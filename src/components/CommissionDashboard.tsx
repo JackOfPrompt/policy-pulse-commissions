@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BulkCommissionProcessor } from "./BulkCommissionProcessor";
+import { RealTimeRateLookup } from "./RealTimeRateLookup";
 import { 
   Calculator, 
   FileSpreadsheet, 
@@ -16,7 +18,9 @@ import {
   AlertCircle,
   Plus,
   Upload,
-  Search
+  Search,
+  Zap,
+  BarChart3
 } from "lucide-react";
 
 interface Commission {
@@ -162,14 +166,22 @@ export function CommissionDashboard() {
 
         {/* Main Content */}
         <Tabs defaultValue="calculate" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
+          <TabsList className="grid w-full grid-cols-5 lg:w-[600px]">
             <TabsTrigger value="calculate" className="gap-2">
               <Calculator className="w-4 h-4" />
               Calculate
             </TabsTrigger>
+            <TabsTrigger value="bulk" className="gap-2">
+              <Upload className="w-4 h-4" />
+              Bulk Process
+            </TabsTrigger>
+            <TabsTrigger value="rates" className="gap-2">
+              <Zap className="w-4 h-4" />
+              Rate Lookup
+            </TabsTrigger>
             <TabsTrigger value="commissions" className="gap-2">
               <FileSpreadsheet className="w-4 h-4" />
-              Commissions
+              History
             </TabsTrigger>
             <TabsTrigger value="validation" className="gap-2">
               <CheckCircle2 className="w-4 h-4" />
@@ -276,6 +288,16 @@ export function CommissionDashboard() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Bulk Processing */}
+          <TabsContent value="bulk">
+            <BulkCommissionProcessor />
+          </TabsContent>
+
+          {/* Rate Lookup */}
+          <TabsContent value="rates">
+            <RealTimeRateLookup />
           </TabsContent>
 
           {/* Commission List */}
