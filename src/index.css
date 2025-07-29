@@ -2,72 +2,74 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Professional Insurance Admin Dashboard Design System */
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 215 25% 15%;
+    /* Professional Insurance Theme Colors */
+    --background: 250 100% 98%;
+    --foreground: 240 15% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
+    --card-foreground: 240 15% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+    --popover-foreground: 240 15% 15%;
 
-    --primary: 214 84% 35%;
+    /* Professional Blue Primary */
+    --primary: 220 85% 52%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 214 84% 30%;
+    --primary-light: 220 85% 65%;
+    --primary-dark: 220 85% 35%;
 
-    --secondary: 210 40% 94%;
-    --secondary-foreground: 215 25% 25%;
+    /* Professional Gray Secondary */
+    --secondary: 240 10% 96%;
+    --secondary-foreground: 240 15% 25%;
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 240 10% 95%;
+    --muted-foreground: 240 8% 45%;
 
-    --accent: 212 95% 85%;
-    --accent-foreground: 214 84% 25%;
+    --accent: 215 100% 96%;
+    --accent-foreground: 220 85% 52%;
 
+    /* Status Colors */
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
-
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
-
+    --warning: 48 96% 53%;
+    --warning-foreground: 240 15% 15%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 214 84% 35%;
+    --border: 240 15% 90%;
+    --input: 240 15% 92%;
+    --ring: 220 85% 52%;
 
-    --gradient-primary: linear-gradient(135deg, hsl(214 84% 35%), hsl(212 95% 45%));
-    --gradient-subtle: linear-gradient(180deg, hsl(210 20% 98%), hsl(210 40% 96%));
+    --radius: 0.75rem;
+
+    /* Admin Sidebar Theme */
+    --sidebar-background: 240 25% 12%;
+    --sidebar-foreground: 240 10% 85%;
+    --sidebar-primary: 220 85% 52%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 20% 18%;
+    --sidebar-accent-foreground: 240 10% 90%;
+    --sidebar-border: 240 20% 20%;
+    --sidebar-ring: 220 85% 52%;
+
+    /* Professional Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(220 85% 52%), hsl(220 85% 65%));
+    --gradient-secondary: linear-gradient(135deg, hsl(240 10% 96%), hsl(240 15% 92%));
+    --gradient-success: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 76% 45%));
+    --gradient-warning: linear-gradient(135deg, hsl(48 96% 53%), hsl(48 96% 65%));
     
-    --shadow-elegant: 0 4px 6px -1px hsl(214 84% 35% / 0.1), 0 2px 4px -1px hsl(214 84% 35% / 0.06);
-    --shadow-glow: 0 0 20px hsl(214 84% 35% / 0.15);
+    /* Professional Shadows */
+    --shadow-card: 0 4px 6px -1px hsl(240 15% 15% / 0.1), 0 2px 4px -1px hsl(240 15% 15% / 0.06);
+    --shadow-lg: 0 10px 15px -3px hsl(240 15% 15% / 0.1), 0 4px 6px -2px hsl(240 15% 15% / 0.05);
+    --shadow-primary: 0 4px 14px 0 hsl(220 85% 52% / 0.25);
 
-    --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-
-    --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Professional Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: all 0.15s ease-out;
   }
 
   .dark {
