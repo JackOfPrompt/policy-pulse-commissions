@@ -26,6 +26,7 @@ import Payouts from "./pages/admin/Payouts";
 import Reports from "./pages/admin/Reports";
 import CommissionReports from "./pages/admin/CommissionReports";
 import PayoutReports from "./pages/admin/PayoutReports";
+import TransactionReports from "./pages/admin/TransactionReports";
 
 
 const queryClient = new QueryClient();
@@ -59,6 +60,7 @@ const App = () => (
             <Route path="commissions" element={<Commissions />} />
             <Route path="payouts" element={<Payouts />} />
             <Route path="reports" element={<Reports />} />
+            <Route path="reports/transactions" element={<TransactionReports />} />
             <Route path="reports/commissions/received" element={<CommissionReports />} />
             <Route path="reports/payouts" element={<PayoutReports />} />
           </Route>

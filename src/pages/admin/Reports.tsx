@@ -28,7 +28,7 @@ interface FilterState {
 
 const Reports = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("policies");
+  const [activeTab, setActiveTab] = useState("overview");
   const [filters, setFilters] = useState<FilterState>({
     startDate: "",
     endDate: "",
@@ -53,6 +53,9 @@ const Reports = () => {
     setLoading(true);
     try {
       switch (activeTab) {
+        case "overview":
+          await fetchOverviewData();
+          break;
         case "policies":
           await fetchPoliciesReport();
           break;
@@ -80,6 +83,26 @@ const Reports = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchOverviewData = async () => {
+    // Fetch overview KPIs from policies data
+    const { data: policies } = await supabase
+      .from("policies_with_details")
+      .select("*");
+
+    const totalPolicies = policies?.length || 0;
+    const totalPremium = policies?.reduce((sum, p) => sum + (p.premium_amount || 0), 0) || 0;
+    const commissionRate = 5.0;
+    const totalCommissions = (totalPremium * commissionRate) / 100;
+    const totalPayouts = totalCommissions; // Assuming full payout
+
+    setKpis({
+      totalPolicies,
+      totalPremium,
+      totalCommissions,
+      totalPayouts
+    });
   };
 
   const fetchPoliciesReport = async () => {
@@ -233,6 +256,12 @@ const Reports = () => {
 
   const renderKPICards = () => {
     const kpiConfigs = {
+      overview: [
+        { label: "Total Policies", value: kpis.totalPolicies || 0, icon: FileText, format: "number" },
+        { label: "Total Premium", value: kpis.totalPremium || 0, icon: DollarSign, format: "currency" },
+        { label: "Total Commissions", value: kpis.totalCommissions || 0, icon: TrendingUp, format: "currency" },
+        { label: "Total Payouts", value: kpis.totalPayouts || 0, icon: Users, format: "currency" }
+      ],
       policies: [
         { label: "Total Policies", value: kpis.totalPolicies || 0, icon: FileText, format: "number" },
         { label: "Total Premium", value: kpis.totalPremium || 0, icon: DollarSign, format: "currency" },
@@ -572,7 +601,8 @@ const Reports = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-7">
+        <TabsList className="grid w-full grid-cols-8">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="policies">Policies</TabsTrigger>
           <TabsTrigger value="commissions">Commissions</TabsTrigger>
           <TabsTrigger value="payouts">Payouts</TabsTrigger>
@@ -581,6 +611,88 @@ const Reports = () => {
           <TabsTrigger value="leads">Leads</TabsTrigger>
           <TabsTrigger value="renewals">Renewals</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="overview" className="space-y-6">
+          {renderKPICards()}
+          
+          {/* Quick Action Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Card className="shadow-card border-primary/20 hover:shadow-lg transition-shadow cursor-pointer" 
+                  onClick={() => navigate('/admin/reports/transactions')}>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  Transaction Reports
+                  <ArrowRight className="h-5 w-5 text-primary" />
+                </CardTitle>
+                <CardDescription>
+                  Unified view of all commission and payout transactions with advanced filtering
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Commissions & Payouts</span>
+                  <Badge className="bg-gradient-primary">New</Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-card border-primary/20 hover:shadow-lg transition-shadow cursor-pointer" 
+                  onClick={() => navigate('/admin/reports/commissions/received')}>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  Commission Reports
+                  <ArrowRight className="h-5 w-5 text-primary" />
+                </CardTitle>
+                <CardDescription>
+                  Detailed commission tracking with export options
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Commission Analysis</span>
+                  <Badge variant="secondary">Detailed</Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-card border-primary/20 hover:shadow-lg transition-shadow cursor-pointer" 
+                  onClick={() => navigate('/admin/reports/payouts')}>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  Payout Reports
+                  <ArrowRight className="h-5 w-5 text-primary" />
+                </CardTitle>
+                <CardDescription>
+                  Agent payout tracking and management
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Payout Management</span>
+                  <Badge variant="secondary">Tracking</Badge>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="shadow-card">
+            <CardHeader>
+              <CardTitle>Reports Overview</CardTitle>
+              <CardDescription>
+                Your business intelligence hub - access all reports and analytics from one place
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-center py-8">
+                <FileText className="h-12 w-12 text-primary mx-auto mb-4" />
+                <p className="text-lg font-medium">Welcome to Reports Center</p>
+                <p className="text-muted-foreground">
+                  Select a specific report type from the tabs above or use the quick action cards to access detailed reports
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="policies" className="space-y-6">
           {renderKPICards()}
