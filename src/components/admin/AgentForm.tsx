@@ -16,6 +16,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 
 const agentSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -66,6 +67,7 @@ export const AgentForm = ({ agent, onSuccess, onCancel }: AgentFormProps) => {
   }>({ pan: null, aadhar: null, irdai: null });
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
+  const { tenantId } = useCurrentTenant();
 
   const form = useForm<AgentFormData>({
     resolver: zodResolver(agentSchema),
@@ -99,12 +101,12 @@ export const AgentForm = ({ agent, onSuccess, onCancel }: AgentFormProps) => {
     try {
       const { data, error } = await supabase
         .from('branches')
-        .select('id, name')
+        .select('id:branch_id, name:branch_name')
         .eq('status', 'Active')
-        .order('name');
+        .order('branch_name');
       
       if (error) throw error;
-      setBranches(data || []);
+      setBranches((data as any) || []);
     } catch (error) {
       console.error('Error fetching branches:', error);
     }
@@ -113,12 +115,12 @@ export const AgentForm = ({ agent, onSuccess, onCancel }: AgentFormProps) => {
   const fetchTiers = async () => {
     try {
       const { data, error } = await supabase
-        .from('agent_tiers')
-        .select('id, name')
-        .order('level');
+        .from('commission_slabs')
+        .select('id:slab_id, name')
+        .order('name');
       
       if (error) throw error;
-      setTiers(data || []);
+      setTiers((data as any) || []);
     } catch (error) {
       console.error('Error fetching tiers:', error);
     }
@@ -126,14 +128,20 @@ export const AgentForm = ({ agent, onSuccess, onCancel }: AgentFormProps) => {
 
   const fetchEmployees = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('employees')
-        .select('id, name, role, branches:branch_id (name)')
+        .select('employee_id, full_name, role, branch_id')
         .eq('status', 'Active')
-        .order('name');
+        .order('full_name');
       
       if (error) throw error;
-      setEmployees(data || []);
+      const mapped = ((data as any[]) || []).map((e) => ({
+        id: e.employee_id,
+        name: e.full_name,
+        role: e.role,
+        branches: { name: '' },
+      }));
+      setEmployees(mapped);
     } catch (error) {
       console.error('Error fetching employees:', error);
     }
@@ -153,7 +161,7 @@ export const AgentForm = ({ agent, onSuccess, onCancel }: AgentFormProps) => {
       };
 
       // Upload files if any
-      const agentId = agent?.id || crypto.randomUUID();
+      const agentId = (agent?.agent_id || agent?.id) || crypto.randomUUID();
       
       for (const [type, file] of Object.entries(files)) {
         if (file) {
@@ -168,29 +176,34 @@ export const AgentForm = ({ agent, onSuccess, onCancel }: AgentFormProps) => {
       }
 
       const agentData = {
-        name: data.name,
+        full_name: data.name,
         agent_code: data.agent_code,
         agent_type: data.agent_type,
         branch_id: data.branch_id,
-        tier_id: data.tier_id,
-        referred_by_employee_id: data.referred_by_employee_id === "none" ? null : data.referred_by_employee_id || null,
-        joining_date: data.joining_date?.toISOString().split('T')[0] || null,
+        aadhaar_number: data.aadhar_number,
         pan_number: data.pan_number,
-        aadhar_number: data.aadhar_number,
-        phone: data.phone,
+        phone_number: data.phone,
         email: data.email,
-        irdai_certified: data.irdai_certified,
-        irdai_cert_number: data.irdai_certified ? data.irdai_cert_number : null,
         status: data.status,
-        ...filePaths
+        tenant_id: tenantId,
+        kyc_documents: {
+          pan_file_path: (filePaths as any).pan_file_path || null,
+          aadhar_file_path: (filePaths as any).aadhar_file_path || null,
+          irdai_file_path: (filePaths as any).irdai_file_path || null,
+          irdai_certified: data.irdai_certified,
+          irdai_cert_number: data.irdai_certified ? data.irdai_cert_number : null,
+          joining_date: data.joining_date?.toISOString().split('T')[0] || null,
+          referred_by_employee_id: data.referred_by_employee_id === "none" ? null : (data.referred_by_employee_id || null),
+          tier_id: data.tier_id || null,
+        }
       };
 
       if (agent) {
         // Update existing agent
         const { error } = await supabase
           .from('agents')
-          .update(agentData)
-          .eq('id', agent.id);
+          .update(agentData as any)
+          .eq('agent_id', (agent as any).agent_id || (agent as any).id);
         
         if (error) throw error;
         toast({ title: "Agent updated successfully!" });
@@ -198,7 +211,7 @@ export const AgentForm = ({ agent, onSuccess, onCancel }: AgentFormProps) => {
         // Create new agent
         const { error } = await supabase
           .from('agents')
-          .insert([agentData]);
+          .insert([agentData as any]);
         
         if (error) throw error;
         toast({ title: "Agent created successfully!" });

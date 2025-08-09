@@ -9,9 +9,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Upload, X, Plus } from "lucide-react";
+import { Upload, X, Plus, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useMasterData } from "@/contexts/MasterDataContext";
 
 const productSchema = z.object({
   name: z.string().min(2, "Product name must be at least 2 characters"),
@@ -50,7 +51,12 @@ export const ProductForm = ({ product, onSuccess, onCancel }: ProductFormProps) 
   const [newFeature, setNewFeature] = useState("");
   const [brochureFile, setBrochureFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uinProducts, setUinProducts] = useState<any[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
+  const [productSearchTerm, setProductSearchTerm] = useState("");
+  const [selectedProvider, setSelectedProvider] = useState<string>("");
   const { toast } = useToast();
+  const { uinCodes } = useMasterData();
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
@@ -73,6 +79,31 @@ export const ProductForm = ({ product, onSuccess, onCancel }: ProductFormProps) 
   useEffect(() => {
     fetchProviders();
   }, []);
+
+  useEffect(() => {
+    if (uinCodes.length > 0) {
+      setUinProducts(uinCodes);
+      setFilteredProducts(uinCodes);
+    }
+  }, [uinCodes]);
+
+  useEffect(() => {
+    let filtered = uinProducts;
+    
+    if (selectedProvider) {
+      filtered = filtered.filter(p => p.insurer_name === selectedProvider);
+    }
+    
+    if (productSearchTerm) {
+      filtered = filtered.filter(p => 
+        p.product_name.toLowerCase().includes(productSearchTerm.toLowerCase()) ||
+        p.line_of_business.toLowerCase().includes(productSearchTerm.toLowerCase()) ||
+        p.uin_code.toLowerCase().includes(productSearchTerm.toLowerCase())
+      );
+    }
+    
+    setFilteredProducts(filtered);
+  }, [productSearchTerm, selectedProvider, uinProducts]);
 
   const fetchProviders = async () => {
     try {
@@ -103,6 +134,30 @@ export const ProductForm = ({ product, onSuccess, onCancel }: ProductFormProps) 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) {
       setBrochureFile(e.target.files[0]);
+    }
+  };
+
+  const handleProductSelect = (selectedProduct: any) => {
+    form.setValue('name', selectedProduct.product_name);
+    form.setValue('code', selectedProduct.uin_code);
+    // Map line of business to category
+    const categoryMapping: {[key: string]: "Health" | "Life" | "Motor" | "Travel" | "Property" | "Personal Accident"} = {
+      'Health': 'Health',
+      'Life': 'Life',
+      'Motor': 'Motor',
+      'Travel': 'Travel',
+      'Property': 'Property',
+      'Personal Accident': 'Personal Accident'
+    };
+    const mappedCategory = categoryMapping[selectedProduct.line_of_business] || 'Health';
+    form.setValue('category', mappedCategory);
+    setProductSearchTerm(selectedProduct.product_name);
+    
+    // Find and set the provider
+    const provider = providers.find(p => p.provider_name === selectedProduct.insurer_name);
+    if (provider) {
+      form.setValue('provider_id', provider.id);
+      setSelectedProvider(selectedProduct.insurer_name);
     }
   };
 
@@ -191,7 +246,36 @@ export const ProductForm = ({ product, onSuccess, onCancel }: ProductFormProps) 
                   <FormItem>
                     <FormLabel>Product Name*</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter product name" {...field} />
+                      <div className="space-y-2">
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                          <Input 
+                            placeholder="Search from UIN database or enter manually..." 
+                            value={productSearchTerm || field.value}
+                            onChange={(e) => {
+                              setProductSearchTerm(e.target.value);
+                              field.onChange(e.target.value);
+                            }}
+                            className="pl-10"
+                          />
+                        </div>
+                        {productSearchTerm && filteredProducts.length > 0 && (
+                          <div className="border border-border rounded-md bg-background shadow-lg max-h-48 overflow-y-auto z-50 absolute w-full">
+                            {filteredProducts.slice(0, 10).map((product, index) => (
+                              <div
+                                key={index}
+                                className="p-3 hover:bg-muted cursor-pointer border-b border-border/50 last:border-b-0"
+                                onClick={() => handleProductSelect(product)}
+                              >
+                                <div className="font-medium text-sm">{product.product_name}</div>
+                                <div className="text-xs text-muted-foreground">
+                                  {product.insurer_name} • {product.line_of_business} • UIN: {product.uin_code}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -204,7 +288,14 @@ export const ProductForm = ({ product, onSuccess, onCancel }: ProductFormProps) 
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Provider*</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select 
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        const provider = providers.find(p => p.id === value);
+                        setSelectedProvider(provider?.provider_name || "");
+                      }} 
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select provider" />

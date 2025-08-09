@@ -36,12 +36,12 @@ export const AgentLeaderboard = ({ filters }: AgentLeaderboardProps) => {
   const fetchAgentPerformance = async () => {
     setLoading(true);
     try {
-      let query = supabase
-        .from('policies')
+      let query = (supabase as any)
+        .from('policies_new')
         .select(`
           agent_id,
           premium_amount,
-          agents (name)
+          agents (full_name)
         `);
 
       // Apply filters
@@ -66,7 +66,7 @@ export const AgentLeaderboard = ({ filters }: AgentLeaderboardProps) => {
       
       data?.forEach((policy: any) => {
         const agentId = policy.agent_id;
-        const agentName = policy.agents?.name || 'Unknown Agent';
+        const agentName = policy.agents?.full_name || 'Unknown Agent';
         const premium = policy.premium_amount || 0;
 
         if (agentMap.has(agentId)) {

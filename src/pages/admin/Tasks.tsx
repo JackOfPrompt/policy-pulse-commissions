@@ -209,12 +209,6 @@ const Tasks = () => {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="border-b border-border pb-4">
-        <h1 className="text-3xl font-bold text-foreground">Tasks & Reminders</h1>
-        <p className="text-muted-foreground mt-1">
-          Manage tasks, follow-ups, and automated reminders
-        </p>
-      </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

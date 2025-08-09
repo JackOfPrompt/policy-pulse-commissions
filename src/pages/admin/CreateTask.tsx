@@ -187,12 +187,6 @@ const CreateTask = () => {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="border-b border-border pb-4">
-        <h1 className="text-3xl font-bold text-foreground">Create New Task</h1>
-        <p className="text-muted-foreground mt-1">
-          Create and assign tasks to employees and agents
-        </p>
-      </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -286,7 +280,7 @@ const CreateTask = () => {
                     <SelectValue placeholder="Select employee" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     {employees.map((employee) => (
                       <SelectItem key={employee.id} value={employee.id}>
                         {employee.name} ({employee.employee_id})
@@ -303,7 +297,7 @@ const CreateTask = () => {
                     <SelectValue placeholder="Select agent" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     {agents.map((agent) => (
                       <SelectItem key={agent.id} value={agent.id}>
                         {agent.name} ({agent.agent_code})
@@ -385,7 +379,7 @@ const CreateTask = () => {
                     <SelectValue placeholder="Select entity type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     {relatedToOptions.map((option) => (
                       <SelectItem key={option} value={option}>{option}</SelectItem>
                     ))}

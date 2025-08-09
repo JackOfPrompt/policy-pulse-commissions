@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import React, { useState } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
 import { 
   BarChart3, 
   Building2, 
@@ -14,82 +14,75 @@ import {
   PieChart,
   Menu,
   X,
-  Shield
+  Shield,
+  CheckSquare,
+  Settings,
+  Target,
+  LogOut,
+  TrendingUp,
+  ShoppingCart,
+  Database
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { usePermissions } from "@/hooks/usePermissions";
+import { useSimpleAuth } from "@/components/auth/SimpleAuthContext";
 
 const adminMenuItems = [
   {
     title: "Overview",
     icon: BarChart3,
     path: "/admin/overview",
-    description: "Dashboard overview and analytics"
+    module: "dashboard"
+  },
+  {
+    title: "Manual Purchase",
+    icon: ShoppingCart,
+    path: "/admin/manual-purchase",
+    module: "dashboard"
   },
   {
     title: "Insurance Providers",
     icon: Building2,
     path: "/admin/providers",
-    description: "Manage insurance companies"
+    module: "providers"
   },
   {
-    title: "Products",
+    title: "Product Management",
     icon: Package,
-    path: "/admin/products",
-    description: "Insurance products and plans"
+    path: "/admin/product-management",
+    module: "products"
   },
   {
-    title: "Agents",
-    icon: Users,
-    path: "/admin/agents",
-    description: "Insurance agents management"
+    title: "Master Data",
+    icon: Database,
+    path: "/admin/master-data",
+    module: "master-data"
   },
   {
-    title: "Employees",
-    icon: UserCheck,
-    path: "/admin/employees",
-    description: "Employee management"
+    title: "Tenant Management",
+    icon: Building2,
+    path: "/admin/tenant-management",
+    module: "tenant-management"
   },
   {
-    title: "Branches",
-    icon: MapPin,
-    path: "/admin/branches",
-    description: "Branch locations and details"
-  },
-  {
-    title: "Policies",
-    icon: FileText,
-    path: "/admin/policies",
-    description: "Insurance policies management"
-  },
-  {
-    title: "Renewals",
-    icon: RefreshCw,
-    path: "/admin/renewals",
-    description: "Policy renewals tracking"
-  },
-  {
-    title: "Commissions",
-    icon: DollarSign,
-    path: "/admin/commissions",
-    description: "Commission calculations"
-  },
-  {
-    title: "Payouts",
-    icon: CreditCard,
-    path: "/admin/payouts",
-    description: "Payout management"
-  },
-  {
-    title: "Reports",
-    icon: PieChart,
-    path: "/admin/reports",
-    description: "Analytics and reporting"
+    title: "Roles & Permissions",
+    icon: Settings,
+    path: "/admin/roles",
+    module: "roles"
   }
 ];
 
 export function AdminSidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const { canAccessModule, loading } = usePermissions();
+  const { logout } = useSimpleAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   return (
     <div className={cn(
@@ -103,7 +96,7 @@ export function AdminSidebar() {
             <div className="flex items-center space-x-2">
               <Shield className="h-8 w-8 text-sidebar-primary" />
               <h1 className="text-lg font-semibold text-sidebar-foreground">
-                Admin Portal
+                System Admin
               </h1>
             </div>
           )}
@@ -120,43 +113,50 @@ export function AdminSidebar() {
         {/* Navigation Menu */}
         <nav className="flex-1 overflow-y-auto p-2">
           <div className="space-y-1">
-            {adminMenuItems.map((item) => {
-              const IconComponent = item.icon;
-              return (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  className={({ isActive }) =>
-                    cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
-                      "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                      isActive
-                        ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
-                        : "text-sidebar-foreground"
-                    )
-                  }
-                  title={isCollapsed ? item.title : undefined}
-                >
-                  <IconComponent className="h-4 w-4 flex-shrink-0" />
-                  {!isCollapsed && (
-                    <div className="flex-1">
-                      <div className="font-medium">{item.title}</div>
-                      <div className="text-xs opacity-75 mt-0.5">
-                        {item.description}
-                      </div>
-                    </div>
-                  )}
-                </NavLink>
-              );
-            })}
+            {adminMenuItems
+              .filter((item) => loading || canAccessModule(item.module) || item.title === "Manual Purchase")
+              .map((item) => {
+                const IconComponent = item.icon;
+                return (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    className={({ isActive }) =>
+                      cn(
+                        "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
+                        "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                        isActive
+                          ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
+                          : "text-sidebar-foreground"
+                      )
+                    }
+                    title={isCollapsed ? item.title : undefined}
+                  >
+                    <IconComponent className="h-4 w-4 flex-shrink-0" />
+                    {!isCollapsed && (
+                      <span className="font-medium">{item.title}</span>
+                    )}
+                  </NavLink>
+                );
+              })}
           </div>
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-sidebar-border">
+        <div className="p-4 border-t border-sidebar-border space-y-2">
+          <Button
+            variant="ghost"
+            size={isCollapsed ? "sm" : "default"}
+            onClick={handleLogout}
+            className="w-full text-sidebar-foreground hover:text-sidebar-primary hover:bg-sidebar-accent justify-start"
+            title={isCollapsed ? "Logout" : undefined}
+          >
+            <LogOut className="h-4 w-4 flex-shrink-0" />
+            {!isCollapsed && <span className="ml-2">Logout</span>}
+          </Button>
           {!isCollapsed && (
             <div className="text-xs text-sidebar-foreground/60 text-center">
-              Admin Dashboard v1.0
+              System Admin v1.0
             </div>
           )}
         </div>

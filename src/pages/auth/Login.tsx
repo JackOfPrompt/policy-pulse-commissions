@@ -28,10 +28,19 @@ const Login = () => {
     try {
       console.log("Attempting login with phone:", phoneNumber);
       
-      // Fetch user by phone number
+      // Fetch user by phone number with role information
       const { data: user, error: fetchError } = await supabase
         .from("users_auth")
-        .select("*")
+        .select(`
+          *,
+          roles (
+            id,
+            name,
+            slug,
+            default_dashboard,
+            is_active
+          )
+        `)
         .eq("phone_number", phoneNumber)
         .eq("is_active", true)
         .single();
@@ -52,19 +61,22 @@ const Login = () => {
         return;
       }
 
-      // Store user data in sessionStorage and navigate to admin dashboard
+      // Store user data in sessionStorage and navigate to role's default dashboard
       sessionStorage.setItem("currentUser", JSON.stringify({ 
         id: user.id, 
         phoneNumber: user.phone_number, 
-        role: user.role 
+        role: user.role,
+        roleInfo: user.roles
       }));
 
       toast({
         title: "Login Successful",
-        description: "Welcome to the admin dashboard!",
+        description: `Welcome, ${user.roles?.name || 'User'}!`,
       });
 
-      navigate("/admin/overview");
+      // Navigate to role's default dashboard or fallback to overview
+      const defaultDashboard = user.roles?.default_dashboard || "/admin/overview";
+      navigate(defaultDashboard);
     } catch (err) {
       setError("An error occurred during login");
       console.error(err);

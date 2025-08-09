@@ -6,9 +6,16 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Upload, Download, CheckCircle, XCircle, FileText } from "lucide-react";
+import { Upload, Download, CheckCircle, XCircle, FileText, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { 
+  BulkUploadLogger, 
+  ProgressTracker, 
+  ProcessingProgress,
+  parseCSVContent,
+  downloadCSVTemplate 
+} from "@/utils/bulkUploadUtils";
+import ProgressIndicator from "@/components/ui/progress-indicator";
 
 interface BulkUploadModalProps {
   isOpen: boolean;
@@ -17,11 +24,12 @@ interface BulkUploadModalProps {
   onSuccess: () => void;
   templateColumns: string[];
   sampleData?: Record<string, any>[];
-  validateRow?: (row: Record<string, any>) => string[];
+  validateRow?: (row: Record<string, any>) => string[] | Promise<string[]>;
   processRow?: (row: Record<string, any>) => Promise<any>;
 }
 
 interface ParsedRow {
+  rowNumber: number;
   data: Record<string, any>;
   errors: string[];
   isValid: boolean;
@@ -47,46 +55,25 @@ const BulkUploadModal = ({
     success: number;
     failed: number;
   } | null>(null);
+  const [bulkUploadLogger] = useState(() => new BulkUploadLogger(entityType));
+  const [processingProgress, setProcessingProgress] = useState<ProcessingProgress>({
+    total: 0,
+    processed: 0,
+    successful: 0,
+    failed: 0
+  });
+  const [progressTracker] = useState(() => new ProgressTracker(setProcessingProgress));
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const downloadTemplate = () => {
-    const csvContent = [
-      templateColumns.join(','),
-      ...sampleData.map(row => 
-        templateColumns.map(col => row[col] || '').join(',')
-      )
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${entityType.toLowerCase()}_template.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
+    downloadCSVTemplate(entityType, templateColumns, sampleData);
   };
 
-  const parseCSV = (csvContent: string): Record<string, any>[] => {
-    const lines = csvContent.split('\n').filter(line => line.trim());
-    if (lines.length < 2) return [];
-
-    const headers = lines[0].split(',').map(h => h.trim());
-    const data = [];
-
-    for (let i = 1; i < lines.length; i++) {
-      const values = lines[i].split(',').map(v => v.trim());
-      const row: Record<string, any> = {};
-      
-      headers.forEach((header, index) => {
-        row[header] = values[index] || '';
-      });
-      
-      data.push(row);
-    }
-
-    return data;
+  const downloadErrorReport = () => {
+    bulkUploadLogger.downloadErrorReport();
   };
+
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
@@ -106,9 +93,10 @@ const BulkUploadModal = ({
     const reader = new FileReader();
     reader.onload = (e) => {
       const content = e.target?.result as string;
-      const data = parseCSV(content);
+      const data = parseCSVContent(content);
       
-      const parsed: ParsedRow[] = data.map(row => ({
+      const parsed: ParsedRow[] = data.map((row, index) => ({
+        rowNumber: index + 2, // +2 because row 1 is headers
         data: row,
         errors: [],
         isValid: true
@@ -130,24 +118,36 @@ const BulkUploadModal = ({
 
     setIsValidating(true);
     
-    const validated = parsedData.map(row => {
-      const errors = validateRow(row.data);
-      return {
-        ...row,
-        errors,
-        isValid: errors.length === 0
-      };
-    });
-    
-    setParsedData(validated);
-    setValidationComplete(true);
-    setIsValidating(false);
+    try {
+      const validated = await Promise.all(
+        parsedData.map(async (row) => {
+          const errors = await Promise.resolve(validateRow(row.data));
+          return {
+            ...row,
+            errors,
+            isValid: errors.length === 0
+          };
+        })
+      );
+      
+      setParsedData(validated);
+      setValidationComplete(true);
 
-    const validRows = validated.filter(row => row.isValid);
-    toast({
-      title: "Validation complete",
-      description: `${validRows.length} out of ${validated.length} rows are valid`,
-    });
+      const validRows = validated.filter(row => row.isValid);
+      toast({
+        title: "Validation complete",
+        description: `${validRows.length} out of ${validated.length} rows are valid`,
+      });
+    } catch (error) {
+      toast({
+        title: "Validation failed",
+        description: "An error occurred during validation",
+        variant: "destructive",
+      });
+      console.error('Validation error:', error);
+    } finally {
+      setIsValidating(false);
+    }
   };
 
   const importData = async () => {
@@ -159,38 +159,34 @@ const BulkUploadModal = ({
     let failedCount = 0;
 
     try {
-      // Create upload history record
-      const { data: uploadRecord } = await supabase
-        .from("upload_history")
-        .insert({
-          entity_type: entityType,
-          file_name: file?.name || 'unknown',
-          total_rows: validRows.length,
-          status: 'Processing'
-        })
-        .select()
-        .single();
+      // Enhanced processing with error logging
+      const total = validRows.length;
+      setProcessingProgress({
+        total,
+        processed: 0,
+        successful: 0,
+        failed: 0
+      });
 
-      for (const row of validRows) {
+      for (let i = 0; i < validRows.length; i++) {
+        const row = validRows[i];
         try {
           await processRow(row.data);
           successCount++;
         } catch (error) {
           failedCount++;
-          console.error('Failed to process row:', error);
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          await bulkUploadLogger.logProcessingError(row.rowNumber, row.data, errorMessage);
         }
-      }
 
-      // Update upload history
-      if (uploadRecord) {
-        await supabase
-          .from("upload_history")
-          .update({
-            success_count: successCount,
-            failure_count: failedCount,
-            status: failedCount === 0 ? 'Completed' : 'Partial'
-          })
-          .eq('id', uploadRecord.id);
+        // Update progress
+        progressTracker.updateProgress({
+          total,
+          processed: i + 1,
+          successful: successCount,
+          failed: failedCount,
+          currentRow: row.rowNumber
+        });
       }
 
       setImportSummary({
@@ -290,11 +286,26 @@ const BulkUploadModal = ({
                 )}
               </div>
 
-              {/* Data Preview */}
+          {/* Progress Indicator */}
+          {(isValidating || isImporting) && (
+            <ProgressIndicator
+              total={processingProgress.total}
+              processed={processingProgress.processed}
+              successful={processingProgress.successful}
+              failed={processingProgress.failed}
+              currentRow={processingProgress.currentRow}
+              estimatedTimeRemaining={processingProgress.estimatedTimeRemaining}
+              isProcessing={isValidating || isImporting}
+              stage={isValidating ? 'validation' : isImporting ? 'processing' : 'completed'}
+            />
+          )}
+
+          {/* Data Preview */}
               <div className="border rounded-lg max-h-64 overflow-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>Row</TableHead>
                       <TableHead>Status</TableHead>
                       {templateColumns.map(col => (
                         <TableHead key={col}>{col}</TableHead>
@@ -305,6 +316,7 @@ const BulkUploadModal = ({
                   <TableBody>
                     {parsedData.slice(0, 10).map((row, index) => (
                       <TableRow key={index}>
+                        <TableCell>{row.rowNumber}</TableCell>
                         <TableCell>
                           {validationComplete ? (
                             row.isValid ? (
@@ -317,13 +329,20 @@ const BulkUploadModal = ({
                           )}
                         </TableCell>
                         {templateColumns.map(col => (
-                          <TableCell key={col}>{row.data[col]}</TableCell>
+                          <TableCell key={`${row.rowNumber}-${col}`}>{row.data[col]}</TableCell>
                         ))}
                         {validationComplete && (
                           <TableCell>
                             {row.errors.length > 0 && (
                               <div className="text-xs text-red-600">
-                                {row.errors.join(', ')}
+                                 {row.errors.slice(0, 2).map((error, i) => (
+                                   <div key={`${row.rowNumber}-error-${i}`}>{error}</div>
+                                 ))}
+                                {row.errors.length > 2 && (
+                                  <div className="text-muted-foreground">
+                                    +{row.errors.length - 2} more...
+                                  </div>
+                                )}
                               </div>
                             )}
                           </TableCell>
@@ -353,13 +372,26 @@ const BulkUploadModal = ({
           )}
 
           {/* Import Summary */}
-          {importSummary && (
-            <Alert>
-              <FileText className="h-4 w-4" />
-              <AlertDescription>
-                Import completed: {importSummary.success} successful, {importSummary.failed} failed out of {importSummary.total} records.
-              </AlertDescription>
-            </Alert>
+          {importSummary && !isImporting && (
+            <div className="space-y-4">
+              <ProgressIndicator
+                total={importSummary.total}
+                processed={importSummary.total}
+                successful={importSummary.success}
+                failed={importSummary.failed}
+                isProcessing={false}
+                stage="completed"
+              />
+
+              {(importSummary.failed > 0 || bulkUploadLogger.getErrors().length > 0) && (
+                <div className="flex justify-center">
+                  <Button variant="outline" onClick={downloadErrorReport}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Download Error Report
+                  </Button>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </DialogContent>

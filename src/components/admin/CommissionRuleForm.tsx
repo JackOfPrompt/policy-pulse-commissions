@@ -98,6 +98,7 @@ export const CommissionRuleForm: React.FC<CommissionRuleFormProps> = ({
 
   const [providers, setProviders] = useState<Provider[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [lineOfBusinessOptions, setLineOfBusinessOptions] = useState<any[]>([]);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [commissionTiers, setCommissionTiers] = useState<CommissionTier[]>([]);
   const [selectedTiers, setSelectedTiers] = useState<string[]>([]);
@@ -108,7 +109,7 @@ export const CommissionRuleForm: React.FC<CommissionRuleFormProps> = ({
 
   const { toast } = useToast();
 
-  const lineOfBusinessOptions = ['Motor', 'Health', 'Life', 'Commercial'];
+  
   const ruleTypeOptions = ['Flat %', 'Fixed', 'Tiered', 'Premium-Based', 'Volume-Based'];
   
   // Line-specific attribute options
@@ -135,6 +136,7 @@ export const CommissionRuleForm: React.FC<CommissionRuleFormProps> = ({
     fetchProviders();
     fetchProducts();
     fetchCommissionTiers();
+    fetchLineOfBusinessOptions();
     
     if (rule) {
       populateForm(rule);
@@ -154,9 +156,9 @@ export const CommissionRuleForm: React.FC<CommissionRuleFormProps> = ({
     try {
       const { data, error } = await supabase
         .from('insurance_providers')
-        .select('id, provider_name')
+        .select('id:provider_id, provider_name:insurer_name')
         .eq('status', 'Active')
-        .order('provider_name');
+        .order('insurer_name');
 
       if (error) throw error;
       setProviders(data || []);
@@ -169,9 +171,9 @@ export const CommissionRuleForm: React.FC<CommissionRuleFormProps> = ({
     try {
       const { data, error } = await supabase
         .from('insurance_products')
-        .select('id, name, provider_id')
+        .select('id:product_id, name:product_name, provider_id')
         .eq('status', 'Active')
-        .order('name');
+        .order('product_name');
 
       if (error) throw error;
       setAllProducts(data || []);
@@ -180,11 +182,27 @@ export const CommissionRuleForm: React.FC<CommissionRuleFormProps> = ({
     }
   };
 
+  const fetchLineOfBusinessOptions = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('lines_of_business')
+        .select('id:lob_id, name:lob_name, code:lob_code')
+        .eq('is_active', true)
+        .order('lob_name');
+
+      if (error) throw error;
+      setLineOfBusinessOptions(data || []);
+    } catch (error) {
+      console.error('Error fetching line of business options:', error);
+    }
+  };
+
   const fetchCommissionTiers = async () => {
     try {
       const { data, error } = await supabase
-        .from('commission_tiers')
-        .select('id, name, code')
+        .from('commission_slabs')
+        .select('id:slab_id, name, code:name')
+        .eq('is_active', true)
         .order('name');
 
       if (error) throw error;
@@ -364,7 +382,7 @@ export const CommissionRuleForm: React.FC<CommissionRuleFormProps> = ({
 
       if (rule) {
         // Update existing rule
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('commission_rules')
           .update(ruleData)
           .eq('id', rule.id);
@@ -373,7 +391,7 @@ export const CommissionRuleForm: React.FC<CommissionRuleFormProps> = ({
         ruleId = rule.id;
       } else {
         // Create new rule
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('commission_rules')
           .insert(ruleData)
           .select()
@@ -385,7 +403,7 @@ export const CommissionRuleForm: React.FC<CommissionRuleFormProps> = ({
 
       // Save conditions
       if (conditions.length > 0) {
-        await supabase.from('rule_conditions').delete().eq('commission_rule_id', ruleId);
+        await (supabase as any).from('rule_conditions').delete().eq('commission_rule_id', ruleId);
         
         const conditionData = conditions
           .filter(c => c.attribute && c.value)
@@ -397,14 +415,14 @@ export const CommissionRuleForm: React.FC<CommissionRuleFormProps> = ({
           }));
 
         if (conditionData.length > 0) {
-          const { error } = await supabase.from('rule_conditions').insert(conditionData);
+          const { error } = await (supabase as any).from('rule_conditions').insert(conditionData);
           if (error) throw error;
         }
       }
 
       // Save ranges
       if (ranges.length > 0) {
-        await supabase.from('rule_ranges').delete().eq('commission_rule_id', ruleId);
+        await (supabase as any).from('rule_ranges').delete().eq('commission_rule_id', ruleId);
         
         const rangeData = ranges
           .filter(r => r.min_value !== undefined)
@@ -418,13 +436,13 @@ export const CommissionRuleForm: React.FC<CommissionRuleFormProps> = ({
           }));
 
         if (rangeData.length > 0) {
-          const { error } = await supabase.from('rule_ranges').insert(rangeData);
+          const { error } = await (supabase as any).from('rule_ranges').insert(rangeData);
           if (error) throw error;
         }
       }
 
       // Save tier associations
-      await supabase.from('commission_rule_tiers').delete().eq('commission_rule_id', ruleId);
+      await (supabase as any).from('commission_rule_tiers').delete().eq('commission_rule_id', ruleId);
       
       if (selectedTiers.length > 0) {
         const tierData = selectedTiers.map(tierId => ({
@@ -432,7 +450,7 @@ export const CommissionRuleForm: React.FC<CommissionRuleFormProps> = ({
           commission_tier_id: tierId
         }));
 
-        const { error } = await supabase.from('commission_rule_tiers').insert(tierData);
+        const { error } = await (supabase as any).from('commission_rule_tiers').insert(tierData);
         if (error) throw error;
       }
 
@@ -516,8 +534,8 @@ export const CommissionRuleForm: React.FC<CommissionRuleFormProps> = ({
                 </SelectTrigger>
                 <SelectContent>
                   {lineOfBusinessOptions.map((lob) => (
-                    <SelectItem key={lob} value={lob}>
-                      {lob}
+                    <SelectItem key={lob.id} value={lob.name}>
+                      {lob.name}
                     </SelectItem>
                   ))}
                 </SelectContent>

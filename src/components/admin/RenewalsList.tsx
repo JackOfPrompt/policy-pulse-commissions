@@ -70,7 +70,7 @@ export const RenewalsList = ({ filters, showWeekOnly = false }: RenewalsListProp
       const { data, error } = await query;
       if (error) throw error;
 
-      setPolicies(data || []);
+      setPolicies((data as any) || []);
     } catch (error) {
       console.error('Error fetching renewals:', error);
     } finally {

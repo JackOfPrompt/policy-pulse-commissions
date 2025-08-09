@@ -206,25 +206,9 @@ const Payouts = () => {
   return (
     <div className="p-6 space-y-6">
       <div className="space-y-2">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/admin/dashboard">Admin Dashboard</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>Tier Payout Rules</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
 
-        <div className="flex items-center justify-between border-b border-border pb-4">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Tier-Based Payout Management</h1>
-            <p className="text-muted-foreground mt-1">
-              Manage agent tiers and commission rules
-            </p>
-          </div>
+        <div className="flex items-center justify-between">
+          <div></div>
         </div>
       </div>
 

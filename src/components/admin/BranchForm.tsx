@@ -97,7 +97,7 @@ export const BranchForm = ({ open, onOpenChange, branch, onSuccess }: BranchForm
         const { error } = await supabase
           .from("branches")
           .update(data as any)
-          .eq("id", branch.id);
+          .eq("branch_id", branch?.branch_id || branch?.id);
         if (error) throw error;
         toast({ title: "Branch updated successfully" });
       } else {

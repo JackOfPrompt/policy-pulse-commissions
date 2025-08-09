@@ -47,6 +47,7 @@ const PayoutReports = () => {
   const [branches, setBranches] = useState<string[]>([]);
   const [tiers, setTiers] = useState<string[]>([]);
   const [providers, setProviders] = useState<string[]>([]);
+  const [lineOfBusinessOptions, setLineOfBusinessOptions] = useState<any[]>([]);
   
   const { toast } = useToast();
 
@@ -54,6 +55,7 @@ const PayoutReports = () => {
     fetchPayouts();
     fetchKPIs();
     fetchFilterOptions();
+    fetchLineOfBusinessOptions();
   }, []);
 
   useEffect(() => {
@@ -244,6 +246,21 @@ const PayoutReports = () => {
     }
   };
 
+  const fetchLineOfBusinessOptions = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('line_of_business')
+        .select('id, name, code')
+        .eq('is_active', true)
+        .order('name');
+
+      if (error) throw error;
+      setLineOfBusinessOptions(data || []);
+    } catch (error) {
+      console.error('Error fetching line of business options:', error);
+    }
+  };
+
   const handleExport = async () => {
     try {
       // Implementation for CSV export
@@ -318,13 +335,8 @@ const PayoutReports = () => {
           </BreadcrumbList>
         </Breadcrumb>
 
-        <div className="flex items-center justify-between border-b border-border pb-4">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Payout Reports</h1>
-            <p className="text-muted-foreground mt-1">
-              Track and manage agent commission payouts
-            </p>
-          </div>
+        <div className="flex items-center justify-between">
+          <div></div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={handleExport}>
               <Download className="h-4 w-4 mr-2" />
@@ -474,10 +486,11 @@ const PayoutReports = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Lines</SelectItem>
-                <SelectItem value="Health">Health</SelectItem>
-                <SelectItem value="Motor">Motor</SelectItem>
-                <SelectItem value="Life">Life</SelectItem>
-                <SelectItem value="Commercial">Commercial</SelectItem>
+                {lineOfBusinessOptions.map((lob) => (
+                  <SelectItem key={lob.id} value={lob.name}>
+                    {lob.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
 

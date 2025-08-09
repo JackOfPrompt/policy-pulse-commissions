@@ -600,12 +600,6 @@ const Renewals = () => {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="border-b border-border pb-4">
-        <h1 className="text-3xl font-bold text-foreground">Policy Renewals</h1>
-        <p className="text-muted-foreground mt-1">
-          Manage policy renewals, send reminders, and track renewal workflow
-        </p>
-      </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-3">

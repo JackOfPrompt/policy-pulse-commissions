@@ -13,29 +13,32 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { ProductForm } from "@/components/admin/ProductForm";
-import BulkUploadModal from "@/components/admin/BulkUploadModal";
+import EnhancedBulkUploadModal from "@/components/admin/EnhancedBulkUploadModal";
+import BulkUpdateModal from "@/components/admin/BulkUpdateModal";
 import { getProductTemplateColumns, getProductSampleData, validateProductRow, processProductRow } from "@/utils/productBulkUpload";
+import { getProductUpdateTemplateColumns, getProductUpdateSampleData, validateProductUpdateRow, processProductUpdateRow } from "@/utils/productBulkUpdate";
 
 interface Product {
-  id: string;
-  name: string;
-  code: string;
-  category: string;
-  coverage_type: string;
-  min_sum_insured: number;
-  max_sum_insured: number;
-  premium_type: string;
+  product_id: string;
+  product_name: string;
+  product_code: string;
   status: string;
   provider_id: string;
-  insurance_providers: {
-    provider_name: string;
+  lob_id?: string;
+  min_sum_insured: number;
+  max_sum_insured: number;
+  insurance_providers?: {
+    insurer_name: string;
+  };
+  lines_of_business?: {
+    lob_name: string;
   };
   created_at: string;
 }
 
 interface Provider {
-  id: string;
-  provider_name: string;
+  provider_id: string;
+  insurer_name: string;
 }
 
 const InsuranceProducts = () => {
@@ -49,6 +52,7 @@ const InsuranceProducts = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [showForm, setShowForm] = useState(false);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
+  const [showBulkUpdate, setShowBulkUpdate] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -68,15 +72,19 @@ const InsuranceProducts = () => {
       const { data, error } = await supabase
         .from('insurance_products')
         .select(`
-          *,
-          insurance_providers (
-            provider_name
-          )
+          product_id, product_name, product_code, status, provider_id, lob_id, min_sum_insured, max_sum_insured, created_at,
+          insurance_providers (insurer_name),
+          lines_of_business (lob_name)
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setProducts((data as Product[]) || []);
+      const normalized = ((data as any[]) || []).map((d) => ({
+        ...d,
+        insurance_providers: Array.isArray(d.insurance_providers) ? d.insurance_providers[0] : d.insurance_providers,
+        lines_of_business: Array.isArray(d.lines_of_business) ? d.lines_of_business[0] : d.lines_of_business,
+      })) as Product[];
+      setProducts(normalized);
     } catch (error: any) {
       console.error('Error fetching products:', error);
       toast({
@@ -93,12 +101,12 @@ const InsuranceProducts = () => {
     try {
       const { data, error } = await supabase
         .from('insurance_providers')
-        .select('id, provider_name')
+        .select('provider_id, insurer_name')
         .eq('status', 'Active')
-        .order('provider_name');
+        .order('insurer_name');
       
       if (error) throw error;
-      setProviders(data || []);
+      setProviders((data as any) || []);
     } catch (error) {
       console.error('Error fetching providers:', error);
     }
@@ -109,9 +117,9 @@ const InsuranceProducts = () => {
 
     if (searchTerm) {
       filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.insurance_providers?.provider_name.toLowerCase().includes(searchTerm.toLowerCase())
+        product.product_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.product_code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.insurance_providers?.insurer_name?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -120,7 +128,7 @@ const InsuranceProducts = () => {
     }
 
     if (categoryFilter !== "all") {
-      filtered = filtered.filter(product => product.category === categoryFilter);
+      filtered = filtered.filter(product => (product.lines_of_business?.lob_name || '') === categoryFilter);
     }
 
     if (statusFilter !== "all") {
@@ -144,7 +152,7 @@ const InsuranceProducts = () => {
       const { error } = await supabase
         .from('insurance_products')
         .delete()
-        .eq('id', productId);
+        .eq('product_id', productId);
 
       if (error) throw error;
 
@@ -201,31 +209,16 @@ const InsuranceProducts = () => {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Breadcrumb */}
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/admin">Admin Dashboard</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>Insurance Products</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-
-      {/* Header */}
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Insurance Products</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage insurance products and their details
-          </p>
-        </div>
+        <div></div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setShowBulkUpload(true)}>
             <Upload className="h-4 w-4 mr-2" />
             Bulk Upload
+          </Button>
+          <Button variant="outline" onClick={() => setShowBulkUpdate(true)}>
+            <Upload className="h-4 w-4 mr-2" />
+            Bulk Update
           </Button>
           <Dialog open={showForm} onOpenChange={setShowForm}>
             <DialogTrigger asChild>
@@ -273,8 +266,8 @@ const InsuranceProducts = () => {
                 <SelectContent>
                   <SelectItem value="all">All Providers</SelectItem>
                   {providers.map((provider) => (
-                    <SelectItem key={provider.id} value={provider.id}>
-                      {provider.provider_name}
+                    <SelectItem key={provider.provider_id} value={provider.provider_id}>
+                      {provider.insurer_name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -339,24 +332,24 @@ const InsuranceProducts = () => {
               </TableHeader>
               <TableBody>
                 {filteredProducts.map((product) => (
-                  <TableRow key={product.id}>
+                  <TableRow key={product.product_id}>
                     <TableCell className="font-medium">
                       <div>
-                        <div>{product.name}</div>
+                        <div>{product.product_name}</div>
                         <div className="text-sm text-muted-foreground">
-                          Code: {product.code}
+                          Code: {product.product_code}
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      {product.insurance_providers?.provider_name || 'N/A'}
+                      {product.insurance_providers?.insurer_name || 'N/A'}
                     </TableCell>
                     <TableCell>
                       <Badge
                         variant="outline"
-                        className={getCategoryBadgeColor(product.category)}
+                        className={getCategoryBadgeColor(product.lines_of_business?.lob_name || 'N/A')}
                       >
-                        {product.category}
+                        {product.lines_of_business?.lob_name || 'N/A'}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -375,7 +368,7 @@ const InsuranceProducts = () => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleView(product.id)}
+                          onClick={() => handleView(product.product_id)}
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
@@ -396,15 +389,15 @@ const InsuranceProducts = () => {
                             <AlertDialogHeader>
                               <AlertDialogTitle>Delete Product</AlertDialogTitle>
                               <AlertDialogDescription>
-                                Are you sure you want to delete "{product.name}"? 
+                                Are you sure you want to delete "{product.product_name}"? 
                                 This action cannot be undone.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDelete(product.id, product.name)}
-                              >
+                               <AlertDialogAction
+                                  onClick={() => handleDelete(product.product_id, product.product_name)}
+                               >
                                 Delete
                               </AlertDialogAction>
                             </AlertDialogFooter>
@@ -420,8 +413,8 @@ const InsuranceProducts = () => {
         </CardContent>
       </Card>
 
-      {/* Bulk Upload Modal */}
-      <BulkUploadModal
+      {/* Enhanced Bulk Upload Modal */}
+      <EnhancedBulkUploadModal
         isOpen={showBulkUpload}
         onClose={() => setShowBulkUpload(false)}
         entityType="Insurance Product"
@@ -430,6 +423,18 @@ const InsuranceProducts = () => {
         sampleData={getProductSampleData()}
         validateRow={validateProductRow}
         processRow={processProductRow}
+      />
+
+      {/* Bulk Update Modal */}
+      <BulkUpdateModal
+        isOpen={showBulkUpdate}
+        onClose={() => setShowBulkUpdate(false)}
+        entityType="Product Updates"
+        onSuccess={fetchProducts}
+        templateColumns={getProductUpdateTemplateColumns()}
+        sampleData={getProductUpdateSampleData()}
+        validateRow={validateProductUpdateRow}
+        processRow={processProductUpdateRow}
       />
     </div>
   );

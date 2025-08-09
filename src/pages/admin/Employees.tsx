@@ -162,25 +162,8 @@ const Employees = () => {
   return (
     <div className="p-6 space-y-6">
       <div className="space-y-2">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/admin/dashboard">Admin Dashboard</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>Employees</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-
-        <div className="flex items-center justify-between border-b border-border pb-4">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Employee Management</h1>
-            <p className="text-muted-foreground mt-1">
-              Manage company employees and their information
-            </p>
-          </div>
+        <div className="flex items-center justify-between">
+          <div></div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setShowBulkUpload(true)}>
               <Upload className="h-4 w-4 mr-2" />

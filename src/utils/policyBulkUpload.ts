@@ -5,11 +5,17 @@ export interface PolicyCSVRow {
   insurerName: string;
   productName: string;
   lineOfBusiness: string;
+  policyType: string;
   policyStartDate: string;
   policyEndDate: string;
   premiumAmount: string;
   sumAssured?: string;
-  policyType?: string;
+  vehicleType?: string;
+  customerName?: string;
+  customerPhone?: string;
+  customerEmail?: string;
+  previousPolicyNumber?: string;
+  paymentMode?: string;
   policySource?: string;
   createdByType?: string;
   agentCode?: string;
@@ -70,11 +76,16 @@ export const getTemplateColumns = (lineOfBusiness: string): string[] => {
     'insurerName', 
     'productName',
     'lineOfBusiness',
+    'policyType',
     'policyStartDate',
     'policyEndDate',
     'premiumAmount',
     'sumAssured',
-    'policyType',
+    'customerName',
+    'customerPhone',
+    'customerEmail',
+    'previousPolicyNumber',
+    'paymentMode',
     'policySource',
     'createdByType',
     'agentCode',
@@ -83,6 +94,11 @@ export const getTemplateColumns = (lineOfBusiness: string): string[] => {
     'status',
     'remarks'
   ];
+  
+  // Add vehicle type for Motor LOB
+  if (lineOfBusiness?.toLowerCase() === 'motor') {
+    baseColumns.splice(baseColumns.indexOf('customerName'), 0, 'vehicleType');
+  }
 
   switch (lineOfBusiness?.toLowerCase()) {
     case 'motor':
@@ -226,9 +242,7 @@ export const validatePolicyRow = (row: Record<string, any>): string[] => {
     errors.push('Insurer name is required');
   }
   
-  if (!row.productName?.trim()) {
-    errors.push('Product name is required');
-  }
+  // Product name is not mandatory - will be handled during processing
   
   if (!row.lineOfBusiness?.trim()) {
     errors.push('Line of business is required');
@@ -265,9 +279,33 @@ export const validatePolicyRow = (row: Record<string, any>): string[] => {
   }
 
   // Line of business validation
-  const validLOBs = ['Motor', 'Life', 'Health', 'Commercial'];
+  const validLOBs = ['Health', 'Motor', 'Life', 'Travel', 'Loan', 'Pet', 'Commercial'];
   if (row.lineOfBusiness && !validLOBs.includes(row.lineOfBusiness)) {
-    errors.push('Line of business must be one of: Motor, Life, Health, Commercial');
+    errors.push('Line of business must be one of: Health, Motor, Life, Travel, Loan, Pet, Commercial');
+  }
+
+  // Policy type validation
+  const validPolicyTypes = ['New', 'Renewal', 'Portability', 'Top-Up', 'Rollover', 'Converted'];
+  if (!row.policyType?.trim()) {
+    errors.push('Policy type is required');
+  } else if (!validPolicyTypes.includes(row.policyType)) {
+    errors.push(`Policy type must be one of: ${validPolicyTypes.join(', ')}`);
+  }
+
+  // Vehicle type validation for Motor LOB
+  if (row.lineOfBusiness === 'Motor' && row.vehicleType?.trim()) {
+    const validVehicleTypes = ['Two-Wheeler', 'Private Car', 'Commercial Vehicle', 'Miscellaneous'];
+    if (!validVehicleTypes.includes(row.vehicleType)) {
+      errors.push(`Vehicle type must be one of: ${validVehicleTypes.join(', ')}`);
+    }
+  }
+
+  // Payment mode validation
+  if (row.paymentMode?.trim()) {
+    const validPaymentModes = ['Cash', 'UPI', 'Cheque', 'Online', 'Bank Transfer'];
+    if (!validPaymentModes.includes(row.paymentMode)) {
+      errors.push(`Payment mode must be one of: ${validPaymentModes.join(', ')}`);
+    }
   }
 
   // Created by type validation
@@ -304,10 +342,12 @@ const isValidDate = (dateString: string): boolean => {
 export const processPolicyRow = async (row: Record<string, any>): Promise<any> => {
   // First, get or create related entities
   const insurerId = await getOrCreateInsurer(row.insurerName);
-  const productId = await getOrCreateProduct(row.productName, insurerId, row.lineOfBusiness);
+  const productId = await getOrCreateProduct(row.productName, insurerId, row.lineOfBusiness, row.policyType);
   const agentId = row.agentCode ? await getAgentByCode(row.agentCode) : null;
   const employeeId = row.employeeCode ? await getEmployeeByCode(row.employeeCode) : null;
   const branchId = row.branchName ? await getBranchByName(row.branchName) : null;
+  const lineOfBusinessId = await getLineOfBusinessId(row.lineOfBusiness);
+  const vehicleTypeId = row.vehicleType ? await getVehicleTypeId(row.vehicleType) : null;
 
   // Map policy type to valid values
   const mapPolicyType = (policyType: string): string | null => {
@@ -343,24 +383,36 @@ export const processPolicyRow = async (row: Record<string, any>): Promise<any> =
     createdByType = row.createdByType === 'Agent' ? 'Agent' : 'Employee';
   }
 
+  // Check if this is an unverified customer policy
+  const isUnverifiedCustomer = row.customerName?.toLowerCase().trim() === 'unverified customer';
+
   // Create the main policy record
   const policyData = {
     policy_number: row.policyNumber,
     insurer_id: insurerId,
     product_id: productId,
     line_of_business: row.lineOfBusiness,
+    line_of_business_id: lineOfBusinessId,
+    policy_type: row.policyType as any,
     policy_start_date: row.policyStartDate,
     policy_end_date: row.policyEndDate,
     premium_amount: parseFloat(row.premiumAmount),
     sum_assured: row.sumAssured ? parseFloat(row.sumAssured) : null,
-    policy_type: mapPolicyType(row.policyType),
+    vehicle_type_id: vehicleTypeId,
+    customer_name: isUnverifiedCustomer ? 'Unverified Customer' : (row.customerName || null),
+    customer_phone: isUnverifiedCustomer ? null : (row.customerPhone || null),
+    customer_email: isUnverifiedCustomer ? null : (row.customerEmail || null),
+    previous_policy_number: row.previousPolicyNumber || null,
+    payment_mode: row.paymentMode as any,
     policy_source: row.policySource || null,
     created_by_type: createdByType,
     agent_id: createdByType === 'Agent' ? agentId : null,
     employee_id: createdByType === 'Employee' ? employeeId : null,
     branch_id: branchId,
     status: row.status || 'Active',
-    remarks: row.remarks || null
+    remarks: isUnverifiedCustomer ? 
+      `Unverified Customer Policy. ${row.remarks || ''}`.trim() : 
+      (row.remarks || null)
   };
 
   const { data: policy, error } = await supabase
@@ -409,24 +461,77 @@ const getOrCreateInsurer = async (insurerName: string): Promise<string> => {
   return newInsurer.id;
 };
 
-const getOrCreateProduct = async (productName: string, providerId: string, lineOfBusiness: string): Promise<string> => {
-  // First try to find existing product
-  const { data: existing } = await supabase
-    .from('insurance_products')
-    .select('id')
-    .eq('name', productName)
-    .eq('provider_id', providerId)
-    .single();
+const getOrCreateProduct = async (productName: string, providerId: string, lineOfBusiness: string, policyType?: string): Promise<string> => {
+  // If no product name provided, create placeholder immediately
+  if (!productName?.trim()) {
+    const { data: newProduct, error } = await supabase
+      .from('insurance_products')
+      .insert({
+        name: 'Product name not found in system',
+        code: `AUTO_${Date.now()}`,
+        provider_id: providerId,
+        category: lineOfBusiness,
+        coverage_type: 'Comprehensive',
+        premium_type: 'Fixed',
+        min_sum_insured: 100000,
+        max_sum_insured: 10000000
+      })
+      .select()
+      .single();
 
-  if (existing) {
-    return existing.id;
+    if (error) {
+      throw new Error(`Failed to create placeholder product: ${error.message}`);
+    }
+
+    return newProduct.id;
   }
 
-  // Create new product if not found
+  // First try to find existing product with enhanced matching
+  let query = supabase
+    .from('insurance_products')
+    .select('id')
+    .eq('provider_id', providerId)
+    .eq('category', lineOfBusiness);
+
+  // Try exact name match first
+  const { data: exactMatch } = await query
+    .eq('name', productName)
+    .maybeSingle();
+
+  if (exactMatch) {
+    return exactMatch.id;
+  }
+
+  // If no exact match, try case-insensitive search
+  const { data: caseInsensitiveMatch } = await query
+    .ilike('name', productName)
+    .maybeSingle();
+
+  if (caseInsensitiveMatch) {
+    return caseInsensitiveMatch.id;
+  }
+
+  // If policy type is provided, try to match with policy type consideration
+  if (policyType) {
+    const { data: policyTypeMatch } = await supabase
+      .from('insurance_products')
+      .select('id')
+      .eq('provider_id', providerId)
+      .eq('category', lineOfBusiness)
+      .contains('supported_policy_types', [policyType])
+      .ilike('name', `%${productName}%`)
+      .maybeSingle();
+
+    if (policyTypeMatch) {
+      return policyTypeMatch.id;
+    }
+  }
+
+  // If no product found, create a placeholder product with "Product name not found in system"
   const { data: newProduct, error } = await supabase
     .from('insurance_products')
     .insert({
-      name: productName,
+      name: 'Product name not found in system',
       code: `AUTO_${Date.now()}`,
       provider_id: providerId,
       category: lineOfBusiness,
@@ -439,7 +544,7 @@ const getOrCreateProduct = async (productName: string, providerId: string, lineO
     .single();
 
   if (error) {
-    throw new Error(`Failed to create product: ${error.message}`);
+    throw new Error(`Failed to create placeholder product: ${error.message}`);
   }
 
   return newProduct.id;
@@ -470,6 +575,30 @@ const getBranchByName = async (branchName: string): Promise<string | null> => {
     .from('branches')
     .select('id')
     .eq('name', branchName)
+    .single();
+
+  return data?.id || null;
+};
+
+const getLineOfBusinessId = async (lineOfBusinessName: string): Promise<string> => {
+  const { data, error } = await supabase
+    .from('line_of_business')
+    .select('id')
+    .eq('name', lineOfBusinessName as any)
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to find line of business "${lineOfBusinessName}": ${error.message}`);
+  }
+
+  return data.id;
+};
+
+const getVehicleTypeId = async (vehicleTypeName: string): Promise<string | null> => {
+  const { data } = await supabase
+    .from('motor_vehicle_types')
+    .select('id')
+    .eq('name', vehicleTypeName as any)
     .single();
 
   return data?.id || null;

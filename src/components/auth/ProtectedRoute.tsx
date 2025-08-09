@@ -1,44 +1,58 @@
-import { ReactNode, useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import React from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ProtectedRouteProps {
-  children: ReactNode;
-  requiredRole?: string;
+  children: React.ReactNode;
+  allowedUserTypes?: ('Employee' | 'Agent' | 'Customer' | 'Admin')[];
+  allowedEmployeeRoles?: ('Admin' | 'Sales' | 'Ops' | 'Branch Manager' | 'Finance')[];
 }
 
-const ProtectedRoute = ({ children, requiredRole = "Admin" }: ProtectedRouteProps) => {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const currentUser = sessionStorage.getItem("currentUser");
-    if (currentUser) {
-      setUser(JSON.parse(currentUser));
-    }
-    setLoading(false);
-  }, []);
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
+  children, 
+  allowedUserTypes = [],
+  allowedEmployeeRoles = []
+}) => {
+  const { user, profile, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Loading...</div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <Navigate to="/auth/login" replace />;
-  }
-
-  if (requiredRole && user.role !== requiredRole) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-destructive mb-2">Access Denied</h1>
-          <p className="text-muted-foreground">You don't have permission to access this page.</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
+  }
+
+  if (!user || !profile) {
+    return <Navigate to="/auth" state={{ from: location }} replace />;
+  }
+
+  // Check if user type is allowed
+  if (allowedUserTypes.length > 0 && !allowedUserTypes.includes(profile.user_type)) {
+    // Redirect to appropriate portal based on user type
+    switch (profile.user_type) {
+      case 'Admin':
+        return <Navigate to="/admin/overview" replace />;
+      case 'Employee':
+        return <Navigate to="/employee/dashboard" replace />;
+      case 'Agent':
+        return <Navigate to="/agent/dashboard" replace />;
+      case 'Customer':
+        return <Navigate to="/customer/dashboard" replace />;
+      default:
+        return <Navigate to="/auth" replace />;
+    }
+  }
+
+  // Check employee role if specified
+  if (allowedEmployeeRoles.length > 0 && profile.user_type === 'Employee') {
+    if (!profile.employee_role || !allowedEmployeeRoles.includes(profile.employee_role)) {
+      return <Navigate to="/employee/dashboard" replace />;
+    }
   }
 
   return <>{children}</>;

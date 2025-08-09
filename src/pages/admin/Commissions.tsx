@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { CommissionRuleForm } from "@/components/admin/CommissionRuleForm";
 import { CommissionCalculator } from "@/components/admin/CommissionCalculator";
+import { UniversalCommissionEngine } from "@/components/admin/UniversalCommissionEngine";
 
 interface CommissionRule {
   id: string;
@@ -48,6 +49,8 @@ const Commissions = () => {
   const [showRuleForm, setShowRuleForm] = useState(false);
   const [editingRule, setEditingRule] = useState<CommissionRule | null>(null);
   const [activeTab, setActiveTab] = useState("rules");
+  const [lineOfBusinessOptions, setLineOfBusinessOptions] = useState<any[]>([]);
+  const [insurers, setInsurers] = useState<any[]>([]);
   
   const { toast } = useToast();
 
@@ -61,6 +64,8 @@ const Commissions = () => {
 
   useEffect(() => {
     fetchCommissionRules();
+    fetchLineOfBusinessOptions();
+    fetchInsurers();
   }, []);
 
   useEffect(() => {
@@ -92,6 +97,36 @@ const Commissions = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchLineOfBusinessOptions = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('line_of_business')
+        .select('id, name, code')
+        .eq('is_active', true)
+        .order('name');
+
+      if (error) throw error;
+      setLineOfBusinessOptions(data || []);
+    } catch (error) {
+      console.error('Error fetching line of business options:', error);
+    }
+  };
+
+  const fetchInsurers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('insurance_providers')
+        .select('id, provider_name')
+        .eq('status', 'Active')
+        .order('provider_name');
+
+      if (error) throw error;
+      setInsurers(data || []);
+    } catch (error) {
+      console.error('Error fetching insurers:', error);
     }
   };
 
@@ -195,44 +230,18 @@ const Commissions = () => {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="border-b border-border pb-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Commission Rule Engine</h1>
-            <p className="text-muted-foreground mt-1">
-              Manage commission rules for all insurance products and lines of business
-            </p>
-          </div>
-          
-          <Dialog open={showRuleForm} onOpenChange={setShowRuleForm}>
-            <DialogTrigger asChild>
-              <Button onClick={() => setEditingRule(null)}>
-                <Plus className="h-4 w-4 mr-2" />
-                New Commission Rule
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>
-                  {editingRule ? 'Edit Commission Rule' : 'Create New Commission Rule'}
-                </DialogTitle>
-              </DialogHeader>
-              <CommissionRuleForm 
-                rule={editingRule}
-                onSuccess={handleFormSuccess}
-                onCancel={() => setShowRuleForm(false)}
-              />
-            </DialogContent>
-          </Dialog>
-        </div>
-      </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="rules">Commission Rules</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="universal">Universal Engine</TabsTrigger>
+          <TabsTrigger value="rules">Legacy Rules</TabsTrigger>
           <TabsTrigger value="statistics">Statistics</TabsTrigger>
           <TabsTrigger value="calculator">Calculator</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="universal" className="space-y-6">
+          <UniversalCommissionEngine />
+        </TabsContent>
 
         <TabsContent value="statistics" className="space-y-6">
           {/* Commission Statistics */}
@@ -283,10 +292,25 @@ const Commissions = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Lines</SelectItem>
-                    <SelectItem value="Motor">Motor</SelectItem>
-                    <SelectItem value="Health">Health</SelectItem>
-                    <SelectItem value="Life">Life</SelectItem>
-                    <SelectItem value="Commercial">Commercial</SelectItem>
+                    {lineOfBusinessOptions.map((lob) => (
+                      <SelectItem key={lob.id} value={lob.name}>
+                        {lob.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={filterInsurer} onValueChange={setFilterInsurer}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Insurer" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Insurers</SelectItem>
+                    {insurers.map((insurer) => (
+                      <SelectItem key={insurer.id} value={insurer.id}>
+                        {insurer.provider_name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
 

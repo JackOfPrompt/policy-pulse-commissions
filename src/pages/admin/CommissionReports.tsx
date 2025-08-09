@@ -58,10 +58,12 @@ const CommissionReports = () => {
   });
   const [branches, setBranches] = useState<any[]>([]);
   const [insurers, setInsurers] = useState<any[]>([]);
+  const [lineOfBusinessOptions, setLineOfBusinessOptions] = useState<any[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
     fetchInitialData();
+    fetchLineOfBusinessOptions();
     fetchCommissionData();
   }, []);
 
@@ -88,6 +90,21 @@ const CommissionReports = () => {
       setInsurers(insurerData || []);
     } catch (error) {
       console.error('Error fetching initial data:', error);
+    }
+  };
+
+  const fetchLineOfBusinessOptions = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('line_of_business')
+        .select('id, name, code')
+        .eq('is_active', true)
+        .order('name');
+
+      if (error) throw error;
+      setLineOfBusinessOptions(data || []);
+    } catch (error) {
+      console.error('Error fetching line of business options:', error);
     }
   };
 
@@ -138,7 +155,7 @@ const CommissionReports = () => {
       // Apply client-side filters
       let filteredData = transformedData;
       
-      if (filters.lineOfBusiness) {
+      if (filters.lineOfBusiness && filters.lineOfBusiness !== "all") {
         filteredData = filteredData.filter(record => 
           record.line_of_business === filters.lineOfBusiness
         );
@@ -148,7 +165,7 @@ const CommissionReports = () => {
           record.insurer_name.toLowerCase().includes(filters.insuranceProvider.toLowerCase())
         );
       }
-      if (filters.createdBy) {
+      if (filters.createdBy && filters.createdBy !== "all") {
         filteredData = filteredData.filter(record => 
           record.created_by_type === filters.createdBy
         );
@@ -158,7 +175,7 @@ const CommissionReports = () => {
           record.branch_name.toLowerCase().includes(filters.branch.toLowerCase())
         );
       }
-      if (filters.status && filters.status !== '') {
+      if (filters.status && filters.status !== "all") {
         filteredData = filteredData.filter(record => 
           record.status === filters.status
         );
@@ -273,13 +290,8 @@ const CommissionReports = () => {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between border-b border-border pb-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Commission Reports</h1>
-          <p className="text-muted-foreground mt-1">
-            Track commission received from insurance providers
-          </p>
-        </div>
+      <div className="flex items-center justify-between">
+        <div></div>
         <Button onClick={exportReport} className="bg-gradient-primary">
           <Download className="h-4 w-4 mr-2" />
           Export CSV
@@ -345,11 +357,12 @@ const CommissionReports = () => {
                   <SelectValue placeholder="All LOB" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Lines</SelectItem>
-                  <SelectItem value="Motor">Motor</SelectItem>
-                  <SelectItem value="Life">Life</SelectItem>
-                  <SelectItem value="Health">Health</SelectItem>
-                  <SelectItem value="Commercial">Commercial</SelectItem>
+                  <SelectItem value="all">All Lines</SelectItem>
+                  {lineOfBusinessOptions.map((lob) => (
+                    <SelectItem key={lob.id} value={lob.name}>
+                      {lob.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -361,7 +374,7 @@ const CommissionReports = () => {
                   <SelectValue placeholder="All Creators" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
                   <SelectItem value="Agent">Agent</SelectItem>
                   <SelectItem value="Employee">Employee</SelectItem>
                 </SelectContent>
@@ -375,7 +388,7 @@ const CommissionReports = () => {
                   <SelectValue placeholder="All Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
                   <SelectItem value="Paid">Paid</SelectItem>
                   <SelectItem value="Pending">Pending</SelectItem>
                   <SelectItem value="Disputed">Disputed</SelectItem>

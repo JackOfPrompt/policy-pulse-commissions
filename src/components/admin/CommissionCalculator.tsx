@@ -85,9 +85,9 @@ export const CommissionCalculator: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from('insurance_providers')
-        .select('id, provider_name')
+        .select('id:provider_id, provider_name:insurer_name')
         .eq('status', 'Active')
-        .order('provider_name');
+        .order('insurer_name');
 
       if (error) throw error;
       setProviders(data || []);
@@ -100,9 +100,9 @@ export const CommissionCalculator: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from('insurance_products')
-        .select('id, name, provider_id')
+        .select('id:product_id, name:product_name, provider_id')
         .eq('status', 'Active')
-        .order('name');
+        .order('product_name');
 
       if (error) throw error;
       setAllProducts(data || []);
@@ -114,12 +114,13 @@ export const CommissionCalculator: React.FC = () => {
   const fetchCommissionTiers = async () => {
     try {
       const { data, error } = await supabase
-        .from('commission_tiers')
-        .select('id, name, code')
+        .from('commission_slabs')
+        .select('slab_id, name')
         .order('name');
 
       if (error) throw error;
-      setCommissionTiers(data || []);
+      const mapped = ((data as any[]) || []).map((d) => ({ id: d.slab_id, name: d.name, code: (d.slab_id || '').toString().slice(0, 4) }));
+      setCommissionTiers(mapped);
     } catch (error) {
       console.error('Error fetching commission tiers:', error);
     }
@@ -367,7 +368,7 @@ export const CommissionCalculator: React.FC = () => {
                   <SelectValue placeholder="All products (optional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Products</SelectItem>
+                  <SelectItem value="all">All Products</SelectItem>
                   {products.map((product) => (
                     <SelectItem key={product.id} value={product.id}>
                       {product.name}
@@ -444,7 +445,7 @@ export const CommissionCalculator: React.FC = () => {
                   <SelectValue placeholder="Select agent tier (optional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Any Tier</SelectItem>
+                  <SelectItem value="any">Any Tier</SelectItem>
                   {commissionTiers.map((tier) => (
                     <SelectItem key={tier.id} value={tier.id}>
                       {tier.name} ({tier.code})

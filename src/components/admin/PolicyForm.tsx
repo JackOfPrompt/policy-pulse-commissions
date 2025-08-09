@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { generatePolicyNumber, validatePolicyNumber } from '@/utils/policyNumberGenerator';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,12 +14,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { FileText, Save, X } from "lucide-react";
+import { PolicyDocumentUpload } from "@/components/ui/policy-document-upload";
 
 const policySchema = z.object({
-  policy_number: z.string().min(1, "Policy number is required"),
+  policy_number: z.string().min(1, "Policy number is required").refine(validatePolicyNumber, "Invalid policy number format"),
   insurer_id: z.string().min(1, "Insurer is required"),
   product_id: z.string().min(1, "Product is required"),
-  line_of_business: z.enum(["Motor", "Life", "Health", "Commercial"]),
+  line_of_business: z.string().min(1, "Line of business is required"),
   policy_start_date: z.string().min(1, "Start date is required"),
   policy_end_date: z.string().min(1, "End date is required"),
   policy_mode: z.enum(["Annual", "Half-Yearly", "Quarterly", "Monthly", "Single", "Multi-year"]).optional(),
@@ -60,6 +62,8 @@ const PolicyForm = ({ onClose, onSuccess, policy }: PolicyFormProps) => {
   const [agents, setAgents] = useState<any[]>([]);
   const [employees, setEmployees] = useState<any[]>([]);
   const [branches, setBranches] = useState<any[]>([]);
+  const [lineOfBusinessOptions, setLineOfBusinessOptions] = useState<any[]>([]);
+  const [createdPolicyId, setCreatedPolicyId] = useState<string | null>(policy?.id || null);
   const { toast } = useToast();
 
   // Fetch data on component mount
@@ -69,6 +73,7 @@ const PolicyForm = ({ onClose, onSuccess, policy }: PolicyFormProps) => {
     fetchAgents();
     fetchEmployees();
     fetchBranches();
+    fetchLineOfBusinessOptions();
   }, []);
 
   const fetchInsurers = async () => {
@@ -146,13 +151,33 @@ const PolicyForm = ({ onClose, onSuccess, policy }: PolicyFormProps) => {
     }
   };
 
+  const fetchLineOfBusinessOptions = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('line_of_business')
+        .select('id, name, code')
+        .eq('is_active', true)
+        .order('name');
+      
+      if (error) throw error;
+      setLineOfBusinessOptions(data || []);
+    } catch (error) {
+      console.error('Error fetching line of business options:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch line of business options",
+        variant: "destructive",
+      });
+    }
+  };
+
   const form = useForm<z.infer<typeof policySchema>>({
     resolver: zodResolver(policySchema),
     defaultValues: {
       policy_number: policy?.policy_number || "",
       insurer_id: policy?.insurer_id || "",
       product_id: policy?.product_id || "",
-      line_of_business: policy?.line_of_business || "Motor",
+      line_of_business: policy?.line_of_business || "",
       policy_start_date: policy?.policy_start_date || "",
       policy_end_date: policy?.policy_end_date || "",
       premium_amount: policy?.premium_amount?.toString() || "",
@@ -165,13 +190,23 @@ const PolicyForm = ({ onClose, onSuccess, policy }: PolicyFormProps) => {
     },
   });
 
+  // Update line of business default when options are loaded
+  useEffect(() => {
+    if (lineOfBusinessOptions.length > 0 && !policy?.line_of_business && !form.watch("line_of_business")) {
+      form.setValue("line_of_business", lineOfBusinessOptions[0].name);
+    }
+  }, [lineOfBusinessOptions, policy, form]);
+
   const lineOfBusiness = form.watch("line_of_business");
   const selectedInsurer = form.watch("insurer_id");
+  const selectedLineOfBusiness = form.watch("line_of_business");
 
-  // Filter products based on selected insurer
-  const filteredProducts = products.filter(product => 
-    !selectedInsurer || product.provider_id === selectedInsurer
-  );
+  // Filter products based on selected insurer and line of business
+  const filteredProducts = products.filter(product => {
+    const matchesInsurer = !selectedInsurer || product.provider_id === selectedInsurer;
+    const matchesLOB = !selectedLineOfBusiness || product.category === selectedLineOfBusiness;
+    return matchesInsurer && matchesLOB;
+  });
 
   const onSubmit = async (values: z.infer<typeof policySchema>) => {
     try {
@@ -192,6 +227,7 @@ const PolicyForm = ({ onClose, onSuccess, policy }: PolicyFormProps) => {
         employee_id: values.created_by_type === "Employee" ? values.employee_id : null,
         branch_id: values.branch_id || null,
         status: values.status || 'Active',
+        policy_status: policy ? policy.policy_status : 'Underwriting', // Default to Underwriting for new policies
         remarks: values.remarks || null,
       };
 
@@ -203,11 +239,14 @@ const PolicyForm = ({ onClose, onSuccess, policy }: PolicyFormProps) => {
         
         if (error) throw error;
       } else {
-        const { error } = await supabase
+        const { data: newPolicy, error } = await supabase
           .from("policies_new")
-          .insert(policyData);
+          .insert(policyData)
+          .select('id')
+          .single();
         
         if (error) throw error;
+        setCreatedPolicyId(newPolicy.id);
       }
 
       toast({
@@ -241,21 +280,37 @@ const PolicyForm = ({ onClose, onSuccess, policy }: PolicyFormProps) => {
       <CardContent>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <Tabs value={currentTab} onValueChange={setCurrentTab}>
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="core">Core Details</TabsTrigger>
               <TabsTrigger value="specific" disabled={!lineOfBusiness}>
                 {lineOfBusiness} Details
               </TabsTrigger>
+              <TabsTrigger value="documents">Documents</TabsTrigger>
             </TabsList>
 
             <TabsContent value="core" className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="policy_number">Policy Number *</Label>
-                  <Input {...form.register("policy_number")} />
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <Label htmlFor="policy_number">Policy Number *</Label>
+                      <Input {...form.register("policy_number")} />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="mt-6"
+                      onClick={async () => {
+                        const generatedNumber = await generatePolicyNumber();
+                        form.setValue("policy_number", generatedNumber);
+                      }}
+                    >
+                      Generate
+                    </Button>
+                  </div>
                   {form.formState.errors.policy_number && (
                     <p className="text-sm text-destructive mt-1">
-                      {form.formState.errors.policy_number.message}
+                      {form.formState.errors.policy_number.message as string}
                     </p>
                   )}
                 </div>
@@ -306,18 +361,28 @@ const PolicyForm = ({ onClose, onSuccess, policy }: PolicyFormProps) => {
                   <Label htmlFor="line_of_business">Line of Business *</Label>
                   <Select 
                     value={form.watch("line_of_business")} 
-                    onValueChange={(value) => form.setValue("line_of_business", value as any)}
+                    onValueChange={(value) => {
+                      form.setValue("line_of_business", value);
+                      // Reset product selection when line of business changes
+                      form.setValue("product_id", "");
+                    }}
                   >
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Select line of business" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Motor">Motor</SelectItem>
-                      <SelectItem value="Life">Life</SelectItem>
-                      <SelectItem value="Health">Health</SelectItem>
-                      <SelectItem value="Commercial">Commercial</SelectItem>
+                      {lineOfBusinessOptions.map((lob) => (
+                        <SelectItem key={lob.id} value={lob.name}>
+                          {lob.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
+                  {form.formState.errors.line_of_business && (
+                    <p className="text-sm text-destructive mt-1">
+                      {form.formState.errors.line_of_business.message}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -488,6 +553,13 @@ const PolicyForm = ({ onClose, onSuccess, policy }: PolicyFormProps) => {
               {lineOfBusiness === "Life" && <LifePolicyForm />}
               {lineOfBusiness === "Health" && <HealthPolicyForm />}
               {lineOfBusiness === "Commercial" && <CommercialPolicyForm />}
+            </TabsContent>
+
+            <TabsContent value="documents" className="space-y-4">
+              <PolicyDocumentUpload 
+                policyId={createdPolicyId || undefined}
+                policyNumber={form.watch("policy_number")}
+              />
             </TabsContent>
           </Tabs>
 

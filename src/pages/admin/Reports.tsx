@@ -132,84 +132,214 @@ const Reports = () => {
   };
 
   const fetchCommissionsReport = async () => {
-    let query = supabase
-      .from("commissions")
-      .select(`
-        *,
-        policies!inner(policy_number, premium_amount, line_of_business),
-        agents!inner(name, agent_code)
-      `);
+    try {
+      // Get commissions with proper joins to policies_new and agents
+      const { data: commissions } = await supabase
+        .from("commissions")
+        .select(`
+          *,
+          agents!inner(name, agent_code),
+          policies_new!inner(policy_number, premium_amount, line_of_business)
+        `);
 
-    const { data: commissions } = await query;
-    setData(commissions || []);
+      setData(commissions || []);
 
-    const totalCommission = commissions?.reduce((sum, c) => sum + (c.commission_amount || 0), 0) || 0;
-    const renewalCommissions = commissions?.filter(c => c.commission_type === "Renewal")
-      .reduce((sum, c) => sum + (c.commission_amount || 0), 0) || 0;
+      const totalCommission = commissions?.reduce((sum, c) => sum + (c.commission_amount || 0), 0) || 0;
+      const renewalCommissions = commissions?.filter(c => c.commission_type === "Renewal")
+        .reduce((sum, c) => sum + (c.commission_amount || 0), 0) || 0;
 
-    setKpis({
-      totalCommission,
-      renewalCommissions,
-      avgCommissionRate: commissions?.length ? (commissions.reduce((sum, c) => sum + (c.commission_rate || 0), 0) / commissions.length) : 0,
-      totalPolicies: commissions?.length || 0
-    });
+      setKpis({
+        totalCommission,
+        renewalCommissions,
+        avgCommissionRate: commissions?.length ? (commissions.reduce((sum, c) => sum + (c.commission_rate || 0), 0) / commissions.length) : 0,
+        totalPolicies: commissions?.length || 0
+      });
+    } catch (error) {
+      console.error("Error fetching commissions:", error);
+      setData([]);
+      setKpis({ totalCommission: 0, renewalCommissions: 0, avgCommissionRate: 0, totalPolicies: 0 });
+    }
   };
 
   const fetchPayoutsReport = async () => {
-    // Placeholder for payouts data
-    setData([]);
-    setKpis({
-      totalPayouts: 0,
-      pendingPayouts: 0,
-      avgPayoutPerAgent: 0,
-      totalAgents: 0
-    });
+    try {
+      // Get payout transactions with related data
+      const { data: payouts } = await supabase
+        .from("payout_transactions")
+        .select(`
+          *,
+          agents(name, agent_code, branches(name)),
+          policies_new(policy_number, premium_amount, line_of_business)
+        `)
+        .order('payout_date', { ascending: false });
+
+      setData(payouts || []);
+
+      const totalPayouts = payouts?.reduce((sum, p) => sum + (p.payout_amount || 0), 0) || 0;
+      const pendingPayouts = payouts?.filter(p => p.payout_status === "Pending")
+        .reduce((sum, p) => sum + (p.payout_amount || 0), 0) || 0;
+      const totalAgents = new Set(payouts?.map(p => p.agent_id)).size;
+
+      setKpis({
+        totalPayouts,
+        pendingPayouts,
+        avgPayoutPerAgent: totalAgents > 0 ? totalPayouts / totalAgents : 0,
+        totalAgents
+      });
+    } catch (error) {
+      console.error("Error fetching payouts:", error);
+      setData([]);
+      setKpis({ totalPayouts: 0, pendingPayouts: 0, avgPayoutPerAgent: 0, totalAgents: 0 });
+    }
   };
 
   const fetchAgentPerformanceReport = async () => {
-    let query = supabase
-      .from("agents")
-      .select(`
-        *,
-        policies!inner(premium_amount, policy_start_date),
-        commissions(commission_amount)
-      `);
+    try {
+      // Get agents with their policies and commissions
+      const { data: agents } = await supabase
+        .from("agents")
+        .select(`
+          *,
+          branches(name),
+          agent_tiers(name, level)
+        `);
 
-    const { data: agents } = await query;
-    setData(agents || []);
+      // Get policies for each agent
+      const { data: policies } = await supabase
+        .from("policies_new")
+        .select(`
+          agent_id,
+          premium_amount,
+          policy_start_date,
+          line_of_business
+        `);
 
-    setKpis({
-      activeAgents: agents?.filter(a => a.status === "Active").length || 0,
-      avgCommissionPerAgent: 0,
-      conversionRatio: 0,
-      topPerformer: "N/A"
-    });
+      // Get commissions for each agent
+      const { data: commissions } = await supabase
+        .from("commissions")
+        .select(`
+          agent_id,
+          commission_amount,
+          commission_type
+        `);
+
+      // Calculate performance metrics for each agent
+      const agentsWithMetrics = agents?.map(agent => {
+        const agentPolicies = policies?.filter(p => p.agent_id === agent.id) || [];
+        const agentCommissions = commissions?.filter(c => c.agent_id === agent.id) || [];
+        
+        const totalPolicies = agentPolicies.length;
+        const totalPremium = agentPolicies.reduce((sum, p) => sum + (p.premium_amount || 0), 0);
+        const totalCommission = agentCommissions.reduce((sum, c) => sum + (c.commission_amount || 0), 0);
+        const renewalCommissions = agentCommissions.filter(c => c.commission_type === "Renewal").length;
+
+        return {
+          ...agent,
+          totalPolicies,
+          totalPremium,
+          totalCommission,
+          renewalCommissions,
+          avgPolicyValue: totalPolicies > 0 ? totalPremium / totalPolicies : 0
+        };
+      }) || [];
+
+      setData(agentsWithMetrics);
+
+      const activeAgents = agentsWithMetrics.filter(a => a.status === "Active").length;
+      const avgCommissionPerAgent = agentsWithMetrics.length > 0 
+        ? agentsWithMetrics.reduce((sum, a) => sum + a.totalCommission, 0) / agentsWithMetrics.length 
+        : 0;
+      const topPerformer = agentsWithMetrics.length > 0 
+        ? agentsWithMetrics.sort((a, b) => b.totalCommission - a.totalCommission)[0]?.name || "N/A"
+        : "N/A";
+
+      setKpis({
+        activeAgents,
+        avgCommissionPerAgent,
+        conversionRatio: 85, // This would need lead data to calculate properly
+        topPerformer
+      });
+    } catch (error) {
+      console.error("Error fetching agent performance:", error);
+      setData([]);
+      setKpis({ activeAgents: 0, avgCommissionPerAgent: 0, conversionRatio: 0, topPerformer: "N/A" });
+    }
   };
 
   const fetchEmployeesReport = async () => {
-    let query = supabase
-      .from("employees")
-      .select(`
-        *,
-        branches(name),
-        agents(id)
-      `);
+    try {
+      let query = supabase
+        .from("employees")
+        .select(`
+          *,
+          branches(name)
+        `);
 
-    if (filters.branch) query = query.eq("branch_id", filters.branch);
-    if (filters.status) query = query.eq("status", filters.status);
+      if (filters.branch) query = query.eq("branch_id", filters.branch);
+      if (filters.status) query = query.eq("status", filters.status);
 
-    const { data: employees } = await query;
-    setData(employees || []);
+      const { data: employees } = await query;
 
-    const totalEmployees = employees?.length || 0;
-    const activeEmployees = employees?.filter(e => e.status === "Active").length || 0;
+      // Get agents managed by each employee
+      const { data: agents } = await supabase
+        .from("agents")
+        .select(`
+          id,
+          referred_by_employee_id,
+          status
+        `);
 
-    setKpis({
-      totalEmployees,
-      activeEmployees,
-      avgBusinessPerEmployee: 0,
-      topPerformer: "N/A"
-    });
+      // Get policies created by employees
+      const { data: policies } = await supabase
+        .from("policies_new")
+        .select(`
+          employee_id,
+          premium_amount,
+          created_at
+        `);
+
+      // Calculate employee performance metrics
+      const employeesWithMetrics = employees?.map(employee => {
+        const managedAgents = agents?.filter(a => a.referred_by_employee_id === employee.id) || [];
+        const employeePolicies = policies?.filter(p => p.employee_id === employee.id) || [];
+        
+        const totalAgentsManaged = managedAgents.length;
+        const activeAgentsManaged = managedAgents.filter(a => a.status === "Active").length;
+        const totalPolicies = employeePolicies.length;
+        const totalBusiness = employeePolicies.reduce((sum, p) => sum + (p.premium_amount || 0), 0);
+
+        return {
+          ...employee,
+          totalAgentsManaged,
+          activeAgentsManaged,
+          totalPolicies,
+          totalBusiness,
+          managedAgents
+        };
+      }) || [];
+
+      setData(employeesWithMetrics);
+
+      const totalEmployees = employeesWithMetrics.length;
+      const activeEmployees = employeesWithMetrics.filter(e => e.status === "Active").length;
+      const avgBusinessPerEmployee = totalEmployees > 0 
+        ? employeesWithMetrics.reduce((sum, e) => sum + e.totalBusiness, 0) / totalEmployees 
+        : 0;
+      const topPerformer = employeesWithMetrics.length > 0 
+        ? employeesWithMetrics.sort((a, b) => b.totalBusiness - a.totalBusiness)[0]?.name || "N/A"
+        : "N/A";
+
+      setKpis({
+        totalEmployees,
+        activeEmployees,
+        avgBusinessPerEmployee,
+        topPerformer
+      });
+    } catch (error) {
+      console.error("Error fetching employees:", error);
+      setData([]);
+      setKpis({ totalEmployees: 0, activeEmployees: 0, avgBusinessPerEmployee: 0, topPerformer: "N/A" });
+    }
   };
 
   const fetchLeadsReport = async () => {
@@ -224,25 +354,52 @@ const Reports = () => {
   };
 
   const fetchRenewalsReport = async () => {
-    let query = supabase
-      .from("policies_with_details")
-      .select("*")
-      .gte("policy_end_date", new Date().toISOString().split('T')[0]);
+    try {
+      // Get renewals from policy_renewals table
+      const { data: renewals } = await supabase
+        .from("policy_renewals")
+        .select(`
+          *,
+          policies_new!policy_id(
+            policy_number,
+            premium_amount,
+            line_of_business,
+            product_id,
+            insurer_id
+          ),
+          agents(name, agent_code),
+          employees(name),
+          branches(name)
+        `)
+        .order('renewal_due_date', { ascending: true });
 
-    if (filters.lineOfBusiness) query = query.eq("line_of_business", filters.lineOfBusiness);
+      // Filter by line of business if specified
+      let filteredRenewals = renewals || [];
+      if (filters.lineOfBusiness) {
+        filteredRenewals = filteredRenewals.filter(r => 
+          r.policies_new?.line_of_business === filters.lineOfBusiness
+        );
+      }
 
-    const { data: renewals } = await query;
-    setData(renewals || []);
+      setData(filteredRenewals);
 
-    const renewalsDue = renewals?.length || 0;
-    const renewedPolicies = renewals?.filter(r => r.status === "Renewed").length || 0;
+      const renewalsDue = filteredRenewals.length;
+      const renewedPolicies = filteredRenewals.filter(r => r.renewal_status === "Renewed").length;
+      const pendingRenewals = filteredRenewals.filter(r => r.renewal_status === "Pending").length;
+      const missedRenewals = filteredRenewals.filter(r => r.renewal_status === "Missed").length;
 
-    setKpis({
-      renewalsDue,
-      renewedPolicies,
-      missedRenewals: renewalsDue - renewedPolicies,
-      renewalRate: renewalsDue > 0 ? (renewedPolicies / renewalsDue) * 100 : 0
-    });
+      setKpis({
+        renewalsDue,
+        renewedPolicies,
+        missedRenewals,
+        renewalRate: renewalsDue > 0 ? (renewedPolicies / renewalsDue) * 100 : 0,
+        pendingRenewals
+      });
+    } catch (error) {
+      console.error("Error fetching renewals:", error);
+      setData([]);
+      setKpis({ renewalsDue: 0, renewedPolicies: 0, missedRenewals: 0, renewalRate: 0, pendingRenewals: 0 });
+    }
   };
 
   const handleFilterChange = (key: keyof FilterState, value: string) => {
@@ -301,7 +458,7 @@ const Reports = () => {
       renewals: [
         { label: "Renewals Due", value: kpis.renewalsDue || 0, icon: Calendar, format: "number" },
         { label: "Renewed Policies", value: kpis.renewedPolicies || 0, icon: Activity, format: "number" },
-        { label: "Missed Renewals", value: kpis.missedRenewals || 0, icon: FileText, format: "number" },
+        { label: "Pending Renewals", value: kpis.pendingRenewals || 0, icon: FileText, format: "number" },
         { label: "Renewal Rate", value: kpis.renewalRate || 0, icon: TrendingUp, format: "percentage" }
       ]
     };
@@ -419,8 +576,8 @@ const Reports = () => {
             <TableCell>{policy.policy_number}</TableCell>
             <TableCell>{policy.product_name}</TableCell>
             <TableCell>₹{policy.premium_amount?.toLocaleString()}</TableCell>
-            <TableCell>{policy.policy_start_date ? format(new Date(policy.policy_start_date), "dd/MM/yyyy") : "-"}</TableCell>
-            <TableCell>{policy.policy_end_date ? format(new Date(policy.policy_end_date), "dd/MM/yyyy") : "-"}</TableCell>
+            <TableCell>{policy.policy_start_date && !isNaN(new Date(policy.policy_start_date).getTime()) ? format(new Date(policy.policy_start_date), "dd/MM/yyyy") : "-"}</TableCell>
+            <TableCell>{policy.policy_end_date && !isNaN(new Date(policy.policy_end_date).getTime()) ? format(new Date(policy.policy_end_date), "dd/MM/yyyy") : "-"}</TableCell>
             <TableCell>{policy.agent_name}</TableCell>
             <TableCell>
               <Badge variant={policy.status === "Active" ? "default" : "secondary"}>
@@ -449,9 +606,9 @@ const Reports = () => {
       <TableBody>
         {data.map((commission, index) => (
           <TableRow key={index}>
-            <TableCell>{commission.policies?.policy_number}</TableCell>
-            <TableCell>{commission.agents?.name}</TableCell>
-            <TableCell>₹{commission.policies?.premium_amount?.toLocaleString()}</TableCell>
+            <TableCell>{commission.policies_new?.policy_number || "-"}</TableCell>
+            <TableCell>{commission.agents?.name || "-"}</TableCell>
+            <TableCell>₹{commission.policies_new?.premium_amount?.toLocaleString() || "0"}</TableCell>
             <TableCell>{commission.commission_rate}%</TableCell>
             <TableCell>₹{commission.commission_amount?.toLocaleString()}</TableCell>
             <TableCell>{commission.commission_type}</TableCell>
@@ -473,9 +630,9 @@ const Reports = () => {
           <TableHead>Employee Name</TableHead>
           <TableHead>Role</TableHead>
           <TableHead>Branch</TableHead>
-          <TableHead>Assigned Agents</TableHead>
+          <TableHead>Managed Agents</TableHead>
           <TableHead>Policies Sold</TableHead>
-          <TableHead>Premium Generated</TableHead>
+          <TableHead>Business Generated</TableHead>
           <TableHead>Joined On</TableHead>
           <TableHead>Status</TableHead>
         </TableRow>
@@ -486,10 +643,15 @@ const Reports = () => {
             <TableCell className="font-medium">{employee.name}</TableCell>
             <TableCell>{employee.role}</TableCell>
             <TableCell>{employee.branches?.name || "-"}</TableCell>
-            <TableCell>{employee.agents?.length || 0}</TableCell>
-            <TableCell>-</TableCell>
-            <TableCell>₹0</TableCell>
-            <TableCell>{employee.joining_date ? format(new Date(employee.joining_date), "dd/MM/yyyy") : "-"}</TableCell>
+            <TableCell>
+              <div className="text-sm">
+                <div>{employee.totalAgentsManaged || 0} Total</div>
+                <div className="text-muted-foreground">{employee.activeAgentsManaged || 0} Active</div>
+              </div>
+            </TableCell>
+            <TableCell>{employee.totalPolicies || 0}</TableCell>
+            <TableCell>₹{(employee.totalBusiness || 0).toLocaleString()}</TableCell>
+            <TableCell>{employee.joining_date && !isNaN(new Date(employee.joining_date).getTime()) ? format(new Date(employee.joining_date), "dd/MM/yyyy") : "-"}</TableCell>
             <TableCell>
               <Badge variant={employee.status === "Active" ? "default" : "secondary"}>
                 {employee.status}
@@ -530,37 +692,44 @@ const Reports = () => {
       <TableHeader>
         <TableRow>
           <TableHead>Policy Number</TableHead>
-          <TableHead>Product Name</TableHead>
-          <TableHead>Policyholder</TableHead>
+          <TableHead>Customer</TableHead>
           <TableHead>Expiry Date</TableHead>
           <TableHead>Agent</TableHead>
+          <TableHead>Employee</TableHead>
+          <TableHead>Branch</TableHead>
           <TableHead>Renewal Status</TableHead>
-          <TableHead>Renewal Premium</TableHead>
-          <TableHead>Days Until Expiry</TableHead>
+          <TableHead>Premium Amount</TableHead>
+          <TableHead>Days Until Due</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {data.map((renewal, index) => {
-          const expiryDate = new Date(renewal.policy_end_date);
+          const dueDate = new Date(renewal.renewal_due_date);
           const today = new Date();
-          const daysUntilExpiry = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
+          const daysUntilDue = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
           
           return (
             <TableRow key={index}>
-              <TableCell className="font-medium">{renewal.policy_number}</TableCell>
-              <TableCell>{renewal.product_name}</TableCell>
-              <TableCell>-</TableCell>
-              <TableCell>{format(expiryDate, "dd/MM/yyyy")}</TableCell>
-              <TableCell>{renewal.agent_name}</TableCell>
+              <TableCell className="font-medium">{renewal.policies_new?.policy_number || "-"}</TableCell>
+              <TableCell>{renewal.customer_name || "-"}</TableCell>
+              <TableCell>{renewal.original_expiry_date && !isNaN(new Date(renewal.original_expiry_date).getTime()) ? format(new Date(renewal.original_expiry_date), "dd/MM/yyyy") : "-"}</TableCell>
+              <TableCell>{renewal.agents?.name || "-"}</TableCell>
+              <TableCell>{renewal.employees?.name || "-"}</TableCell>
+              <TableCell>{renewal.branches?.name || "-"}</TableCell>
               <TableCell>
-                <Badge variant={daysUntilExpiry <= 30 ? "destructive" : "default"}>
-                  {daysUntilExpiry <= 0 ? "Expired" : "Due"}
+                <Badge variant={
+                  renewal.renewal_status === "Renewed" ? "default" : 
+                  renewal.renewal_status === "Missed" ? "destructive" : 
+                  "secondary"
+                }>
+                  {renewal.renewal_status}
                 </Badge>
               </TableCell>
-              <TableCell>₹{renewal.premium_amount?.toLocaleString()}</TableCell>
+              <TableCell>₹{renewal.policies_new?.premium_amount?.toLocaleString() || "0"}</TableCell>
               <TableCell>
-                <span className={daysUntilExpiry <= 30 ? "text-destructive font-medium" : ""}>
-                  {daysUntilExpiry} days
+                <span className={daysUntilDue <= 7 ? "text-destructive font-medium" : 
+                                daysUntilDue <= 30 ? "text-yellow-600 font-medium" : ""}>
+                  {daysUntilDue <= 0 ? "Overdue" : `${daysUntilDue} days`}
                 </span>
               </TableCell>
             </TableRow>
@@ -572,13 +741,8 @@ const Reports = () => {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center border-b border-border pb-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Reports & Analytics</h1>
-          <p className="text-muted-foreground mt-1">
-            Comprehensive business intelligence and performance reports
-          </p>
-        </div>
+      <div className="flex justify-between items-center">
+        <div></div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button className="bg-gradient-primary shadow-primary">
@@ -764,9 +928,46 @@ const Reports = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8 text-muted-foreground">
-                Payouts functionality coming soon
-              </div>
+              {loading ? (
+                <div className="text-center py-8">Loading...</div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Payout ID</TableHead>
+                      <TableHead>Agent</TableHead>
+                      <TableHead>Branch</TableHead>
+                      <TableHead>Policy Number</TableHead>
+                      <TableHead>Payout Amount</TableHead>
+                      <TableHead>Payment Mode</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Date</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {data.map((payout, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="font-medium">{payout.payout_id}</TableCell>
+                        <TableCell>{payout.agents?.name || "-"}</TableCell>
+                        <TableCell>{payout.agents?.branches?.name || "-"}</TableCell>
+                        <TableCell>{payout.policies_new?.policy_number || "-"}</TableCell>
+                        <TableCell>₹{payout.payout_amount?.toLocaleString()}</TableCell>
+                        <TableCell>{payout.payment_mode}</TableCell>
+                        <TableCell>
+                          <Badge variant={
+                            payout.payout_status === "Paid" ? "default" : 
+                            payout.payout_status === "Pending" ? "secondary" : 
+                            "destructive"
+                          }>
+                            {payout.payout_status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{payout.payout_date && !isNaN(new Date(payout.payout_date).getTime()) ? format(new Date(payout.payout_date), "dd/MM/yyyy") : "-"}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -782,9 +983,44 @@ const Reports = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8 text-muted-foreground">
-                Performance analysis coming soon
-              </div>
+              {loading ? (
+                <div className="text-center py-8">Loading...</div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Agent Name</TableHead>
+                      <TableHead>Agent Code</TableHead>
+                      <TableHead>Branch</TableHead>
+                      <TableHead>Tier</TableHead>
+                      <TableHead>Policies Sold</TableHead>
+                      <TableHead>Total Premium</TableHead>
+                      <TableHead>Total Commission</TableHead>
+                      <TableHead>Avg Policy Value</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {data.map((agent, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="font-medium">{agent.name}</TableCell>
+                        <TableCell>{agent.agent_code}</TableCell>
+                        <TableCell>{agent.branches?.name || "-"}</TableCell>
+                        <TableCell>{agent.agent_tiers?.name || "-"}</TableCell>
+                        <TableCell>{agent.totalPolicies || 0}</TableCell>
+                        <TableCell>₹{(agent.totalPremium || 0).toLocaleString()}</TableCell>
+                        <TableCell>₹{(agent.totalCommission || 0).toLocaleString()}</TableCell>
+                        <TableCell>₹{(agent.avgPolicyValue || 0).toLocaleString()}</TableCell>
+                        <TableCell>
+                          <Badge variant={agent.status === "Active" ? "default" : "secondary"}>
+                            {agent.status}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

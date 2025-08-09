@@ -355,13 +355,8 @@ const TransactionReports = () => {
           </BreadcrumbList>
         </Breadcrumb>
 
-        <div className="flex items-center justify-between border-b border-border pb-4">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Transaction Reports</h1>
-            <p className="text-muted-foreground mt-1">
-              Unified view of all commission and payout transactions
-            </p>
-          </div>
+        <div className="flex items-center justify-between">
+          <div></div>
           <Button onClick={exportReport} className="bg-gradient-primary">
             <Download className="h-4 w-4 mr-2" />
             Export CSV
@@ -428,7 +423,7 @@ const TransactionReports = () => {
                   <SelectValue placeholder="All LOB" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Lines</SelectItem>
+                  <SelectItem value="all">All Lines</SelectItem>
                   <SelectItem value="Motor">Motor</SelectItem>
                   <SelectItem value="Life">Life</SelectItem>
                   <SelectItem value="Health">Health</SelectItem>
@@ -444,7 +439,7 @@ const TransactionReports = () => {
                   <SelectValue placeholder="All Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
                   <SelectItem value="Paid">Paid</SelectItem>
                   <SelectItem value="Pending">Pending</SelectItem>
                   <SelectItem value="Failed">Failed</SelectItem>

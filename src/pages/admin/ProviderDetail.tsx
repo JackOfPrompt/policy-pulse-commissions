@@ -15,11 +15,12 @@ interface Provider {
   id: string;
   provider_name: string;
   irdai_code: string;
-  provider_type: 'General' | 'Life' | 'Health' | 'Motor';
   status: 'Active' | 'Inactive';
   contact_person: string;
   support_email: string;
   phone_number: string;
+  logo_url?: string;
+  logo_file_path?: string;
   contract_start_date: string;
   contract_end_date: string;
   api_key: string;
@@ -68,7 +69,7 @@ const ProviderDetail = () => {
         description: "Failed to fetch provider details",
         variant: "destructive"
       });
-      navigate('/admin/insurers');
+      navigate('/admin/providers');
     } finally {
       setLoading(false);
     }
@@ -176,7 +177,7 @@ const ProviderDetail = () => {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink href="/admin/insurers">Insurance Providers</BreadcrumbLink>
+            <BreadcrumbLink href="/admin/providers">Insurance Providers</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
@@ -190,21 +191,35 @@ const ProviderDetail = () => {
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
-            onClick={() => navigate('/admin/insurers')}
+            onClick={() => navigate('/admin/providers')}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Providers
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
-              {provider.provider_name}
-              <Badge variant={provider.status === 'Active' ? 'default' : 'secondary'}>
-                {provider.status}
-              </Badge>
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              IRDAI Code: {provider.irdai_code}
-            </p>
+          <div className="flex items-center gap-4">
+            {provider.logo_file_path && (
+              <div className="flex-shrink-0">
+                <img 
+                  src={`https://vnrwnqcoytwdinlxswqe.supabase.co/storage/v1/object/public/provider-documents/${provider.logo_file_path}`}
+                  alt={`${provider.provider_name} logo`}
+                  className="w-16 h-16 rounded-lg object-contain border border-border bg-background"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              </div>
+            )}
+            <div>
+              <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
+                {provider.provider_name}
+                <Badge variant={provider.status === 'Active' ? 'default' : 'secondary'}>
+                  {provider.status}
+                </Badge>
+              </h1>
+              <p className="text-muted-foreground mt-1">
+                IRDAI Code: {provider.irdai_code}
+              </p>
+            </div>
           </div>
         </div>
         <div className="flex gap-2">
@@ -236,18 +251,25 @@ const ProviderDetail = () => {
           <CardContent className="space-y-4">
             <div>
               <label className="text-sm font-medium text-muted-foreground">Provider Name</label>
-              <p className="text-lg font-semibold">{provider.provider_name}</p>
+              <div className="flex items-center gap-3 mt-2">
+                {provider.logo_file_path && (
+                  <img 
+                    src={`https://vnrwnqcoytwdinlxswqe.supabase.co/storage/v1/object/public/provider-documents/${provider.logo_file_path}`}
+                    alt={`${provider.provider_name} logo`}
+                    className="w-12 h-12 rounded object-contain border border-border bg-background"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                )}
+                <p className="text-lg font-semibold">{provider.provider_name}</p>
+              </div>
             </div>
             <div>
               <label className="text-sm font-medium text-muted-foreground">IRDAI Code</label>
               <p>{provider.irdai_code}</p>
             </div>
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Type</label>
-              <div className="mt-1">
-                <Badge variant="outline">{provider.provider_type}</Badge>
-              </div>
-            </div>
+            {/* Removed provider type field */}
             <div>
               <label className="text-sm font-medium text-muted-foreground">Status</label>
               <div className="mt-1">
