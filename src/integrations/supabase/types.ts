@@ -4918,6 +4918,58 @@ export type Database = {
           },
         ]
       }
+      tenant_users: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          role: string
+          tenant_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          role?: string
+          tenant_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          role?: string
+          tenant_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_users_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "agent_commission_summary"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "tenant_users_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_subscription_status"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "tenant_users_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["tenant_id"]
+          },
+        ]
+      }
       tenants: {
         Row: {
           contact_email: string | null
