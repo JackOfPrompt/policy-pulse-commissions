@@ -53,15 +53,45 @@ const ProductDetail = () => {
         .from('insurance_products')
         .select(`
           *,
-          insurance_providers (
-            provider_name
+          insurance_providers:provider_id (
+            insurer_name,
+            logo_url,
+            provider_id
+          ),
+          lines_of_business:lob_id (
+            lob_name,
+            lob_id
           )
         `)
-        .eq('id', id)
+        .eq('product_id', id)
         .single();
 
       if (error) throw error;
-      setProduct(data as Product);
+
+      const row: any = data;
+      const normalized: Product = {
+        id: row.product_id,
+        name: row.product_name,
+        code: row.product_code,
+        category: row.product_type || '',
+        coverage_type: row.coverage_type || '',
+        min_sum_insured: row.min_sum_insured || 0,
+        max_sum_insured: row.max_sum_insured || 0,
+        premium_type: row.premium_type || '',
+        status: row.status,
+        description: row.description || '',
+        api_mapping_key: row.api_mapping_key || '',
+        features: row.features || [],
+        brochure_file_path: row.brochure_file_path || '',
+        eligibility_criteria: row.eligibility_criteria || '',
+        provider_id: row.provider_id,
+        insurance_providers: {
+          provider_name: row.insurance_providers?.insurer_name || ''
+        },
+        created_at: row.created_at,
+        updated_at: row.updated_at || row.created_at,
+      };
+      setProduct(normalized);
     } catch (error: any) {
       console.error('Error fetching product:', error);
       toast({
@@ -69,7 +99,7 @@ const ProductDetail = () => {
         description: "Failed to fetch product details",
         variant: "destructive"
       });
-      navigate('/admin/products');
+      navigate('/admin/product-management');
     } finally {
       setLoading(false);
     }

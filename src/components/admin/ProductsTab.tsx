@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Plus, Search, Edit, Eye, Trash2, Upload, RefreshCw } from "lucide-react";
+import { Plus, Search, Edit, Eye, Trash2, Upload, RefreshCw, LayoutGrid, List, Package } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -14,6 +14,7 @@ import { SimpleProductForm } from "@/components/admin/SimpleProductForm";
 import EnhancedBulkUploadModal from "@/components/admin/EnhancedBulkUploadModal";
 import { getProductTemplateColumns, getProductSampleData, validateProductRow, processProductRow } from "@/utils/productBulkUpload";
 import { getProductUpdateTemplateColumns, getProductUpdateSampleData, validateProductUpdateRow, processProductUpdateRow } from "@/utils/productBulkUpdate";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface Product {
   id: string;
@@ -69,6 +70,7 @@ const ProductsTab = () => {
   const [productTypeFilter, setProductTypeFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [availableLOBsForFilter, setAvailableLOBsForFilter] = useState<LineOfBusiness[]>([]);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showForm, setShowForm] = useState(false);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [showBulkUpdate, setShowBulkUpdate] = useState(false);
@@ -450,7 +452,19 @@ const ProductsTab = () => {
         </div>
       </div>
 
-      {/* Table */}
+      {/* View toggle */}
+      <div className="flex justify-end">
+        <ToggleGroup type="single" value={viewMode} onValueChange={(v) => v && setViewMode(v as 'grid' | 'list')}>
+          <ToggleGroupItem value="grid" aria-label="Icon view">
+            <LayoutGrid className="h-4 w-4" />
+          </ToggleGroupItem>
+          <ToggleGroupItem value="list" aria-label="List view">
+            <List className="h-4 w-4" />
+          </ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+
+      {/* Table or Grid */}
       <div className="rounded-md border">
         {loading ? (
           <div className="text-center py-8 text-muted-foreground">
@@ -460,7 +474,7 @@ const ProductsTab = () => {
           <div className="text-center py-8 text-muted-foreground">
             No products found
           </div>
-        ) : (
+        ) : viewMode === 'list' ? (
           <Table>
             <TableHeader>
               <TableRow>
@@ -576,6 +590,98 @@ const ProductsTab = () => {
               ))}
             </TableBody>
           </Table>
+        ) : (
+          <div className="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {filteredProducts.map((product) => (
+              <div key={product.id} className="group">
+                <div
+                  className="rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-lg transition-smooth cursor-pointer"
+                  onClick={() => handleView(product.id)}
+                  role="button"
+                  aria-label={`View product ${product.name}`}
+                >
+                  <div className="p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {product.insurance_providers?.logo_url ? (
+                          <img
+                            src={product.insurance_providers.logo_url.startsWith('http') ? product.insurance_providers.logo_url : `https://vnrwnqcoytwdinlxswqe.supabase.co/storage/v1/object/public/provider-documents/${product.insurance_providers.logo_url}`}
+                            alt={`${product.insurance_providers?.provider_name || 'Provider'} logo`}
+                            className="h-8 w-8 rounded object-contain"
+                            loading="lazy"
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                          />
+                        ) : (
+                          <div className="h-8 w-8 rounded bg-muted flex items-center justify-center">
+                            <Package className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div>
+                          <div className="font-semibold leading-tight">{product.name}</div>
+                          <div className="text-xs text-muted-foreground">Code: {product.code}</div>
+                        </div>
+                      </div>
+                      <Badge variant={getStatusBadgeVariant(product.status)}>{product.status}</Badge>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {product.insurance_providers?.provider_name && (
+                        <Badge variant="outline">{product.insurance_providers.provider_name}</Badge>
+                      )}
+                      {product.line_of_business?.name && (
+                        <Badge variant="outline">{product.line_of_business.name}</Badge>
+                      )}
+                      {product.product_type && (
+                        <Badge variant="secondary">{product.product_type}</Badge>
+                      )}
+                      {product.uin && (
+                        <span className="text-xs font-mono text-muted-foreground">UIN: {product.uin}</span>
+                      )}
+                    </div>
+                    <div className="flex justify-end gap-2 pt-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); handleView(product.id); }}
+                        aria-label="View details"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); handleEdit(product); }}
+                        aria-label="Edit product"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="sm" onClick={(e) => e.stopPropagation()} aria-label="Delete product">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Product</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete "{product.name}"? 
+                              This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleDelete(product.id, product.name)}>
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 

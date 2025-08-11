@@ -16,6 +16,7 @@ import ManualPurchase from './pages/admin/ManualPurchase';
 import InsuranceProviders from './pages/admin/InsuranceProviders';
 import ProviderDetail from './pages/admin/ProviderDetail';
 import ProductManagement from './pages/admin/ProductManagement';
+import ProductDetail from './pages/admin/ProductDetail';
 import Agents from './pages/admin/Agents';
 import Employees from './pages/admin/Employees';
 import Branches from './pages/admin/Branches';
@@ -75,6 +76,7 @@ const App: FC = () => {
                       <Route path="providers" element={<InsuranceProviders />} />
                       <Route path="providers/:id" element={<ProviderDetail />} />
                       <Route path="product-management" element={<ProductManagement />} />
+                      <Route path="products/:id" element={<ProductDetail />} />
                       <Route path="master-data" element={<MasterData />} />
                       <Route path="tenant-management" element={<ProtectedTenantManagement />} />
                       <Route path="roles" element={<RolesManagement />} />
