@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,7 +17,7 @@ interface Provider { id: string; insurer_name: string; logo_url?: string | null 
 interface Plan { plan_id: string; plan_name: string; monthly_price: number | null; annual_price: number | null; features?: any; trial_days?: number | null }
 
 export default function Landing() {
-  const navigate = useNavigate();
+  
   const { brandName, logoUrl, isTenantSubdomain } = useTenantBranding();
   const { toast } = useToast();
 
@@ -67,8 +67,8 @@ export default function Landing() {
   }, []);
 
 const goToDashboard = () => {
-    if (isTenantSubdomain) navigate('/tenant/overview');
-    else navigate('/tenant-select');
+    if (isTenantSubdomain) window.location.href = '/tenant/overview';
+    else window.location.href = '/tenant-select';
   };
 
   const handleSeed = async () => {
@@ -132,10 +132,10 @@ const goToDashboard = () => {
               <a href="#features" className="hover:text-foreground transition-colors">Features</a>
               <a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a>
               <a href="#contact" className="hover:text-foreground transition-colors">Contact</a>
-              <a href="/tenant-select" onClick={(e) => { e.preventDefault(); navigate('/tenant-select'); }} className="hover:text-foreground transition-colors">Login</a>
+              <a href="/tenant-select" className="hover:text-foreground transition-colors">Login</a>
             </nav>
             <div className="flex items-center gap-3">
-              <Button variant="outline" onClick={() => navigate('/tenant-select')}>Login</Button>
+              <Button variant="outline" onClick={() => { window.location.href = '/tenant-select'; }}>Login</Button>
             </div>
           </div>
         </header>
@@ -149,7 +149,7 @@ const goToDashboard = () => {
                   Empowering Insurance Brokers with Next-Gen Technology
                 </h1>
                 <div className="flex">
-                  <Button onClick={() => navigate('/tenant-select')}>Login</Button>
+                  <Button onClick={() => { window.location.href = '/tenant-select'; }}>Login</Button>
                 </div>
               </div>
               <div className="relative">
@@ -175,7 +175,7 @@ const goToDashboard = () => {
                   key={c.id}
                   type="button"
                   className="group rounded-xl border border-border/50 bg-card/60 backdrop-blur supports-[backdrop-filter]:bg-card/60 p-6 text-left hover:shadow-primary transition-smooth hover:scale-[1.02]"
-                  onClick={() => navigate(`/products?category=${c.id}`)}
+                  onClick={() => { window.location.href = `/products?category=${c.id}`; }}
                   aria-label={`Explore ${c.name}`}
                 >
                   <c.Icon className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
