@@ -200,13 +200,13 @@ const goToDashboard = () => {
                       ? p.logo_url
                       : (p.logo_url ? `https://vnrwnqcoytwdinlxswqe.supabase.co/storage/v1/object/public/provider-documents/${p.logo_url}` : null);
                     return (
-                      <CarouselItem key={p.id} className="basis-1/2 sm:basis-1/3 md:basis-1/5 lg:basis-1/6">
-                        <div className="rounded-lg bg-card/60 backdrop-blur supports-[backdrop-filter]:bg-card/60 border border-border/50 inline-flex items-center justify-center px-4 py-3 md:px-5 md:py-4 hover:shadow-primary transition-smooth">
+                      <CarouselItem key={p.id} className="basis-[140px] sm:basis-[160px] md:basis-[176px] lg:basis-[192px]">
+                        <div className="w-full rounded-lg bg-card/60 backdrop-blur supports-[backdrop-filter]:bg-card/60 border border-border/50 flex items-center justify-center px-3 py-2 md:px-4 md:py-3 hover:shadow-primary transition-smooth">
                           {logoSrc ? (
                             <img
                               src={logoSrc}
                               alt={`${p.insurer_name} logo`}
-                              className="h-10 md:h-12 w-auto object-contain max-w-[160px]"
+                              className="h-10 md:h-12 w-auto object-contain max-w-full"
                               loading="lazy"
                               onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
                             />
