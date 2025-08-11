@@ -70,7 +70,7 @@ export const EnhancedDashboardFilters = ({ filters, onFiltersChange }: EnhancedD
   const fetchFilterData = async () => {
     try {
       const [branchesResult, agentsResult, productsResult, providersResult] = await Promise.all([
-        supabase.from('branches').select('id, name').eq('status', 'Active').order('name'),
+        supabase.from('branches').select('branch_id:id, branch_name:name').eq('status', 'Active').order('branch_name'),
         supabase.from('agents').select('id, name, agent_code').eq('status', 'Active').order('name'),
         supabase.from('insurance_products').select('id, name').eq('status', 'Active').order('name'),
         supabase.from('insurance_providers').select('id, provider_name').eq('status', 'Active').order('provider_name')

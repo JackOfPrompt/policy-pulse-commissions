@@ -71,6 +71,9 @@ export function MasterDataUpload({ entityType, tableName, fields }: MasterDataUp
         const data = parseCSVContent(text);
         setCsvData(data);
         
+        // Ensure an upload logger exists for this session so processing errors are captured even without validation
+        setUploadLogger(new BulkUploadLogger(entityType));
+        
         // Auto-map columns
         const autoMapping: Record<string, string> = {};
         const csvHeaders = data.length > 0 ? Object.keys(data[0]) : [];
@@ -189,6 +192,10 @@ export function MasterDataUpload({ entityType, tableName, fields }: MasterDataUp
       const { data: user } = await supabase.auth.getUser();
       const batchSize = 10; // Process in batches for better performance
       
+      // Ensure we have a logger for processing errors even if validation wasn't run
+      const loggerRef = uploadLogger ?? new BulkUploadLogger(entityType);
+      if (!uploadLogger) setUploadLogger(loggerRef);
+      
       for (let i = 0; i < csvData.length; i++) {
         const row = csvData[i];
         const mappedRow: any = {
@@ -258,7 +265,7 @@ export function MasterDataUpload({ entityType, tableName, fields }: MasterDataUp
             }
           }
           
-          uploadLogger?.logProcessingError(i + 1, mappedRow, errorMessage);
+          loggerRef.logProcessingError(i + 1, mappedRow, errorMessage);
           
           setProgress(prev => ({
             ...prev,

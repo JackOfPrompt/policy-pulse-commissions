@@ -13,7 +13,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { BranchForm } from "@/components/admin/BranchForm";
 import BulkUploadModal from "@/components/admin/BulkUploadModal";
 import { getBranchTemplateColumns, getBranchSampleData, validateBranchRow, processBranchRow } from "@/utils/branchBulkUpload";
-import { 
+import { useCurrentTenant } from "@/hooks/useCurrentTenant";
+
+import {
   Plus, 
   Search, 
   Filter, 
@@ -37,11 +39,15 @@ const Branches = () => {
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState<any>(null);
   const { toast } = useToast();
-
+  const { tenantId, tenants } = useCurrentTenant();
+  const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
   useEffect(() => {
     fetchBranches();
   }, []);
 
+  useEffect(() => {
+    if (tenantId) setSelectedTenantId(tenantId);
+  }, [tenantId]);
   const fetchBranches = async () => {
     try {
       setLoading(true);
@@ -51,7 +57,7 @@ const Branches = () => {
         .order("created_at", { ascending: false });
 
       if (searchTerm) {
-        query = query.or(`name.ilike.%${searchTerm}%,code.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,manager_name.ilike.%${searchTerm}%`);
+        query = query.or(`branch_name.ilike.%${searchTerm}%,branch_code.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,contact_person.ilike.%${searchTerm}%`);
       }
       if (stateFilter && stateFilter !== "all") {
         query = query.eq("state", stateFilter);
@@ -93,7 +99,7 @@ const Branches = () => {
       const { error } = await supabase
         .from("branches")
         .update({ status: newStatus })
-        .eq("id", branch.id);
+        .eq("branch_id", branch.branch_id);
 
       if (error) throw error;
       
@@ -115,7 +121,7 @@ const Branches = () => {
       const { error } = await supabase
         .from("branches")
         .delete()
-        .eq("id", branch.id);
+        .eq("branch_id", branch.branch_id);
 
       if (error) throw error;
       
@@ -136,7 +142,23 @@ const Branches = () => {
     <div className="p-6 space-y-6">
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <div></div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Tenant</span>
+            <Select value={selectedTenantId ?? ""} onValueChange={(v) => setSelectedTenantId(v)}>
+              <SelectTrigger className="w-[260px]">
+                <SelectValue placeholder="Select tenant" />
+              </SelectTrigger>
+              <SelectContent>
+                {tenants.length === 0 ? (
+                  <SelectItem value="" disabled>No tenants available</SelectItem>
+                ) : (
+                  tenants.map((id) => (
+                    <SelectItem key={id} value={id}>{id}</SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setShowBulkUpload(true)}>
               <Upload className="h-4 w-4 mr-2" />
@@ -145,6 +167,10 @@ const Branches = () => {
             <Button 
               onClick={() => {
                 setSelectedBranch(null);
+                if (!selectedTenantId) {
+                  toast({ title: "Select tenant first", description: "Please choose a tenant to create branches.", variant: "destructive" });
+                  return;
+                }
                 setShowForm(true);
               }}
               className="bg-gradient-primary shadow-primary"
@@ -165,7 +191,7 @@ const Branches = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
@@ -174,6 +200,19 @@ const Branches = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
               />
+            </div>
+
+            <div>
+              <Select value={selectedTenantId ?? ""} onValueChange={(v) => setSelectedTenantId(v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by tenant" />
+                </SelectTrigger>
+                <SelectContent>
+                  {tenants.map((id) => (
+                    <SelectItem key={id} value={id}>{id}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             
             <Select value={stateFilter} onValueChange={setStateFilter}>
@@ -233,9 +272,9 @@ const Branches = () => {
               </TableHeader>
               <TableBody>
                 {branches.map((branch) => (
-                  <TableRow key={branch.id}>
-                    <TableCell className="font-medium">{branch.name}</TableCell>
-                    <TableCell>{branch.code}</TableCell>
+                  <TableRow key={branch.branch_id}>
+                    <TableCell className="font-medium">{branch.branch_name}</TableCell>
+                    <TableCell>{branch.branch_code}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
                         <MapPin className="h-3 w-3 text-muted-foreground" />
@@ -243,11 +282,11 @@ const Branches = () => {
                       </div>
                     </TableCell>
                     <TableCell>{branch.state || "Not specified"}</TableCell>
-                    <TableCell>{branch.manager_name || "Not assigned"}</TableCell>
+                    <TableCell>{branch.contact_person || "Not assigned"}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
                         <Phone className="h-3 w-3 text-muted-foreground" />
-                        {branch.phone || "Not provided"}
+                        {branch.phone_number || "Not provided"}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -267,7 +306,7 @@ const Branches = () => {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem asChild>
-                            <Link to={`/admin/branches/${branch.id}`}>
+                            <Link to={`/admin/branches/${branch.branch_id}`}>
                               <Eye className="h-4 w-4 mr-2" />
                               View Branch
                             </Link>
@@ -312,6 +351,7 @@ const Branches = () => {
           fetchBranches();
           setSelectedBranch(null);
         }}
+        tenantIdOverride={selectedTenantId || undefined}
       />
 
       {/* Bulk Upload Modal */}
@@ -323,7 +363,7 @@ const Branches = () => {
         templateColumns={getBranchTemplateColumns()}
         sampleData={getBranchSampleData()}
         validateRow={validateBranchRow}
-        processRow={processBranchRow}
+        processRow={(row) => processBranchRow(row, selectedTenantId || undefined)}
       />
     </div>
   );

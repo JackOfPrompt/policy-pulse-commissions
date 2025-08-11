@@ -43,7 +43,7 @@ const BranchDetail = () => {
       const { data: branchData, error: branchError } = await supabase
         .from("branches")
         .select("*")
-        .eq("id", id)
+        .eq("branch_id", id)
         .single();
 
       if (branchError) throw branchError;
@@ -84,7 +84,7 @@ const BranchDetail = () => {
       const { error } = await supabase
         .from("branches")
         .update({ status: newStatus })
-        .eq("id", id);
+        .eq("branch_id", id);
 
       if (error) throw error;
       
@@ -133,7 +133,7 @@ const BranchDetail = () => {
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>{branch.name}</BreadcrumbPage>
+                <BreadcrumbPage>{branch.branch_name}</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -145,7 +145,7 @@ const BranchDetail = () => {
                 Back to Branches
               </Button>
             </Link>
-            <h1 className="text-3xl font-bold text-foreground">{branch.name}</h1>
+            <h1 className="text-3xl font-bold text-foreground">{branch.branch_name}</h1>
             <Badge 
               variant={branch.status === "Active" ? "default" : "secondary"}
               className={branch.status === "Active" ? "bg-gradient-success" : ""}
@@ -198,11 +198,11 @@ const BranchDetail = () => {
               <CardContent className="space-y-4">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Branch Code</p>
-                  <p className="text-lg font-semibold">{branch.code}</p>
+                  <p className="text-lg font-semibold">{branch.branch_code}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Branch Name</p>
-                  <p className="text-lg">{branch.name}</p>
+                  <p className="text-lg">{branch.branch_name}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-muted-foreground" />
@@ -214,7 +214,7 @@ const BranchDetail = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-muted-foreground" />
-                  <span>{branch.phone || "Not provided"}</span>
+                  <span>{branch.phone_number || "Not provided"}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-muted-foreground" />
@@ -233,11 +233,11 @@ const BranchDetail = () => {
               <CardContent className="space-y-4">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Manager Name</p>
-                  <p className="text-lg">{branch.manager_name || "Not assigned"}</p>
+                  <p className="text-lg">{branch.contact_person || "Not assigned"}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Manager Phone</p>
-                  <p className="text-lg">{branch.manager_phone || "Not provided"}</p>
+                  <p className="text-lg">{branch.phone_number || "Not provided"}</p>
                 </div>
               </CardContent>
             </Card>

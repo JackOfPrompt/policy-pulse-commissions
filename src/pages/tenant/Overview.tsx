@@ -33,45 +33,9 @@ import {
 } from "recharts";
 import { AgentLeaderboard } from "@/components/admin/AgentLeaderboard";
 import { RenewalsList } from "@/components/admin/RenewalsList";
+import { useTenantOverviewData } from "@/hooks/useTenantOverviewData";
 
-// Mock datasets
-const summaryKPIs = [
-  { label: "Total Policies Issued", value: 1842, icon: FileText },
-  { label: "Active Policies", value: 1560, icon: TrendingUp },
-  { label: "Premium Collected (₹)", value: 12_45_000, icon: CreditCard },
-  { label: "Pending Renewals", value: 92, icon: RotateCcw },
-  { label: "Total Agents", value: 118, icon: Users },
-];
-
-const salesByMonth = [
-  { month: "Jan", online: 120, offline: 80 },
-  { month: "Feb", online: 140, offline: 90 },
-  { month: "Mar", online: 160, offline: 110 },
-  { month: "Apr", online: 150, offline: 95 },
-  { month: "May", online: 180, offline: 120 },
-  { month: "Jun", online: 170, offline: 130 },
-];
-
-const commissionsSeries = [
-  { month: "Jan", earned: 4.2, paid: 3.6 },
-  { month: "Feb", earned: 4.5, paid: 3.8 },
-  { month: "Mar", earned: 4.9, paid: 4.0 },
-  { month: "Apr", earned: 4.7, paid: 3.9 },
-  { month: "May", earned: 5.4, paid: 4.6 },
-  { month: "Jun", earned: 5.1, paid: 4.3 },
-];
-
-const onboardingStatus = [
-  { name: "Onboarded", value: 420 },
-  { name: "KYC Pending", value: 96 },
-  { name: "Docs Pending", value: 58 },
-];
-
-const claimsByLOB = [
-  { lob: "Motor", submitted: 38, approved: 22, pending: 10 },
-  { lob: "Health", submitted: 25, approved: 15, pending: 6 },
-  { lob: "Life", submitted: 12, approved: 6, pending: 4 },
-];
+// Data is loaded from Supabase via useTenantOverviewData hook
 
 const COLORS = ["#22c55e", "#3b82f6", "#f59e0b"]; // will map to tokens
 
@@ -81,6 +45,15 @@ export default function TenantOverview() {
     const meta = document.querySelector('meta[name="description"]');
     if (meta) meta.setAttribute("content", "Tenant Admin overview: sales, agents, commissions, renewals, claims.");
   }, []);
+
+  const { loading, error, kpis, salesByMonth, commissionsSeries, onboardingStatus, claimsByLOB } = useTenantOverviewData();
+  const summaryCards = [
+    { label: "Total Policies Issued", value: kpis.totalPoliciesIssued || 0, icon: FileText },
+    { label: "Active Policies", value: kpis.activePolicies || 0, icon: TrendingUp },
+    { label: "Premium Collected (₹)", value: kpis.premiumCollected || 0, icon: CreditCard },
+    { label: "Pending Renewals", value: kpis.pendingRenewals || 0, icon: RotateCcw },
+    { label: "Total Agents", value: kpis.totalAgents || 0, icon: Users },
+  ];
 
   return (
     <main className="p-6 space-y-8">
@@ -95,7 +68,7 @@ export default function TenantOverview() {
       <section aria-labelledby="biz-summary">
         <h2 id="biz-summary" className="sr-only">Business Summary</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
-          {summaryKPIs.map((k) => {
+          {summaryCards.map((k) => {
             const Icon = k.icon;
             return (
               <Card key={k.label}>

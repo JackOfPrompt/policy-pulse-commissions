@@ -3,19 +3,23 @@ import { useNavigate } from 'react-router-dom';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { Shield, Building2, Heart, Car, Factory, Sparkles, Lock, Globe2 } from 'lucide-react';
+import Autoplay from 'embla-carousel-autoplay';
+import { Shield, Building2, Heart, Car, Factory, Sparkles, Lock, Globe2, Linkedin, Twitter, Mail, BarChart3, Layers, ShoppingCart } from 'lucide-react';
 import { useTenantBranding } from '@/hooks/useTenantBranding';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
+import QuoteOfTheDay from '@/components/marketing/QuoteOfTheDay';
 
 interface LOB { id: string; lob_name: string; description?: string | null }
 interface Provider { id: string; insurer_name: string; logo_url?: string | null }
-interface Plan { id: string; name: string; price_monthly: number | null; price_annual: number | null; features?: string[]; trial_days?: number | null }
+interface Plan { plan_id: string; plan_name: string; monthly_price: number | null; annual_price: number | null; features?: any; trial_days?: number | null }
 
 export default function Landing() {
   const navigate = useNavigate();
   const { brandName, logoUrl, isTenantSubdomain } = useTenantBranding();
+  const { toast } = useToast();
 
   const [lobs, setLobs] = useState<LOB[]>([]);
   const [providers, setProviders] = useState<Provider[]>([]);
@@ -41,37 +45,76 @@ export default function Landing() {
         }
       } catch {}
       try {
-        const { data: planData } = await supabase.from('subscription_plans').select('id, name, price_monthly, price_annual, features, trial_days').order('price_monthly', { ascending: true });
+        const { data: planData } = await supabase
+          .from('subscription_plans')
+          .select('plan_id, plan_name, monthly_price, annual_price, features, trial_days, is_active')
+          .eq('is_active', true)
+          .order('monthly_price', { ascending: true });
         if (active && planData) {
           setPlans(planData as any);
         }
       } catch {
         if (active) {
           setPlans([
-            { id: 'starter', name: 'Starter', price_monthly: 0, price_annual: 0, features: ['Tenant-branded portal', 'Up to 3 users', 'Email support'], trial_days: 14 },
-            { id: 'pro', name: 'Pro', price_monthly: 1999, price_annual: 19990, features: ['Unlimited users', 'Policy workflows', 'Provider integrations'] },
-            { id: 'enterprise', name: 'Enterprise', price_monthly: null, price_annual: null, features: ['Custom SLA', 'Dedicated support', 'SSO, Audit logs'] },
-          ]);
+            { plan_id: 'starter', plan_name: 'Starter', monthly_price: 0, annual_price: 0, features: ['Tenant-branded portal', 'Up to 3 users', 'Email support'], trial_days: 14 },
+            { plan_id: 'pro', plan_name: 'Pro', monthly_price: 1999, annual_price: 19990, features: ['Unlimited users', 'Policy workflows', 'Provider integrations'] },
+            { plan_id: 'enterprise', plan_name: 'Enterprise', monthly_price: null, annual_price: null, features: ['Custom SLA', 'Dedicated support', 'SSO, Audit logs'] },
+          ] as any);
         }
       }
     })();
     return () => { active = false; };
   }, []);
 
-  const goToDashboard = () => {
+const goToDashboard = () => {
     if (isTenantSubdomain) navigate('/tenant/overview');
     else navigate('/tenant-select');
   };
 
+  const handleSeed = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('seed-test-auth');
+      if (error) throw error;
+      toast({ title: 'Seeding complete', description: 'Tenants and admins created. Check console for details.' });
+      console.log('seed-test-auth result:', data);
+    } catch (e: any) {
+      // Show detailed error body from Edge Function if available
+      try {
+        const resp = e?.context?.response;
+        const bodyText = resp ? await resp.text() : '';
+        toast({ title: 'Seeding failed', description: bodyText || e?.message || 'Unknown error' });
+        console.error('seed-test-auth error:', e, bodyText);
+      } catch {
+        toast({ title: 'Seeding failed', description: e?.message || 'Unknown error' });
+        console.error('seed-test-auth error:', e);
+      }
+    }
+  };
+
   const heroImgAlt = `${brandName} insurance SaaS dashboard illustration`;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: brandName,
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "Web",
+    description: "White-labeled SaaS for insurance broking to manage policies and enable online purchases.",
+    url: window.location.origin,
+    offers: [
+      { "@type": "Offer", name: "Starter", price: "0", priceCurrency: "INR" },
+      { "@type": "Offer", name: "Professional", price: "1999", priceCurrency: "INR" },
+      { "@type": "Offer", name: "Enterprise", price: "0", priceCurrency: "INR", availability: "https://schema.org/PreOrder" }
+    ]
+  };
 
   return (
     <HelmetProvider>
-      <div className="min-h-screen bg-background">
+      <div className="abiraksha-landing font-inter min-h-screen bg-background">
         <Helmet>
-          <title>Abiraksha Insuretech SaaS for Brokers</title>
-          <meta name="description" content="White-labeled SaaS for insurance brokers to sell and manage policies online. Fast issuance, secure payments, multi-insurer options." />
+          <title>Abiraksha Insuretech — Next-Gen Broker SaaS</title>
+          <meta name="description" content="White-labeled SaaS for insurance broking: manage policies, enable online purchases, and streamline operations." />
           <link rel="canonical" href={window.location.href} />
+          <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
         </Helmet>
 
         <header className="sticky top-0 z-30 bg-card/80 backdrop-blur border-b">
@@ -85,14 +128,14 @@ export default function Landing() {
               <span className="font-semibold text-lg">{brandName}</span>
             </div>
             <nav className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
+              <a href="#" className="hover:text-foreground transition-colors">Home</a>
               <a href="#features" className="hover:text-foreground transition-colors">Features</a>
               <a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a>
-              <a href="#support" className="hover:text-foreground transition-colors">Support</a>
-              <a href="#contact" className="hover:text-foreground transition-colors">Contact Us</a>
+              <a href="#contact" className="hover:text-foreground transition-colors">Contact</a>
+              <a href="/tenant-select" onClick={(e) => { e.preventDefault(); navigate('/tenant-select'); }} className="hover:text-foreground transition-colors">Login</a>
             </nav>
             <div className="flex items-center gap-3">
-              <Button variant="outline" onClick={() => navigate('/auth')}>Login</Button>
-              <Button onClick={goToDashboard}>Login to Your Dashboard</Button>
+              <Button variant="outline" onClick={() => navigate('/tenant-select')}>Login</Button>
             </div>
           </div>
         </header>
@@ -102,106 +145,145 @@ export default function Landing() {
           <section className="bg-gradient-to-br from-primary/5 via-background to-secondary/5">
             <div className="container mx-auto px-4 py-16 md:py-24 grid md:grid-cols-2 gap-10 items-center">
               <div>
-                <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
-                  Empowering Brokers to Sell & Manage Insurance with Ease
+                <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6">
+                  Empowering Insurance Brokers with Next-Gen Technology
                 </h1>
-                <p className="text-lg text-muted-foreground mb-6">
-                  Abiraksha Insuretech — Your White-Labeled Digital Insurance Platform
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Button onClick={goToDashboard}>Login to Your Dashboard</Button>
-                  <Button variant="outline" onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}>Explore Plans</Button>
+                <div className="flex">
+                  <Button onClick={() => navigate('/tenant-select')}>Login</Button>
                 </div>
               </div>
               <div className="relative">
-                <div className="aspect-[16/10] rounded-xl border shadow-[var(--shadow-card)] bg-card flex items-center justify-center">
-                  {/* Placeholder hero illustration */}
-                  <div className="text-center p-8">
-                    <div className="flex items-center justify-center gap-6 mb-4">
-                      <Building2 className="h-10 w-10 text-primary" />
-                      <Heart className="h-10 w-10 text-primary" />
-                      <Car className="h-10 w-10 text-primary" />
-                      <Factory className="h-10 w-10 text-primary" />
-                    </div>
-                    <p className="text-sm text-muted-foreground">Modern multi-device dashboard, policy icons, and digital workflows</p>
-                  </div>
-                </div>
+                <QuoteOfTheDay />
                 <span className="sr-only">{heroImgAlt}</span>
               </div>
             </div>
           </section>
 
-          {/* LOB categories */}
-          <section id="features" className="container mx-auto px-4 py-12 md:py-16">
+          {/* LOB categories - icon view */}
+          <section id="categories" className="container mx-auto px-4 py-12 md:py-16">
             <h2 className="text-2xl font-semibold mb-6">Insurance Product Categories</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {(lobs.length ? lobs : [
-                { id: 'motor', lob_name: 'Motor Insurance', description: 'Cars, bikes, and commercial vehicles' },
-                { id: 'health', lob_name: 'Health Insurance', description: 'Individual and family health plans' },
-                { id: 'life', lob_name: 'Life Insurance', description: 'Term and savings plans' },
-                { id: 'commercial', lob_name: 'Commercial Insurance', description: 'SME and enterprise covers' },
-              ]).map((lob) => (
-                <Card key={lob.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="text-base">{lob.lob_name}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-3">{lob.description ?? 'Explore products and pricing'}</p>
-                    <Button variant="outline" onClick={() => navigate(`/products?lob_id=${lob.id}`)}>View Products</Button>
-                  </CardContent>
-                </Card>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+              {[
+                { id: 'motor', name: 'Motor Insurance', Icon: Car },
+                { id: 'health', name: 'Health Insurance', Icon: Heart },
+                { id: 'life', name: 'Life Insurance', Icon: Shield },
+                { id: 'commercial', name: 'Commercial', Icon: Factory },
+                { id: 'global', name: 'Travel', Icon: Globe2 },
+                { id: 'secure', name: 'Cyber', Icon: Lock },
+              ].map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  className="group rounded-xl border border-border/50 bg-card/60 backdrop-blur supports-[backdrop-filter]:bg-card/60 p-6 text-left hover:shadow-primary transition-smooth hover:scale-[1.02]"
+                  onClick={() => navigate(`/products?category=${c.id}`)}
+                  aria-label={`Explore ${c.name}`}
+                >
+                  <c.Icon className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
+                  <div className="mt-3 text-sm font-medium">{c.name}</div>
+                </button>
               ))}
             </div>
           </section>
 
-          {/* Providers carousel */}
-          <section className="bg-secondary/50 py-12">
+          {/* Trusted by insurers - logo carousel */}
+          <section className="bg-secondary/50 backdrop-blur supports-[backdrop-filter]:bg-secondary/50 py-12">
             <div className="container mx-auto px-4">
-              <div className="flex items-center gap-2 mb-4">
-                <span className="text-sm text-muted-foreground">Trusted by</span>
-                <Sparkles className="h-4 w-4 text-primary" />
-              </div>
-              <Carousel opts={{ align: 'start', loop: true }}>
+              <h2 className="text-2xl font-semibold mb-6">Trusted by insurers</h2>
+              <Carousel
+                opts={{ align: "start", loop: true }}
+                plugins={[Autoplay({ delay: 2500, stopOnInteraction: false })]}
+                className="w-full"
+              >
                 <CarouselContent>
-                  {providerList.map((p) => (
-                    <CarouselItem key={p.id} className="basis-1/2 sm:basis-1/3 md:basis-1/6 lg:basis-1/8 px-2">
-                      <div className="h-16 rounded-md bg-card border flex items-center justify-center">
-                        {p.logo_url ? (
-                          <img src={p.logo_url} alt={`${p.insurer_name} logo`} className="max-h-10 w-auto" loading="lazy" />
-                        ) : (
-                          <span className="text-xs text-muted-foreground">{p.insurer_name}</span>
-                        )}
-                      </div>
-                    </CarouselItem>
-                  ))}
+                  {providerList.map((p) => {
+                    const logoSrc = p.logo_url && p.logo_url.startsWith('http')
+                      ? p.logo_url
+                      : (p.logo_url ? `https://vnrwnqcoytwdinlxswqe.supabase.co/storage/v1/object/public/provider-documents/${p.logo_url}` : null);
+                    return (
+                      <CarouselItem key={p.id} className="basis-1/2 sm:basis-1/3 md:basis-1/5 lg:basis-1/6">
+                        <div className="h-16 rounded-md bg-card/60 backdrop-blur supports-[backdrop-filter]:bg-card/60 border border-border/50 flex items-center justify-center hover:shadow-primary transition hover-scale">
+                          {logoSrc ? (
+                            <img
+                              src={logoSrc}
+                              alt={`${p.insurer_name} logo`}
+                              className="max-h-10 w-auto"
+                              loading="lazy"
+                              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                            />
+                          ) : (
+                            <span className="text-xs text-muted-foreground">{p.insurer_name}</span>
+                          )}
+                        </div>
+                      </CarouselItem>
+                    );
+                  })}
                 </CarouselContent>
-                <CarouselPrevious />
-                <CarouselNext />
+                <CarouselPrevious className="hidden md:inline-flex" />
+                <CarouselNext className="hidden md:inline-flex" />
               </Carousel>
             </div>
           </section>
 
-          {/* Why choose */}
-          <section className="container mx-auto px-4 py-12 md:py-16">
-            <h2 className="text-2xl font-semibold mb-6">Why Choose Abiraksha Insuretech</h2>
+          {/* Features */}
+          <section className="container mx-auto px-4 py-12 md:py-16" id="features">
+            <h2 className="text-2xl font-semibold mb-6">Core Features</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="shadow-sm">
+              <Card className="shadow-sm hover:shadow-primary transition-smooth hover:scale-[1.01]">
                 <CardHeader>
-                  <div className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" /><CardTitle className="text-base">Fast Policy Issuance</CardTitle></div>
+                  <div className="flex items-center gap-2">
+                    <ShoppingCart className="h-5 w-5 text-primary" />
+                    <CardTitle className="text-base">Online Policy Purchase</CardTitle>
+                  </div>
                 </CardHeader>
-                <CardContent className="text-sm text-muted-foreground">Real-time generation with e-docs</CardContent>
+                <CardContent className="text-sm text-muted-foreground">
+                  Sell and manage policies seamlessly online
+                </CardContent>
               </Card>
-              <Card className="shadow-sm">
+              <Card className="shadow-sm hover:shadow-primary transition-smooth hover:scale-[1.01]">
                 <CardHeader>
-                  <div className="flex items-center gap-2"><Lock className="h-5 w-5 text-primary" /><CardTitle className="text-base">Secure Payments</CardTitle></div>
+                  <div className="flex items-center gap-2">
+                    <Layers className="h-5 w-5 text-primary" />
+                    <CardTitle className="text-base">Multi-Tenant Platform</CardTitle>
+                  </div>
                 </CardHeader>
-                <CardContent className="text-sm text-muted-foreground">Integrated gateway & receipts</CardContent>
+                <CardContent className="text-sm text-muted-foreground">
+                  Serve multiple branches or clients with isolated data
+                </CardContent>
               </Card>
-              <Card className="shadow-sm">
+              <Card className="shadow-sm hover:shadow-primary transition-smooth hover:scale-[1.01]">
                 <CardHeader>
-                  <div className="flex items-center gap-2"><Globe2 className="h-5 w-5 text-primary" /><CardTitle className="text-base">Multi-Insurer Options</CardTitle></div>
+                  <div className="flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5 text-primary" />
+                    <CardTitle className="text-base">Advanced Analytics</CardTitle>
+                  </div>
                 </CardHeader>
-                <CardContent className="text-sm text-muted-foreground">Nationwide insurer coverage</CardContent>
+                <CardContent className="text-sm text-muted-foreground">
+                  Gain insights with real-time dashboards
+                </CardContent>
+              </Card>
+            </div>
+          </section>
+
+          {/* About */}
+          <section className="container mx-auto px-4 py-12 md:py-16" id="about">
+            <div className="grid md:grid-cols-2 gap-8 items-center">
+              <div>
+                <h2 className="text-2xl font-semibold mb-4">About Abiraksha Insuretech</h2>
+                <p className="text-muted-foreground">
+                  Abiraksha Insuretech is a white-labeled SaaS platform built for insurance broking companies. 
+                  Manage end-to-end policy lifecycles, enable secure online purchases, and streamline operations 
+                  across branches with powerful workflows, approvals, and integrations.
+                </p>
+              </div>
+              <Card className="bg-card/60 backdrop-blur supports-[backdrop-filter]:bg-card/60 border border-border/50">
+                <CardContent className="p-6 text-sm text-muted-foreground">
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>Digital onboarding and KYC</li>
+                    <li>Provider and product catalog management</li>
+                    <li>Commission automation and reports</li>
+                    <li>Renewals and reminders</li>
+                  </ul>
+                </CardContent>
               </Card>
             </div>
           </section>
@@ -211,41 +293,59 @@ export default function Landing() {
             <div className="container mx-auto px-4">
               <h2 className="text-2xl font-semibold mb-6">Pricing & Plans</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {(plans).map((plan) => (
-                  <Card key={plan.id} className="hover:shadow-lg transition-shadow">
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <CardTitle>{plan.name}</CardTitle>
-                        {plan.trial_days && plan.trial_days > 0 && (
-                          <Badge variant="secondary">{plan.trial_days}-day trial</Badge>
+                {(plans.length ? plans : [
+                  { plan_id: 'free', plan_name: 'Free', monthly_price: 0, annual_price: 0, features: ['Branding','Policies','Reports'], trial_days: 0 },
+                ]).map((plan) => {
+                  const hasPrice = plan.monthly_price != null || plan.annual_price != null;
+                  const priceLabel = plan.monthly_price != null
+                    ? `₹${Number(plan.monthly_price).toLocaleString()}`
+                    : (plan.annual_price != null ? `₹${Number(plan.annual_price).toLocaleString()}` : 'Contact Us');
+                  const priceSuffix = plan.monthly_price != null ? '/mo' : (plan.annual_price != null ? '/yr' : '');
+                  const features = Array.isArray(plan.features) ? plan.features : [];
+                  return (
+                    <Card key={plan.plan_id} className="bg-card/60 backdrop-blur supports-[backdrop-filter]:bg-card/60 border border-border/50 hover:shadow-primary transition-smooth hover:scale-[1.01]">
+                      <CardHeader>
+                        <CardTitle>{plan.plan_name}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-3xl font-bold mb-2">{priceLabel}{priceSuffix && <span className="text-base text-muted-foreground">{priceSuffix}</span>}</p>
+                        {typeof plan.trial_days === 'number' && plan.trial_days > 0 && (
+                          <p className="text-muted-foreground mb-4">{plan.trial_days}-day free trial</p>
                         )}
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-3xl font-semibold mb-2">
-                        {plan.price_monthly === null ? 'Contact Us' : `₹${plan.price_monthly}/mo`}
-                      </div>
-                      <ul className="text-sm text-muted-foreground mb-4 list-disc pl-5 space-y-1">
-                        {(plan.features ?? ['Core features', 'Basic support']).map((f, i) => (
-                          <li key={i}>{f}</li>
-                        ))}
-                      </ul>
-                      <Button onClick={goToDashboard}>{plan.price_monthly === 0 ? 'Start Free Trial' : 'Subscribe Now'}</Button>
-                    </CardContent>
-                  </Card>
-                ))}
+                        {features.length > 0 && (
+                          <ul className="text-sm text-muted-foreground mb-6 list-disc pl-5 space-y-1">
+                            {features.slice(0, 6).map((f: any, idx: number) => (
+                              <li key={idx}>{String(f)}</li>
+                            ))}
+                          </ul>
+                        )}
+                        <Button variant={hasPrice ? 'default' : 'outline'} onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}>
+                          {hasPrice ? `Choose ${plan.plan_name}` : 'Talk to Sales'}
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             </div>
           </section>
         </main>
 
         <footer id="contact" className="border-t">
-          <div className="container mx-auto px-4 py-8 text-sm text-muted-foreground flex flex-col md:flex-row items-center justify-between gap-3">
-            <p>© 2025 {brandName} — All Rights Reserved</p>
-            <div className="flex items-center gap-4">
-              <a href="#" aria-label="Privacy Policy" className="hover:text-foreground">Privacy Policy</a>
-              <a href="#" aria-label="Terms of Service" className="hover:text-foreground">Terms of Service</a>
-              <a href="#support" className="hover:text-foreground">Contact Support</a>
+          <div className="container mx-auto px-4 py-8 text-sm text-muted-foreground grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <p className="font-semibold text-foreground mb-2">Abiraksha Insuretech</p>
+              <p>White-labeled SaaS for insurance brokers</p>
+            </div>
+            <div>
+              <p className="font-semibold text-foreground mb-2">Contact</p>
+              <p>Email: support@abiraksha.example</p>
+              <p>Phone: +91-00000-00000</p>
+            </div>
+            <div className="flex items-center md:justify-end gap-4">
+              <a href="#" aria-label="LinkedIn" className="hover:text-foreground transition-colors"><Linkedin className="h-5 w-5" /></a>
+              <a href="#" aria-label="Twitter" className="hover:text-foreground transition-colors"><Twitter className="h-5 w-5" /></a>
+              <a href="mailto:support@abiraksha.example" aria-label="Email" className="hover:text-foreground transition-colors"><Mail className="h-5 w-5" /></a>
             </div>
           </div>
         </footer>

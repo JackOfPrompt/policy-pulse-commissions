@@ -2,9 +2,10 @@ import React, { FC } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
-import { SimpleAuthProvider } from '@/components/auth/SimpleAuthContext';
+import { AuthProvider } from '@/contexts/AuthContext';
 import { PermissionsProvider } from '@/hooks/usePermissions';
 import { MasterDataProvider } from '@/contexts/MasterDataContext';
+import { SimpleAuthProvider } from '@/components/auth/SimpleAuthContext';
 
 // Pages
 import RoleSelection from './pages/RoleSelection';
@@ -13,6 +14,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import SystemOverview from './pages/admin/SystemOverview';
 import ManualPurchase from './pages/admin/ManualPurchase';
 import InsuranceProviders from './pages/admin/InsuranceProviders';
+import ProviderDetail from './pages/admin/ProviderDetail';
 import ProductManagement from './pages/admin/ProductManagement';
 import Agents from './pages/admin/Agents';
 import Employees from './pages/admin/Employees';
@@ -41,7 +43,10 @@ import TenantManagement from './pages/admin/TenantManagement';
 import { withPermission } from '@/hooks/usePermissions';
 const ProtectedTenantManagement = withPermission(TenantManagement, 'tenant-management');
 import TenantSelect from './pages/tenant/TenantSelect';
-
+import AuthPage from './pages/auth/AuthPage';
+import ChangePassword from './pages/auth/ChangePassword';
+import NotFound from './pages/NotFound';
+import { TenantAdminRoute } from '@/components/auth/TenantAdminRoute';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -55,26 +60,30 @@ const App: FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <SimpleAuthProvider>
-        <PermissionsProvider>
-          <MasterDataProvider>
-            <Router>
-              <div className="min-h-screen bg-background">
-                <Routes>
-                  <Route path="/" element={<Landing />} />
-                  <Route path="/admin" element={<AdminDashboard />}>
-                    <Route path="overview" element={<SystemOverview />} />
-                    <Route path="manual-purchase" element={<ManualPurchase />} />
-                    <Route path="providers" element={<InsuranceProviders />} />
-                    <Route path="product-management" element={<ProductManagement />} />
-                    <Route path="master-data" element={<MasterData />} />
-                    <Route path="tenant-management" element={<ProtectedTenantManagement />} />
-                    <Route path="roles" element={<RolesManagement />} />
-                    <Route index element={<SystemOverview />} />
-                  </Route>
-                  <Route path="/agent/*" element={<AgentDashboard />} />
-                  <Route path="/employee/*" element={<EmployeeDashboard />} />
-                  <Route path="/customer/*" element={<CustomerDashboard />} />
-                  <Route path="/tenant" element={<TenantDashboard />}>
+        <AuthProvider>
+          <PermissionsProvider>
+            <MasterDataProvider>
+              <Router>
+                <div className="min-h-screen bg-background">
+                  <Routes>
+                    <Route path="/" element={<Landing />} />
+                    <Route path="/auth" element={<AuthPage />} />
+                    <Route path="/auth/change-password" element={<TenantAdminRoute><ChangePassword /></TenantAdminRoute>} />
+                    <Route path="/admin" element={<AdminDashboard />}>
+                      <Route path="overview" element={<SystemOverview />} />
+                      <Route path="manual-purchase" element={<ManualPurchase />} />
+                      <Route path="providers" element={<InsuranceProviders />} />
+                      <Route path="providers/:id" element={<ProviderDetail />} />
+                      <Route path="product-management" element={<ProductManagement />} />
+                      <Route path="master-data" element={<MasterData />} />
+                      <Route path="tenant-management" element={<ProtectedTenantManagement />} />
+                      <Route path="roles" element={<RolesManagement />} />
+                      <Route index element={<SystemOverview />} />
+                    </Route>
+                    <Route path="/agent/*" element={<AgentDashboard />} />
+                    <Route path="/employee/*" element={<EmployeeDashboard />} />
+                    <Route path="/customer/*" element={<CustomerDashboard />} />
+                  <Route path="/tenant" element={<TenantAdminRoute><TenantDashboard /></TenantAdminRoute>}>
                     <Route path="overview" element={<TenantOverview />} />
                     <Route path="branches" element={<Branches />} />
                     <Route path="employees" element={<Employees />} />
@@ -94,12 +103,15 @@ const App: FC = () => {
                     <Route path="catalog/overrides" element={<TenantOverrides />} />
                     <Route index element={<TenantOverview />} />
                   </Route>
-                </Routes>
-                <Toaster />
-              </div>
-            </Router>
-          </MasterDataProvider>
-        </PermissionsProvider>
+                    <Route path="/tenant-select" element={<TenantSelect />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                  <Toaster />
+                </div>
+              </Router>
+            </MasterDataProvider>
+          </PermissionsProvider>
+        </AuthProvider>
       </SimpleAuthProvider>
     </QueryClientProvider>
   );

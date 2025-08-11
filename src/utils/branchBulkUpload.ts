@@ -116,14 +116,29 @@ const isValidPincode = (pincode: string): boolean => {
   return pincodeRegex.test(pincode);
 };
 
-export const processBranchRow = async (row: Record<string, any>): Promise<any> => {
+export const processBranchRow = async (row: Record<string, any>, tenantId?: string): Promise<any> => {
+  let tId = tenantId || null;
+
+  if (!tId) {
+    const { data, error } = await supabase.rpc('current_user_tenant_ids');
+    if (error) {
+      throw new Error(`Failed to resolve tenant: ${error.message}`);
+    }
+    const ids: string[] = Array.isArray(data) ? data : [];
+    tId = ids[0] || null;
+  }
+
+  if (!tId) {
+    throw new Error('No tenant context available. Please select a tenant and try again.');
+  }
+
   const branchData = {
-    name: row.branchName,
-    code: row.branchCode || null,
-    manager_name: row.managerName || null,
-    manager_phone: row.managerPhone || null,
+    tenant_id: tId,
+    branch_name: row.branchName,
+    branch_code: row.branchCode || null,
+    contact_person: row.managerName || null,
     email: row.email || null,
-    phone: row.phone || null,
+    phone_number: row.phone || row.managerPhone || null,
     address_line1: row.addressLine1 || null,
     address_line2: row.addressLine2 || null,
     city: row.city || null,
@@ -131,7 +146,6 @@ export const processBranchRow = async (row: Record<string, any>): Promise<any> =
     pincode: row.pincode || null,
     status: row.status || 'Active'
   };
-
   const { data: branch, error } = await supabase
     .from('branches')
     .insert(branchData)

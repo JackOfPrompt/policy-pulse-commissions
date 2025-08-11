@@ -7,13 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useSimpleAuth } from "@/components/auth/SimpleAuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { Shield, Building2, Users, User, ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const AuthPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { login, signUp, user, loading: authLoading } = useSimpleAuth();
+  const { signIn, signUp, user, loading: authLoading } = useAuth();
   
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
@@ -26,6 +27,11 @@ const AuthPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [tenantId, setTenantId] = useState('');
+  const [tenantPhone, setTenantPhone] = useState('');
+  const [creatingAdmin, setCreatingAdmin] = useState(false);
+  const [createError, setCreateError] = useState('');
+  const [createMsg, setCreateMsg] = useState<string | null>(null);
 
   // Get role data from navigation state
   const roleData = location.state;
@@ -41,11 +47,31 @@ const AuthPage = () => {
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (user && !authLoading) {
-      // For now, redirect all authenticated users to customer dashboard
-      navigate('/customer/dashboard');
-    }
-  }, [user, authLoading]);
+    const checkAndRedirect = async () => {
+      if (!user || authLoading) return;
+      try {
+        const { data: isAdmin } = await supabase.rpc('is_current_user_admin');
+        if (isAdmin) {
+          navigate('/admin/overview');
+          return;
+        }
+        const { data: tenantUser } = await supabase
+          .from('tenant_users' as any)
+          .select('tenant_id, role, is_active')
+          .eq('user_id', user.id)
+          .eq('is_active', true)
+          .maybeSingle();
+        if (tenantUser) {
+          navigate('/tenant/overview');
+          return;
+        }
+        navigate('/tenant-select');
+      } catch (e) {
+        navigate('/tenant-select');
+      }
+    };
+    checkAndRedirect();
+  }, [user, authLoading, navigate]);
 
   const redirectToPortal = (userType: string) => {
     switch (userType) {
@@ -102,10 +128,13 @@ const AuthPage = () => {
     setError('');
 
     try {
-      const result = await login(email, password);
-      
-      if (!result.success) {
-        setError(result.error || 'Login failed. Please check your credentials.');
+      // Allow login with phone number by deriving email
+      const input = email.trim();
+      const isPhone = !input.includes('@');
+      const loginEmail = isPhone ? `${input.replace(/\D/g, '')}@tenants.local` : input;
+      const { error } = await signIn(loginEmail, password);
+      if (error) {
+        setError(error.message || 'Login failed. Please check your credentials.');
       }
       // Redirect will be handled by useEffect when user updates
     } catch (err) {
@@ -121,10 +150,10 @@ const AuthPage = () => {
     setError('');
 
     try {
-      const result = await signUp(email, password);
+      const { error } = await signUp(email, password, fullName, userType);
       
-      if (!result.success) {
-        setError(result.error || 'Sign up failed. Please try again.');
+      if (error) {
+        setError(error.message || 'Sign up failed. Please try again.');
       } else {
         setSuccess('Sign up successful! Please check your email to verify your account.');
       }
@@ -132,6 +161,38 @@ const AuthPage = () => {
       setError('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
+    }
+  }; 
+
+  const handleCreateTenantAdmin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreatingAdmin(true);
+    setCreateError('');
+    setCreateMsg(null);
+    try {
+      const phone = tenantPhone.trim().replace(/\D/g, '');
+      if (!tenantId || !phone) {
+        setCreateError('Tenant ID and mobile are required');
+        return;
+      }
+      const { data, error } = await supabase.functions.invoke('create-tenant-admin', {
+        body: { tenant_id: tenantId, phone_number: phone }
+      });
+      if (error) {
+        setCreateError(error.message || 'Failed to create tenant admin');
+        return;
+      }
+      const loginHint = (data as any)?.login_hint;
+      if (loginHint?.email && loginHint?.password) {
+        setEmail(loginHint.email);
+        setPassword(loginHint.password);
+        setIsLogin(true);
+      }
+      setCreateMsg('Tenant admin created. Credentials have been pre-filled below.');
+    } catch (err) {
+      setCreateError('Failed to create tenant admin');
+    } finally {
+      setCreatingAdmin(false);
     }
   };
 
@@ -239,13 +300,13 @@ const AuthPage = () => {
             <TabsContent value="login" className="space-y-4">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">Email or Mobile</Label>
                   <Input
                     id="email"
-                    type="email"
+                    type="text"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email"
+                    placeholder="Enter email or mobile number"
                     required
                   />
                 </div>
@@ -419,8 +480,38 @@ const AuthPage = () => {
             </TabsContent>
           </Tabs>
 
-          <div className="mt-6 text-center text-sm text-muted-foreground">
-            <p>This is a test environment with pre-configured accounts</p>
+          <div className="mt-6">
+            <div className="text-sm text-muted-foreground mb-2">
+              First-time Tenant Admin? Create your admin using mobile.
+            </div>
+            {createError && (
+              <Alert variant="destructive" className="mb-3">
+                <AlertDescription>{createError}</AlertDescription>
+              </Alert>
+            )}
+            {createMsg && (
+              <Alert className="mb-3">
+                <AlertDescription>{createMsg}</AlertDescription>
+              </Alert>
+            )}
+            <form onSubmit={handleCreateTenantAdmin} className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div className="space-y-1 sm:col-span-1">
+                <Label htmlFor="tenantId">Tenant ID</Label>
+                <Input id="tenantId" value={tenantId} onChange={(e) => setTenantId(e.target.value)} placeholder="UUID" />
+              </div>
+              <div className="space-y-1 sm:col-span-1">
+                <Label htmlFor="tenantPhone">Mobile</Label>
+                <Input id="tenantPhone" value={tenantPhone} onChange={(e) => setTenantPhone(e.target.value)} placeholder="10-digit mobile" />
+              </div>
+              <div className="flex items-end sm:col-span-1">
+                <Button type="submit" className="w-full" disabled={creatingAdmin}>
+                  {creatingAdmin ? 'Creating...' : 'Create Tenant Admin'}
+                </Button>
+              </div>
+            </form>
+            <p className="mt-2 text-xs text-muted-foreground">
+              We’ll auto-fill the login with email as mobile@tenants.local and password 1234567.
+            </p>
           </div>
         </CardContent>
       </Card>

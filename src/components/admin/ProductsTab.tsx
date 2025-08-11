@@ -39,6 +39,7 @@ interface Product {
   max_entry_age?: number;
   insurance_providers: {
     provider_name: string;
+    logo_url?: string | null;
   };
   line_of_business: {
     name: string;
@@ -113,6 +114,7 @@ const ProductsTab = () => {
           created_at,
           insurance_providers:provider_id (
             insurer_name,
+            logo_url,
             provider_id
           ),
           lines_of_business:lob_id (
@@ -149,7 +151,8 @@ const ProductsTab = () => {
         min_entry_age: undefined,
         max_entry_age: undefined,
         insurance_providers: {
-          provider_name: row.insurance_providers?.insurer_name || ''
+          provider_name: row.insurance_providers?.insurer_name || '',
+          logo_url: row.insurance_providers?.logo_url || null
         },
         line_of_business: {
           name: row.lines_of_business?.lob_name || ''
@@ -482,8 +485,17 @@ const ProductsTab = () => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="font-medium">
-                      {product.insurance_providers?.provider_name || 'N/A'}
+                    <div className="flex items-center gap-2">
+                      {product.insurance_providers?.logo_url ? (
+                        <img
+                          src={product.insurance_providers.logo_url.startsWith('http') ? product.insurance_providers.logo_url : `https://vnrwnqcoytwdinlxswqe.supabase.co/storage/v1/object/public/provider-documents/${product.insurance_providers.logo_url}`}
+                          alt={`${product.insurance_providers?.provider_name || 'Provider'} logo`}
+                          className="h-5 w-5 rounded object-contain"
+                          loading="lazy"
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                        />
+                      ) : null}
+                      <span className="font-medium">{product.insurance_providers?.provider_name || 'N/A'}</span>
                     </div>
                   </TableCell>
                   <TableCell>

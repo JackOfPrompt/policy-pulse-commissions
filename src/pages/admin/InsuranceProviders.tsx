@@ -16,6 +16,7 @@ import { ProviderForm } from "@/components/admin/ProviderForm";
 import BulkUpdateModal from "@/components/admin/BulkUpdateModal";
 import { getProviderUpdateTemplateColumns, getProviderUpdateSampleData, validateProviderUpdateRow, processProviderUpdateRow, downloadProviderUpdateTemplate } from "@/utils/providerBulkUpdate";
 import { format } from "date-fns";
+import { Helmet } from "react-helmet-async";
 
 interface Provider {
   id: string;
@@ -193,11 +194,26 @@ const InsuranceProviders = () => {
       fetchProviders();
     } catch (error: any) {
       console.error('Error deleting provider:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete provider",
-        variant: "destructive"
-      });
+      // Fallback to soft delete (archive) when hard delete fails due to FK constraints
+      try {
+        const { error: updErr } = await supabase
+          .from('insurance_providers')
+          .update({ status: 'Inactive' })
+          .eq('provider_id', providerId);
+        if (updErr) throw updErr;
+        toast({
+          title: "Archived",
+          description: `${providerName} has linked records. Marked as Inactive instead.`,
+        });
+        fetchProviders();
+      } catch (e: any) {
+        console.error('Soft delete also failed:', e);
+        toast({
+          title: "Error",
+          description: "Failed to delete provider",
+          variant: "destructive"
+        });
+      }
     }
   };
 
@@ -280,6 +296,11 @@ const InsuranceProviders = () => {
 
   return (
     <div className="p-6 space-y-6">
+      <Helmet>
+        <title>Insurance Providers | Admin</title>
+        <meta name="description" content="Browse and manage insurance providers. Compact icon view with visible logos." />
+        <link rel="canonical" href="/admin/providers" />
+      </Helmet>
       <div className="flex justify-between items-center">
         <div></div>
         <div className="flex gap-2">
@@ -367,138 +388,80 @@ const InsuranceProviders = () => {
               No providers found
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-6 gap-4">
               {filteredProviders.map((provider) => (
                 <Card 
                   key={provider.id} 
-                  className="cursor-pointer hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 group border-border/50 hover:border-primary/20 bg-gradient-to-br from-card to-card/95 hover:scale-[1.02] rounded-xl overflow-hidden"
+                  className="cursor-pointer hover:shadow-md transition-colors duration-200 group border border-border/50 bg-card rounded-lg overflow-hidden"
                   onClick={() => handleView(provider.id)}
                 >
                   <CardContent className="p-0">
-                    {/* Header section with gradient background */}
-                    <div className="bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 p-6 pb-4 relative overflow-hidden">
-                      <div className="absolute inset-0 bg-gradient-to-br from-transparent via-primary/5 to-primary/10 opacity-50" />
-                      <div className="relative">
-                        {/* Logo */}
-                        <div className="w-20 h-20 mx-auto flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-2xl shadow-md border border-border/20">
-                          {provider.logo_file_path ? (
-                            <img 
-                              src={`https://vnrwnqcoytwdinlxswqe.supabase.co/storage/v1/object/public/provider-documents/${provider.logo_file_path}`}
-                              alt={`${provider.provider_name} logo`}
-                              className="w-16 h-16 rounded-xl object-contain"
-                              onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                              }}
-                            />
-                          ) : (
-                            <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-primary/30 rounded-xl flex items-center justify-center shadow-inner">
-                              <span className="text-primary font-bold text-2xl">
-                                {(provider.provider_name?.charAt(0) ?? '?').toUpperCase()}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Status Badge - floating on top right */}
-                        <div className="absolute -top-2 -right-2">
-                          <Badge 
-                            variant={getStatusBadgeVariant(provider.status)}
-                            className="shadow-sm border border-background/20"
-                          >
-                            {provider.status}
-                          </Badge>
-                        </div>
+                    <div className="bg-muted/40 p-3 relative">
+                      <div className="absolute top-2 right-2">
+                        <Badge 
+                          variant={getStatusBadgeVariant(provider.status)}
+                          className="shadow-sm"
+                        >
+                          {provider.status}
+                        </Badge>
                       </div>
-                    </div>
-
-                    {/* Content section */}
-                    <div className="p-6 pt-4 space-y-4">
-                      {/* Provider Name */}
-                      <div className="text-center">
-                        <h3 className="font-bold text-lg text-foreground group-hover:text-primary transition-colors duration-200 line-clamp-2 min-h-[3.5rem] flex items-center justify-center">
-                          {provider.provider_name}
-                        </h3>
-                        <div className="inline-flex items-center justify-center bg-muted/50 rounded-full px-3 py-1 mt-2">
-                          <p className="text-xs font-medium text-muted-foreground">
-                            IRDAI: {provider.irdai_code}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Contact Info Card */}
-                      <div className="bg-muted/30 rounded-lg p-3 space-y-2">
-                        {provider.contact_person && (
-                          <div className="flex items-center justify-center text-sm text-muted-foreground">
-                            <span className="font-medium truncate">{provider.contact_person}</span>
-                          </div>
-                        )}
-                        {provider.contact_email && (
-                          <div className="text-center">
-                            <span className="text-xs text-muted-foreground/80 truncate block">
-                              {provider.contact_email}
+                      <div className="w-16 h-16 mx-auto flex items-center justify-center bg-muted rounded-xl border border-border">
+                        {provider.logo_file_path ? (
+                          <img 
+                            src={`https://vnrwnqcoytwdinlxswqe.supabase.co/storage/v1/object/public/provider-documents/${provider.logo_file_path}`}
+                            alt={`${provider.provider_name} logo`}
+                            className="w-14 h-14 object-contain"
+                            loading="lazy"
+                            onError={(e) => {
+                              (e.currentTarget as HTMLImageElement).style.display = 'none';
+                            }}
+                          />
+                        ) : (
+                          <div className="w-14 h-14 bg-card rounded-lg flex items-center justify-center">
+                            <span className="text-foreground font-semibold text-xl">
+                              {(provider.provider_name?.charAt(0) ?? '?').toUpperCase()}
                             </span>
                           </div>
                         )}
                       </div>
-
-                      {/* Website */}
-                      {provider.website && (
-                        <div className="text-center">
-                          <a 
-                            href={provider.website} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center bg-primary/5 hover:bg-primary/10 text-primary hover:text-primary/80 text-sm font-medium px-3 py-1.5 rounded-full transition-all duration-200 border border-primary/20"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            🌐 Visit Website
-                          </a>
-                        </div>
-                      )}
-
-                      {/* Contract Expiry */}
-                      {provider.contract_end_date && (
-                        <div className="text-center">
-                          <div className="inline-flex items-center justify-center bg-orange-50 text-orange-600 text-xs font-medium px-2 py-1 rounded-full border border-orange-200">
-                            📅 Expires: {format(new Date(provider.contract_end_date), 'MMM yyyy')}
-                          </div>
-                        </div>
-                      )}
                     </div>
 
-                    {/* Action Buttons */}
-                    <div className="border-t border-border/50 bg-muted/20 p-4">
-                      <div className="flex gap-2 justify-center">
+                    <div className="p-3 space-y-1">
+                      <h3 className="text-sm font-semibold text-center text-foreground line-clamp-2">
+                        {provider.provider_name}
+                      </h3>
+                      <p className="text-xs text-muted-foreground text-center">IRDAI: {provider.irdai_code}</p>
+                    </div>
+
+                    <div className="border-t border-border/50 bg-muted/10 p-2">
+                      <div className="flex items-center justify-center gap-1">
                         <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 hover:bg-primary hover:text-primary-foreground transition-all duration-200"
+                          variant="ghost"
+                          size="icon"
+                          title="Edit"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleEdit(provider);
                           }}
                         >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Edit
+                          <Edit className="h-4 w-4" />
                         </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button 
-                              variant="outline" 
-                              size="sm"
-                              className="flex-1 hover:bg-destructive hover:text-destructive-foreground transition-all duration-200"
+                              variant="ghost" 
+                              size="icon"
+                              title="Delete"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <Trash2 className="h-4 w-4 mr-1" />
-                              Delete
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
                               <AlertDialogTitle>Delete Provider</AlertDialogTitle>
                               <AlertDialogDescription>
-                                Are you sure you want to delete "{provider.provider_name}"? 
-                                This action cannot be undone.
+                                Are you sure you want to delete "{provider.provider_name}"? This action cannot be undone.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>

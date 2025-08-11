@@ -32,28 +32,20 @@ export const SimpleAuthProvider = ({ children }: SimpleAuthProviderProps) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // DEVELOPMENT MODE: Set up mock admin user session
-    const mockSession = {
-      access_token: 'dev-token',
-      token_type: 'bearer',
-      expires_in: 3600,
-      expires_at: Date.now() + 3600000,
-      refresh_token: 'dev-refresh',
-      user: {
-        id: '11111111-1111-1111-1111-111111111111', // Use existing admin user ID
-        email: 'admin@dev.com',
-        role: 'authenticated',
-        aud: 'authenticated',
-        app_metadata: {},
-        user_metadata: {},
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
-    };
-    
-    setSession(mockSession as any);
-    setUser(mockSession.user as any);
-    setLoading(false);
+    // Set up Supabase auth state listener and initial session
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {

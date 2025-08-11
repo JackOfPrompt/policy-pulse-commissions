@@ -41,15 +41,15 @@ export function useTenantBranding(): TenantBranding {
         }
         const { data, error } = await supabase
           .from('tenants')
-          .select('name, logo_url, brand_color, subdomain')
+          .select('tenant_name, logo_url, subdomain')
           .eq('subdomain', tenantSubdomain)
           .maybeSingle();
         if (error) throw error;
         if (!active) return;
         if (data) {
-          setBrandName(data.name ?? 'Abiraksha Insuretech');
-          setLogoUrl(data.logo_url ?? undefined);
-          setBrandColor(data.brand_color ?? undefined);
+          setBrandName((data as any).tenant_name ?? 'Abiraksha Insuretech');
+          setLogoUrl((data as any).logo_url ?? undefined);
+          setBrandColor((data as any).brand_color ?? undefined);
         }
       } catch {
         // Silently ignore and use defaults

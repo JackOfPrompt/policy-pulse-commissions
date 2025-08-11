@@ -190,10 +190,33 @@ export default function SystemDbDiagnostics() {
               <Input id="product_name" value={product.product_name} onChange={(e) => setProduct({ ...product, product_name: e.target.value })} />
               <Label htmlFor="product_code">Product Code</Label>
               <Input id="product_code" value={product.product_code} onChange={(e) => setProduct({ ...product, product_code: e.target.value })} />
-              <div className="pt-4">
+              <div className="pt-4 space-y-2">
                 <Button onClick={runCrudTests} disabled={running} className="w-full">
                   {running ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
                   {running ? "Running Diagnostics..." : "Run CRUD Diagnostics"}
+                </Button>
+                <Button
+                  variant="secondary"
+                  className="w-full"
+                  onClick={async () => {
+                    try {
+                      const { data, error } = await supabase.functions.invoke("seed-test-auth", { body: {} });
+                      if (error) throw error;
+                      toast({
+                        title: "Seeded test auth",
+                        description: "Created/ensured system admin and two tenant admins with tenants.",
+                      });
+                      setResults((r) => [
+                        ...r,
+                        { step: "Seed Test Auth", status: "success", message: `Users: ${data?.users?.map((u: any) => u.email).join(", ")}` },
+                      ]);
+                    } catch (e: any) {
+                      toast({ title: "Seed failed", description: e?.message ?? "Unknown error", variant: "destructive" });
+                      setResults((r) => [...r, { step: "Seed Test Auth", status: "error", message: e?.message }]);
+                    }
+                  }}
+                >
+                  Seed Test Auth (System & Tenant Admins)
                 </Button>
               </div>
             </div>
@@ -216,7 +239,7 @@ export default function SystemDbDiagnostics() {
                       <StatusIcon s={r.status} />
                       <div className="text-sm">
                         <div className="font-medium text-foreground">{r.step}</div>
-                        {r.message ? <div className="text-muted-foreground">{r.message}</div> : null}
+                        {r.message ? <div className="text-muted-foreground whitespace-pre-wrap">{r.message}</div> : null}
                       </div>
                     </li>
                   ))}

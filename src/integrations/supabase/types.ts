@@ -1333,6 +1333,95 @@ export type Database = {
         }
         Relationships: []
       }
+      employee_department_assignments: {
+        Row: {
+          branch_id: string
+          created_at: string | null
+          created_by: string
+          department_id: string
+          employee_id: string
+          end_date: string | null
+          id: string
+          is_active: boolean | null
+          is_primary: boolean | null
+          role_id: string
+          start_date: string
+          tenant_id: string
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          branch_id: string
+          created_at?: string | null
+          created_by: string
+          department_id: string
+          employee_id: string
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_primary?: boolean | null
+          role_id: string
+          start_date?: string
+          tenant_id: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          branch_id?: string
+          created_at?: string | null
+          created_by?: string
+          department_id?: string
+          employee_id?: string
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_primary?: boolean | null
+          role_id?: string
+          start_date?: string
+          tenant_id?: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_department_assignments_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "employee_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employee_roles: {
+        Row: {
+          code: string
+          created_at: string | null
+          department_id: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          permissions: Json | null
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          department_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          permissions?: Json | null
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          department_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          permissions?: Json | null
+        }
+        Relationships: []
+      }
       endorsement_events: {
         Row: {
           approved_by: string | null
@@ -3013,6 +3102,36 @@ export type Database = {
         }
         Relationships: []
       }
+      plan_features: {
+        Row: {
+          created_at: string
+          description: string | null
+          feature_id: string
+          feature_key: string
+          feature_name: string
+          is_active: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          feature_id?: string
+          feature_key: string
+          feature_name: string
+          is_active?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          feature_id?: string
+          feature_key?: string
+          feature_name?: string
+          is_active?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       policies: {
         Row: {
           created_at: string | null
@@ -4249,6 +4368,42 @@ export type Database = {
           },
         ]
       }
+      subscription_plan_features: {
+        Row: {
+          created_at: string
+          feature_id: string
+          id: string
+          plan_id: string
+        }
+        Insert: {
+          created_at?: string
+          feature_id: string
+          id?: string
+          plan_id: string
+        }
+        Update: {
+          created_at?: string
+          feature_id?: string
+          id?: string
+          plan_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_plan_features_feature"
+            columns: ["feature_id"]
+            isOneToOne: false
+            referencedRelation: "plan_features"
+            referencedColumns: ["feature_id"]
+          },
+          {
+            foreignKeyName: "fk_plan_features_plan"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["plan_id"]
+          },
+        ]
+      }
       subscription_plans: {
         Row: {
           annual_price: number | null
@@ -4742,6 +4897,42 @@ export type Database = {
             referencedColumns: ["tenant_id"]
           },
         ]
+      }
+      tenant_branch_departments: {
+        Row: {
+          branch_id: string
+          created_at: string | null
+          created_by: string
+          department_id: string
+          id: string
+          is_active: boolean | null
+          tenant_id: string
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          branch_id: string
+          created_at?: string | null
+          created_by: string
+          department_id: string
+          id?: string
+          is_active?: boolean | null
+          tenant_id: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          branch_id?: string
+          created_at?: string | null
+          created_by?: string
+          department_id?: string
+          id?: string
+          is_active?: boolean | null
+          tenant_id?: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
       }
       tenant_gateway_configurations: {
         Row: {
@@ -5519,7 +5710,15 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string[]
       }
+      ensure_user_tenant: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       generate_policy_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      generate_subscription_plan_code: {
         Args: Record<PropertyKey, never>
         Returns: string
       }

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -11,29 +12,57 @@ const Catalog = () => {
   const { tenantId, loading: tenantLoading, error } = useCurrentTenant();
   const { toast } = useToast();
 
-  useEffect(() => {
-    document.title = 'Tenant Catalog — Products & Providers';
-  }, []);
+  // Title handled by Helmet
 
   const { data: providers } = useQuery({
     queryKey: ['tenant_providers_resolved', tenantId],
-    enabled: !!tenantId,
+    enabled: true,
     queryFn: async () => {
-      const query = supabase.from('tenant_providers_resolved').select('*');
-      const { data, error } = tenantId ? await query.eq('tenant_id', tenantId) : await query;
-      if (error) throw error;
-      return data ?? [];
+      try {
+        const base = supabase.from('tenant_providers_resolved' as any).select('*');
+        const { data, error } = tenantId ? await base.eq('tenant_id', tenantId) : await base;
+        if (error) throw error;
+        return data ?? [];
+      } catch (err: any) {
+        const { data, error } = await supabase
+          .from('insurance_providers' as any)
+          .select('provider_id,insurer_name,status');
+        if (error) throw error;
+        return (data ?? []).map((p: any) => ({
+          provider_name: p.insurer_name,
+          status: p.status,
+          tenant_id: null,
+          provider_id: p.provider_id,
+        }));
+      }
     },
   });
 
   const { data: products } = useQuery({
     queryKey: ['tenant_products_resolved', tenantId],
-    enabled: !!tenantId,
+    enabled: true,
     queryFn: async () => {
-      const query = supabase.from('tenant_products_resolved').select('*');
-      const { data, error } = tenantId ? await query.eq('tenant_id', tenantId) : await query;
-      if (error) throw error;
-      return data ?? [];
+      try {
+        const base = supabase.from('tenant_products_resolved' as any).select('*');
+        const { data, error } = tenantId ? await base.eq('tenant_id', tenantId) : await base;
+        if (error) throw error;
+        return data ?? [];
+      } catch (err: any) {
+        const { data, error } = await supabase
+          .from('insurance_products' as any)
+          .select('product_id,product_name,product_code,product_type,status');
+        if (error) throw error;
+        return (data ?? []).map((r: any) => ({
+          product_id: r.product_id,
+          tenant_id: null,
+          name: r.product_name,
+          code: r.product_code,
+          category: r.product_type,
+          status: r.status,
+          premium_markup_rate: null,
+          premium_flat_add: null,
+        }));
+      }
     },
   });
 
@@ -45,6 +74,11 @@ const Catalog = () => {
 
   return (
     <main className="p-6 space-y-8">
+      <Helmet>
+        <title>Tenant Catalog | Products & Providers</title>
+        <meta name="description" content="Browse providers and products available for your tenant." />
+        <link rel="canonical" href="/tenant/catalog" />
+      </Helmet>
       <section>
         <header className="mb-4">
           <h1 className="text-2xl font-semibold">Tenant Catalog</h1>

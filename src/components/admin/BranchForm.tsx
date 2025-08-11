@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 
 const branchSchema = z.object({
   name: z.string().min(1, "Branch name is required"),
@@ -32,11 +33,14 @@ interface BranchFormProps {
   onOpenChange: (open: boolean) => void;
   branch?: any;
   onSuccess: () => void;
+  tenantIdOverride?: string;
 }
 
-export const BranchForm = ({ open, onOpenChange, branch, onSuccess }: BranchFormProps) => {
+export const BranchForm = ({ open, onOpenChange, branch, onSuccess, tenantIdOverride }: BranchFormProps) => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { tenantId } = useCurrentTenant();
+  const effectiveTenantId = tenantIdOverride ?? tenantId;
 
   const form = useForm<BranchFormData>({
     resolver: zodResolver(branchSchema),
@@ -59,17 +63,17 @@ export const BranchForm = ({ open, onOpenChange, branch, onSuccess }: BranchForm
   useEffect(() => {
     if (branch) {
       form.reset({
-        name: branch.name || "",
-        code: branch.code || "",
+        name: branch.branch_name || "",
+        code: branch.branch_code || "",
         address_line1: branch.address_line1 || "",
         address_line2: branch.address_line2 || "",
         city: branch.city || "",
         state: branch.state || "",
         pincode: branch.pincode || "",
-        phone: branch.phone || "",
+        phone: branch.phone_number || "",
         email: branch.email || "",
-        manager_name: branch.manager_name || "",
-        manager_phone: branch.manager_phone || "",
+        manager_name: branch.contact_person || "",
+        manager_phone: "",
         status: branch.status || "Active",
       });
     } else {
@@ -93,17 +97,34 @@ export const BranchForm = ({ open, onOpenChange, branch, onSuccess }: BranchForm
   const onSubmit = async (data: BranchFormData) => {
     setLoading(true);
     try {
+      const payload: any = {
+        branch_name: data.name,
+        branch_code: data.code,
+        address_line1: data.address_line1,
+        address_line2: data.address_line2 || null,
+        city: data.city,
+        state: data.state,
+        pincode: data.pincode,
+        email: data.email || null,
+        contact_person: data.manager_name || null,
+        phone_number: data.phone || data.manager_phone || null,
+        status: data.status,
+      };
+
       if (branch) {
         const { error } = await supabase
           .from("branches")
-          .update(data as any)
+          .update(payload)
           .eq("branch_id", branch?.branch_id || branch?.id);
         if (error) throw error;
         toast({ title: "Branch updated successfully" });
       } else {
+        if (!effectiveTenantId) {
+          throw new Error("No tenant context available. Please select a tenant and try again.");
+        }
         const { error } = await supabase
           .from("branches")
-          .insert(data as any);
+          .insert({ ...payload, tenant_id: effectiveTenantId });
         if (error) throw error;
         toast({ title: "Branch created successfully" });
       }

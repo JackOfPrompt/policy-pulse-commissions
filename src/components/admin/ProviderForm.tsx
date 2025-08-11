@@ -32,8 +32,6 @@ const providerSchema = z.object({
   logo_file_path: z.string().optional(),
   contract_start_date: z.date().optional(),
   contract_end_date: z.date().optional(),
-  api_key: z.string().optional(),
-  api_endpoint: z.string().url("Invalid URL format").optional().or(z.literal(""))
 });
 
 type ProviderFormData = z.infer<typeof providerSchema>;
@@ -99,8 +97,6 @@ export const ProviderForm = ({ provider, onSuccess, onCancel }: ProviderFormProp
       logo_file_path: provider?.logo_file_path || "",
       contract_start_date: provider?.contract_start_date ? new Date(provider.contract_start_date) : undefined,
       contract_end_date: provider?.contract_end_date ? new Date(provider.contract_end_date) : undefined,
-      api_key: provider?.api_key || "",
-      api_endpoint: provider?.api_endpoint || ""
     }
   });
 
@@ -130,21 +126,18 @@ export const ProviderForm = ({ provider, onSuccess, onCancel }: ProviderFormProp
       }
 
       const providerData = {
-        provider_name: data.provider_name,
-        irdai_code: data.irdai_code,
+        insurer_name: data.provider_name,
+        irdai_registration_number: data.irdai_code,
         status: data.status,
         contact_person: data.contact_person || null,
         contact_email: data.contact_email || null,
         support_email: data.support_email || null,
         phone_number: data.phone_number || null,
         website: data.website || null,
-        head_office_address: data.head_office_address || null,
-        logo_file_path: data.logo_file_path || null,
+        head_office_location: data.head_office_address || null,
+        logo_url: data.logo_file_path || null,
         contract_start_date: data.contract_start_date?.toISOString().split('T')[0] || null,
-        contract_end_date: data.contract_end_date?.toISOString().split('T')[0] || null,
-        api_key: data.api_key || null,
-        api_endpoint: data.api_endpoint || null,
-        documents_folder: documentsFolder
+        contract_end_date: data.contract_end_date?.toISOString().split('T')[0] || null
       };
 
       if (provider) {
@@ -152,7 +145,7 @@ export const ProviderForm = ({ provider, onSuccess, onCancel }: ProviderFormProp
         const { error } = await supabase
           .from('insurance_providers')
           .update(providerData)
-          .eq('id', provider.id);
+          .eq('provider_id', provider.id);
         
         if (error) throw error;
         toast({ title: "Provider updated successfully!" });
@@ -490,41 +483,6 @@ export const ProviderForm = ({ provider, onSuccess, onCancel }: ProviderFormProp
               </div>
             </div>
 
-            {/* API Integration Section */}
-            <div className="space-y-4">
-              <div className="border-b border-border pb-2">
-                <h3 className="text-lg font-semibold text-foreground">API Integration</h3>
-                <p className="text-sm text-muted-foreground">API configuration for integration</p>
-              </div>
-
-              <FormField
-                control={form.control}
-                name="api_endpoint"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>API Endpoint</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://api.provider.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="api_key"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>API Key</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="Enter API key" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
 
             {/* File Upload Section */}
             <div className="space-y-4">

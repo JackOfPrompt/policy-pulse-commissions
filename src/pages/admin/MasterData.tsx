@@ -79,13 +79,14 @@ const masterDataEntities = [
       { name: "api_mapping_key", label: "API Mapping Key", type: "text" },
       { name: "is_commercial_use", label: "Commercial Use Allowed", type: "checkbox" },
       { name: "special_attributes", label: "Special Attributes", type: "textarea" },
-      { name: "remarks", label: "Remarks", type: "textarea" }
+      { name: "remarks", label: "Remarks", type: "textarea" },
+      { name: "is_active", label: "Active", type: "checkbox" }
     ]
   },
   {
     id: "cities",
     name: "Cities & Pincodes",
-    table: "master_cities",
+    table: "pincode_data",
     icon: MapPin,
     description: "Master list of cities, states and pincode mapping",
     color: "bg-green-50 text-green-700 border-green-200",
@@ -93,9 +94,10 @@ const masterDataEntities = [
       { name: "city_name", label: "City Name", type: "text", required: true },
       { name: "state_name", label: "State Name", type: "text", required: true },
       { name: "pincode", label: "Pincode", type: "text", required: true },
-      { name: "district", label: "District", type: "text" },
+      { name: "district_name", label: "District", type: "text" },
       { name: "region", label: "Region", type: "text" },
-      { name: "tier", label: "Tier", type: "select", options: ["Tier 1", "Tier 2", "Tier 3"] }
+      { name: "tier", label: "Tier", type: "select", options: ["Tier 1", "Tier 2", "Tier 3"] },
+      { name: "is_active", label: "Active", type: "checkbox" }
     ]
   },
   {
@@ -116,7 +118,8 @@ const masterDataEntities = [
       { name: "sum_insured_limit", label: "Sum Insured Limit", type: "number" },
       { name: "applicable_age_min", label: "Min Age", type: "number" },
       { name: "applicable_age_max", label: "Max Age", type: "number" },
-      { name: "is_mandatory", label: "Is Mandatory", type: "checkbox" }
+      { name: "is_mandatory", label: "Is Mandatory", type: "checkbox" },
+      { name: "is_active", label: "Active", type: "checkbox" }
     ]
   },
   {
@@ -133,7 +136,8 @@ const masterDataEntities = [
       { name: "waiting_period_months", label: "Waiting Period (Months)", type: "number" },
       { name: "exclusion_period_months", label: "Exclusion Period (Months)", type: "number" },
       { name: "coverage_percentage", label: "Coverage Percentage", type: "number" },
-      { name: "description", label: "Description", type: "textarea" }
+      { name: "description", label: "Description", type: "textarea" },
+      { name: "is_active", label: "Active", type: "checkbox" }
     ]
   },
   {
@@ -151,7 +155,8 @@ const masterDataEntities = [
       { name: "benefit_amount", label: "Benefit Amount", type: "number" },
       { name: "benefit_percentage", label: "Benefit Percentage", type: "number" },
       { name: "coverage_limit", label: "Coverage Limit", type: "number" },
-      { name: "description", label: "Description", type: "textarea" }
+      { name: "description", label: "Description", type: "textarea" },
+      { name: "is_active", label: "Active", type: "checkbox" }
     ]
   },
   {
@@ -172,7 +177,8 @@ const masterDataEntities = [
       { name: "base_premium", label: "Base Premium", type: "number" },
       { name: "premium_rate", label: "Premium Rate", type: "number" },
       { name: "gender", label: "Gender", type: "select", options: ["Male", "Female", "All"] },
-      { name: "zone", label: "Zone", type: "text" }
+      { name: "zone", label: "Zone", type: "text" },
+      { name: "is_active", label: "Active", type: "checkbox" }
     ]
   },
   {
@@ -188,7 +194,8 @@ const masterDataEntities = [
       { name: "industry_type", label: "Industry Type", type: "text" },
       { name: "risk_category", label: "Risk Category", type: "select", options: ["low", "medium", "high"] },
       { name: "hazard_class", label: "Hazard Class", type: "text" },
-      { name: "description", label: "Description", type: "textarea" }
+      { name: "description", label: "Description", type: "textarea" },
+      { name: "is_active", label: "Active", type: "checkbox" }
     ]
   },
   {
@@ -203,7 +210,8 @@ const masterDataEntities = [
       { name: "relationship_code", label: "Relationship Code", type: "text" },
       { name: "applicable_for", label: "Applicable For", type: "multiselect", options: ["nominee", "beneficiary", "insured"] },
       { name: "is_blood_relation", label: "Is Blood Relation", type: "checkbox" },
-      { name: "description", label: "Description", type: "textarea" }
+      { name: "description", label: "Description", type: "textarea" },
+      { name: "is_active", label: "Active", type: "checkbox" }
     ]
   },
   {
@@ -219,7 +227,22 @@ const masterDataEntities = [
       { name: "occupation_category", label: "Occupation Category", type: "text" },
       { name: "risk_class", label: "Risk Class", type: "select", options: ["low", "medium", "high", "hazardous"] },
       { name: "loading_percentage", label: "Loading Percentage", type: "number" },
-      { name: "description", label: "Description", type: "textarea" }
+      { name: "description", label: "Description", type: "textarea" },
+      { name: "is_active", label: "Active", type: "checkbox" }
+    ]
+  },
+  {
+    id: "departments",
+    name: "Departments",
+    table: "departments",
+    icon: Building,
+    description: "Company departments and organizational units",
+    color: "bg-cyan-50 text-cyan-700 border-cyan-200",
+    fields: [
+      { name: "name", label: "Department Name", type: "text", required: true },
+      { name: "code", label: "Department Code", type: "text" },
+      { name: "description", label: "Description", type: "textarea" },
+      { name: "is_active", label: "Active", type: "checkbox" }
     ]
   },
   {
@@ -239,7 +262,8 @@ const masterDataEntities = [
       { name: "expiry_date", label: "Expiry Date", type: "date" },
       { name: "filing_date", label: "Filing Date", type: "date" },
       { name: "approval_date", label: "Approval Date", type: "date" },
-      { name: "status", label: "Status", type: "select", options: ["active", "inactive", "withdrawn"] }
+      { name: "status", label: "Status", type: "select", options: ["active", "inactive", "withdrawn"] },
+      { name: "is_active", label: "Active", type: "checkbox" }
     ]
   }
 ];
@@ -311,6 +335,21 @@ const MasterData = () => {
                       entityType={entity.id}
                       tableName={entity.table}
                       fields={entity.fields}
+                      primaryKey="pincode_id"
+                    />
+                  </>
+                ) : entity.id === "departments" ? (
+                  <>
+                    <MasterDataUpload 
+                      entityType={entity.id}
+                      tableName={entity.table}
+                      fields={entity.fields}
+                    />
+                    <MasterDataTable 
+                      entityType={entity.id}
+                      tableName={entity.table}
+                      fields={entity.fields}
+                      primaryKey="department_id"
                     />
                   </>
                 ) : entity.id === "uin_codes" ? (

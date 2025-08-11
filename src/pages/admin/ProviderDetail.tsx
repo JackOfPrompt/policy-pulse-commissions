@@ -23,9 +23,9 @@ interface Provider {
   logo_file_path?: string;
   contract_start_date: string;
   contract_end_date: string;
-  api_key: string;
-  api_endpoint: string;
-  documents_folder: string;
+  api_key?: string;
+  api_endpoint?: string;
+  documents_folder?: string;
   created_at: string;
   updated_at: string;
 }
@@ -56,8 +56,8 @@ const ProviderDetail = () => {
     try {
       const { data, error } = await supabase
         .from('insurance_providers')
-        .select('*')
-        .eq('id', id)
+        .select('id:provider_id, provider_name:insurer_name, irdai_code:irdai_registration_number, status, contact_person, support_email, phone_number, website, head_office_address:head_office_location, logo_file_path:logo_url, contract_start_date, contract_end_date, created_at, updated_at')
+        .eq('provider_id', id)
         .single();
 
       if (error) throw error;
@@ -123,7 +123,7 @@ const ProviderDetail = () => {
       const { error } = await supabase
         .from('insurance_providers')
         .update({ status: 'Inactive' })
-        .eq('id', provider.id);
+        .eq('provider_id', provider.id);
 
       if (error) throw error;
 

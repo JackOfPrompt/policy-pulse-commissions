@@ -11,10 +11,13 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface Tenant {
   tenant_id: string;
   tenant_name: string;
+  tenant_code: string;
   contact_person?: string;
   contact_email?: string;
   phone_number?: string;
@@ -156,6 +159,23 @@ function TenantsTab() {
   const [editing, setEditing] = useState<Tenant | null>(null);
   const [form, setForm] = useState<Partial<Tenant>>({ status: 'Active' });
 
+  // Plan assignment on tenant creation
+  const [planOptions, setPlanOptions] = useState<{ plan_id: string; plan_name: string }[]>([]);
+  const [selectedPlanId, setSelectedPlanId] = useState<string>('');
+  const [billingCycle, setBillingCycle] = useState<'Monthly' | 'Annual'>('Monthly');
+
+  // Load active plans for selection
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from('subscription_plans')
+        .select('plan_id, plan_name')
+        .eq('is_active', true)
+        .order('created_at', { ascending: true });
+      setPlanOptions((data as any[]) || []);
+    })();
+  }, []);
+
   const load = async () => {
     try {
       setLoading(true);
@@ -194,11 +214,54 @@ function TenantsTab() {
         if (error) throw error;
         toast({ title: 'Tenant updated' });
       } else {
-        const { error } = await supabase.from('tenants').insert(payload);
-        if (error) throw error;
-        toast({ title: 'Tenant created' });
+        // Create tenant and auto-assign subscription plan
+        if (!selectedPlanId) {
+          toast({ title: 'Select a subscription plan', variant: 'destructive' as any });
+          return;
+        }
+        // Ensure tenant_code is present
+        payload.tenant_code = (payload.tenant_code || ('TEN-' + Math.random().toString(36).slice(2,8))).toUpperCase();
+        const { data: newTenant, error: createErr } = await supabase
+          .from('tenants')
+          .insert(payload)
+          .select('tenant_id')
+          .single();
+        if (createErr) throw createErr;
+
+        // Assign subscription plan
+        const { error: subErr } = await supabase.from('tenant_subscriptions').insert({
+          tenant_id: newTenant.tenant_id,
+          plan_id: selectedPlanId,
+          billing_cycle: billingCycle,
+          start_date: new Date().toISOString().slice(0, 10),
+          auto_renew: true,
+          payment_status: 'Pending',
+        });
+        if (subErr) throw subErr;
+
+        // Auto-provision tenant admin account via Edge Function
+        const { data: fnData, error: fnError } = await supabase.functions.invoke('create-tenant-admin', {
+          body: {
+            tenant_id: newTenant.tenant_id,
+            tenant_name: payload.tenant_name,
+            contact_person: payload.contact_person,
+            contact_email: payload.contact_email,
+            phone_number: payload.phone_number,
+          }
+        });
+        if (fnError) {
+          console.warn('Tenant admin provisioning failed', fnError);
+          toast({ title: 'Tenant created (admin provisioning pending)', description: 'You can provision later from tenant row actions.', variant: 'secondary' as any });
+        } else {
+          toast({ title: 'Tenant created', description: `Admin login: ${fnData?.login_hint?.email} / 1234567` });
+        }
+
       }
-      setOpen(false); setEditing(null); setForm({ status: 'Active' });
+      setOpen(false);
+      setEditing(null);
+      setForm({ status: 'Active' });
+      setSelectedPlanId('');
+      setBillingCycle('Monthly');
       load();
     } catch (e: any) {
       toast({ title: 'Save failed', description: e.message, variant: 'destructive' as any });
@@ -212,6 +275,27 @@ function TenantsTab() {
       toast({ title: 'Tenant deleted' });
       load();
     } catch (e: any) { toast({ title: 'Delete failed', description: e.message, variant: 'destructive' as any }); }
+  };
+
+  const provisionAdmin = async (tenant: Tenant) => {
+    try {
+      const phone = tenant.phone_number || window.prompt('Enter admin mobile number for this tenant');
+      if (!phone) { toast({ title: 'Mobile number required', variant: 'destructive' as any }); return; }
+      const { data, error } = await supabase.functions.invoke('create-tenant-admin', {
+        body: {
+          tenant_id: tenant.tenant_id,
+          tenant_name: tenant.tenant_name,
+          contact_person: tenant.contact_person,
+          contact_email: tenant.contact_email,
+          phone_number: phone,
+        }
+      });
+      if (error) throw error;
+      const hint = data?.login_hint;
+      toast({ title: 'Tenant admin provisioned', description: hint ? `Login with ${hint.email} / 1234567` : 'Default password is 1234567' });
+    } catch (e: any) {
+      toast({ title: 'Provisioning failed', description: e.message, variant: 'destructive' as any });
+    }
   };
 
   const exportCSV = () => {
@@ -240,13 +324,18 @@ function TenantsTab() {
         <Button onClick={exportCSV} variant="outline">Export CSV</Button>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => { setEditing(null); setForm({ status: 'Active' }); }}>New Tenant</Button>
+            <Button onClick={() => { setEditing(null); setForm({ status: 'Active', tenant_code: 'TEN-' + Math.random().toString(36).slice(2,8).toUpperCase() }); setSelectedPlanId(planOptions[0]?.plan_id || ''); setBillingCycle('Monthly'); }}>New Tenant</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>{editing ? 'Edit Tenant' : 'Create Tenant'}</DialogTitle>
             </DialogHeader>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label>Tenant Code</Label>
+                <Input value={form.tenant_code || ''} onChange={e => setForm(f => ({ ...f, tenant_code: e.target.value.toUpperCase() }))} placeholder="TEN-ABC123" />
+                <p className="text-xs text-muted-foreground mt-1">Required • unique code (auto-filled)</p>
+              </div>
               <div>
                 <Label>Name</Label>
                 <Input value={form.tenant_name || ''} onChange={e => setForm(f => ({ ...f, tenant_name: e.target.value }))} />
@@ -262,6 +351,7 @@ function TenantsTab() {
               <div>
                 <Label>Phone</Label>
                 <Input value={form.phone_number || ''} onChange={e => setForm(f => ({ ...f, phone_number: e.target.value }))} />
+                <p className="text-xs text-muted-foreground mt-1">Tenant admin can login with this mobile number and default password 1234567</p>
               </div>
               <div>
                 <Label>Industry</Label>
@@ -277,6 +367,32 @@ function TenantsTab() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {!editing && (
+                <>
+                  <div className="md:col-span-2">
+                    <Label>Subscription Plan</Label>
+                    <Select value={selectedPlanId} onValueChange={setSelectedPlanId}>
+                      <SelectTrigger><SelectValue placeholder="Select a plan" /></SelectTrigger>
+                      <SelectContent>
+                        {planOptions.map(p => (
+                          <SelectItem key={p.plan_id} value={p.plan_id}>{p.plan_name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Billing Cycle</Label>
+                    <Select value={billingCycle} onValueChange={v => setBillingCycle(v as any)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Monthly">Monthly</SelectItem>
+                        <SelectItem value="Annual">Annual</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              )}
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
@@ -310,6 +426,7 @@ function TenantsTab() {
                 <TableCell>{t.created_at ? new Date(t.created_at).toLocaleDateString() : '-'}</TableCell>
                 <TableCell className="text-right space-x-2">
                   <Button size="sm" variant="outline" onClick={() => { setEditing(t); setForm(t); setOpen(true); }}>Edit</Button>
+                  <Button size="sm" variant="secondary" onClick={() => provisionAdmin(t)}>Provision Admin</Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button size="sm" variant="destructive">Delete</Button>
@@ -347,6 +464,31 @@ function PlansTab() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<SubscriptionPlan | null>(null);
   const [form, setForm] = useState<Partial<SubscriptionPlan>>({ is_active: true });
+
+  // Helper to normalize features to string[]
+  const normalizeFeatures = (val: any): string[] => {
+    if (Array.isArray(val)) return val as string[];
+    if (typeof val === 'string') {
+      try { const parsed = JSON.parse(val); return Array.isArray(parsed) ? parsed : []; } catch { return []; }
+    }
+    return [];
+  };
+
+  // Load distinct module names from feature flags
+  const [moduleOptions, setModuleOptions] = useState<string[]>([]);
+  useEffect(() => {
+    (async () => {
+      const { data, error } = await supabase
+        .from('feature_flags')
+        .select('module_name')
+        .neq('module_name', null)
+        .order('module_name');
+      if (!error) {
+        const mods = Array.from(new Set((data || []).map((d: any) => d.module_name).filter(Boolean)));
+        setModuleOptions(mods as string[]);
+      }
+    })();
+  }, []);
 
   const load = async () => {
     try {
@@ -414,7 +556,7 @@ function PlansTab() {
         <Button onClick={exportCSV} variant="outline">Export CSV</Button>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => { setEditing(null); setForm({ is_active: true }); }}>New Plan</Button>
+            <Button onClick={() => { setEditing(null); setForm({ is_active: true, features: [] }); }}>New Plan</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
@@ -462,8 +604,53 @@ function PlansTab() {
                 </Select>
               </div>
               <div className="md:col-span-2">
-                <Label>Features (JSON)</Label>
-                <Input placeholder='{"featureA": true}' value={typeof form.features === 'string' ? form.features : (form.features ? JSON.stringify(form.features) : '')} onChange={e => setForm(f => ({ ...f, features: e.target.value }))} />
+                <Label>Modules</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="justify-between w-full">
+                      <span>{Array.isArray(form.features) && form.features.length ? `${(form.features as string[]).length} selected` : 'Select modules'}</span>
+                      <Badge variant="secondary">{Array.isArray(form.features) ? (form.features as string[]).length : 0}</Badge>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80 max-h-64 overflow-auto z-50 bg-background">
+                    <div className="space-y-2">
+                      {moduleOptions.map((m) => {
+                        const checked = Array.isArray(form.features) && (form.features as string[]).includes(m);
+                        return (
+                          <label key={m} className="flex items-center gap-3 cursor-pointer">
+                            <Checkbox
+                              checked={checked}
+                              onCheckedChange={(c) => {
+                                const enable = Boolean(c);
+                                setForm((f) => {
+                                  const curr = Array.isArray(f.features) ? [...(f.features as string[])] : [];
+                                  if (enable) {
+                                    if (!curr.includes(m)) curr.push(m);
+                                  } else {
+                                    const idx = curr.indexOf(m);
+                                    if (idx >= 0) curr.splice(idx, 1);
+                                  }
+                                  return { ...f, features: curr };
+                                });
+                              }}
+                            />
+                            <span className="text-sm">{m}</span>
+                          </label>
+                        );
+                      })}
+                      {!moduleOptions.length && (
+                        <div className="text-sm text-muted-foreground">No modules found</div>
+                      )}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+                {Array.isArray(form.features) && (form.features as string[]).length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {(form.features as string[]).map((m) => (
+                      <Badge key={m} variant="outline">{m}</Badge>
+                    ))}
+                  </div>
+                )}
               </div>
               <div>
                 <Label>Status</Label>
@@ -502,7 +689,7 @@ function PlansTab() {
                 <TableCell>{p.max_users ?? 0} users • {p.max_agents ?? 0} agents</TableCell>
                 <TableCell><Badge variant={p.is_active ? 'default' : 'secondary'}>{p.is_active ? 'Active' : 'Inactive'}</Badge></TableCell>
                 <TableCell className="text-right space-x-2">
-                  <Button size="sm" variant="outline" onClick={() => { setEditing(p); setForm(p); setOpen(true); }}>Edit</Button>
+                  <Button size="sm" variant="outline" onClick={() => { setEditing(p); setForm({ ...p, features: normalizeFeatures(p.features) }); setOpen(true); }}>Edit</Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button size="sm" variant="destructive">Delete</Button>
