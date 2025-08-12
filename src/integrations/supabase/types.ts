@@ -86,6 +86,156 @@ export type Database = {
         }
         Relationships: []
       }
+      mdm_business_categories: {
+        Row: {
+          business_category_id: string | null
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          status: Database["public"]["Enums"]["mdm_status"]
+          tenant_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          business_category_id?: string | null
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          status?: Database["public"]["Enums"]["mdm_status"]
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          business_category_id?: string | null
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          status?: Database["public"]["Enums"]["mdm_status"]
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      mdm_cities: {
+        Row: {
+          city_id: string | null
+          city_name: string
+          country_code: string | null
+          created_at: string
+          description: string | null
+          id: string
+          pincode: string
+          state_name: string | null
+          status: Database["public"]["Enums"]["mdm_status"]
+          tenant_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          city_id?: string | null
+          city_name: string
+          country_code?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          pincode: string
+          state_name?: string | null
+          status?: Database["public"]["Enums"]["mdm_status"]
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          city_id?: string | null
+          city_name?: string
+          country_code?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          pincode?: string
+          state_name?: string | null
+          status?: Database["public"]["Enums"]["mdm_status"]
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      mdm_departments: {
+        Row: {
+          code: string
+          created_at: string
+          department_id: string | null
+          description: string | null
+          id: string
+          name: string
+          status: Database["public"]["Enums"]["mdm_status"]
+          tenant_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          department_id?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          status?: Database["public"]["Enums"]["mdm_status"]
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          department_id?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          status?: Database["public"]["Enums"]["mdm_status"]
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      mdm_health_conditions: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          health_condition_id: string | null
+          id: string
+          name: string
+          status: Database["public"]["Enums"]["mdm_status"]
+          tenant_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          health_condition_id?: string | null
+          id?: string
+          name: string
+          status?: Database["public"]["Enums"]["mdm_status"]
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          health_condition_id?: string | null
+          id?: string
+          name?: string
+          status?: Database["public"]["Enums"]["mdm_status"]
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       mdm_lobs: {
         Row: {
           created_at: string
@@ -116,6 +266,42 @@ export type Database = {
           lob_code?: string
           lob_id?: string | null
           lob_name?: string
+          status?: Database["public"]["Enums"]["mdm_status"]
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      mdm_occupations: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          occupation_id: string | null
+          status: Database["public"]["Enums"]["mdm_status"]
+          tenant_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          occupation_id?: string | null
+          status?: Database["public"]["Enums"]["mdm_status"]
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          occupation_id?: string | null
           status?: Database["public"]["Enums"]["mdm_status"]
           tenant_id?: string | null
           updated_at?: string
@@ -411,6 +597,140 @@ export type Database = {
           website_url?: string | null
         }
         Relationships: []
+      }
+      mdm_relationship_codes: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          relationship_code_id: string | null
+          status: Database["public"]["Enums"]["mdm_status"]
+          tenant_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          relationship_code_id?: string | null
+          status?: Database["public"]["Enums"]["mdm_status"]
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          relationship_code_id?: string | null
+          status?: Database["public"]["Enums"]["mdm_status"]
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      mdm_vehicle_types: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          status: Database["public"]["Enums"]["mdm_status"]
+          tenant_id: string | null
+          updated_at: string
+          vehicle_type_code: string
+          vehicle_type_id: string | null
+          vehicle_type_name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          status?: Database["public"]["Enums"]["mdm_status"]
+          tenant_id?: string | null
+          updated_at?: string
+          vehicle_type_code: string
+          vehicle_type_id?: string | null
+          vehicle_type_name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          status?: Database["public"]["Enums"]["mdm_status"]
+          tenant_id?: string | null
+          updated_at?: string
+          vehicle_type_code?: string
+          vehicle_type_id?: string | null
+          vehicle_type_name?: string
+        }
+        Relationships: []
+      }
+      mdm_vehicles: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          fuel_type: string | null
+          id: string
+          make: string | null
+          model: string | null
+          name: string
+          status: Database["public"]["Enums"]["mdm_status"]
+          tenant_id: string | null
+          updated_at: string
+          variant: string | null
+          vehicle_id: string | null
+          vehicle_type_id: string
+          year: number | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          fuel_type?: string | null
+          id?: string
+          make?: string | null
+          model?: string | null
+          name: string
+          status?: Database["public"]["Enums"]["mdm_status"]
+          tenant_id?: string | null
+          updated_at?: string
+          variant?: string | null
+          vehicle_id?: string | null
+          vehicle_type_id: string
+          year?: number | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          fuel_type?: string | null
+          id?: string
+          make?: string | null
+          model?: string | null
+          name?: string
+          status?: Database["public"]["Enums"]["mdm_status"]
+          tenant_id?: string | null
+          updated_at?: string
+          variant?: string | null
+          vehicle_id?: string | null
+          vehicle_type_id?: string
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mdm_vehicles_vehicle_type_id_fkey"
+            columns: ["vehicle_type_id"]
+            isOneToOne: false
+            referencedRelation: "mdm_vehicle_types"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       permissions: {
         Row: {
