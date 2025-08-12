@@ -1,7 +1,1 @@
-project_id = "vnrwnqcoytwdinlxswqe"
-
-[functions.seed-test-auth]
-verify_jwt = false
-
-[functions.create-tenant-admin]
-verify_jwt = false
+project_id = "lbugwviqysfvjzmbzoga"
