@@ -1,1 +1,0 @@
-ALTER TABLE insurance_products DROP CONSTRAINT insurance_products_category_check;

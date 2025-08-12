@@ -1,122 +1,82 @@
-import React, { FC } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from '@/components/ui/toaster';
-import { AuthProvider } from '@/contexts/AuthContext';
-import { PermissionsProvider } from '@/hooks/usePermissions';
-import { MasterDataProvider } from '@/contexts/MasterDataContext';
-import { SimpleAuthProvider } from '@/components/auth/SimpleAuthContext';
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
+import Index from "./pages/Index";
+import NotFound from "./pages/NotFound";
+import SelectRole from "./pages/SelectRole";
+import AuthPage from "./pages/Auth";
+import SystemAdminDashboard from "./pages/dashboard/SystemAdmin";
+import ITSupportDashboard from "./pages/dashboard/ITSupport";
+import TenantAdminDashboard from "./pages/dashboard/TenantAdmin";
+import EmployeeDashboard from "./pages/dashboard/Employee";
+import AgentDashboard from "./pages/dashboard/Agent";
+import CustomerDashboard from "./pages/dashboard/Customer";
+import Overview from "./pages/dashboard/system-admin/Overview";
+import MDM from "./pages/dashboard/system-admin/MDM";
+import TenantManagement from "./pages/dashboard/system-admin/TenantManagement";
+import SubscriptionPlans from "./pages/dashboard/system-admin/SubscriptionPlans";
+import RolesPermissions from "./pages/dashboard/system-admin/RolesPermissions";
+import Reports from "./pages/dashboard/system-admin/Reports";
+import Security from "./pages/dashboard/system-admin/Security";
+import Settings from "./pages/dashboard/system-admin/Settings";
+import Lobs from "./pages/dashboard/system-admin/mdm/Lobs";
+import ProductTypes from "./pages/dashboard/system-admin/mdm/ProductTypes";
+import VehicleTypes from "./pages/dashboard/system-admin/mdm/VehicleTypes";
+import VehicleData from "./pages/dashboard/system-admin/mdm/VehicleData";
+import CitiesPincodes from "./pages/dashboard/system-admin/mdm/CitiesPincodes";
+import RelationshipCodes from "./pages/dashboard/system-admin/mdm/RelationshipCodes";
+import HealthConditions from "./pages/dashboard/system-admin/mdm/HealthConditions";
+import BusinessCategories from "./pages/dashboard/system-admin/mdm/BusinessCategories";
+import Occupations from "./pages/dashboard/system-admin/mdm/Occupations";
+import Departments from "./pages/dashboard/system-admin/mdm/Departments";
 
-// Pages
-import RoleSelection from './pages/RoleSelection';
-import Landing from './pages/marketing/Landing';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import SystemOverview from './pages/admin/SystemOverview';
-import ManualPurchase from './pages/admin/ManualPurchase';
-import InsuranceProviders from './pages/admin/InsuranceProviders';
-import ProviderDetail from './pages/admin/ProviderDetail';
-import ProductManagement from './pages/admin/ProductManagement';
-import ProductDetail from './pages/admin/ProductDetail';
-import Agents from './pages/admin/Agents';
-import Employees from './pages/admin/Employees';
-import Branches from './pages/admin/Branches';
-import PolicyDetail from './pages/admin/PolicyDetail';
-import Policies from './pages/admin/Policies';
-import Leads from './pages/admin/Leads';
-import DocumentValidation from './pages/admin/DocumentValidation';
-import Renewals from './pages/admin/Renewals';
-import Commissions from './pages/admin/Commissions';
-import Payouts from './pages/admin/Payouts';
-import Finance from './pages/admin/Finance';
-import Revenue from './pages/admin/Revenue';
-import Business from './pages/admin/Business';
-import Reports from './pages/admin/Reports';
-import MasterData from './pages/admin/MasterData';
-import RolesManagement from './pages/admin/RolesManagement';
-import AgentDashboard from './pages/agent/AgentDashboard';
-import EmployeeDashboard from './pages/employee/EmployeeDashboard';
-import CustomerDashboard from './pages/customer/CustomerDashboard';
-import TenantDashboard from './pages/tenant/TenantDashboard';
-import TenantCatalog from './pages/tenant/Catalog';
-import TenantOverrides from './pages/tenant/Overrides';
-import TenantOverview from './pages/tenant/Overview';
-import TenantManagement from './pages/admin/TenantManagement';
-import { withPermission } from '@/hooks/usePermissions';
-const ProtectedTenantManagement = withPermission(TenantManagement, 'tenant-management');
-import TenantSelect from './pages/tenant/TenantSelect';
-import AuthPage from './pages/auth/AuthPage';
-import ChangePassword from './pages/auth/ChangePassword';
-import NotFound from './pages/NotFound';
-import { TenantAdminRoute } from '@/components/auth/TenantAdminRoute';
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+const queryClient = new QueryClient();
 
-const App: FC = () => {
-  return (
+const App = () => (
+  <HelmetProvider>
     <QueryClientProvider client={queryClient}>
-      <SimpleAuthProvider>
-        <AuthProvider>
-          <PermissionsProvider>
-            <MasterDataProvider>
-              <Router>
-                <div className="min-h-screen bg-background">
-                  <Routes>
-                    <Route path="/" element={<Landing />} />
-                    <Route path="/auth" element={<AuthPage />} />
-                    <Route path="/auth/change-password" element={<TenantAdminRoute><ChangePassword /></TenantAdminRoute>} />
-                    <Route path="/admin" element={<AdminDashboard />}>
-                      <Route path="overview" element={<SystemOverview />} />
-                      <Route path="manual-purchase" element={<ManualPurchase />} />
-                      <Route path="providers" element={<InsuranceProviders />} />
-                      <Route path="providers/:id" element={<ProviderDetail />} />
-                      <Route path="product-management" element={<ProductManagement />} />
-                      <Route path="products/:id" element={<ProductDetail />} />
-                      <Route path="master-data" element={<MasterData />} />
-                      <Route path="tenant-management" element={<ProtectedTenantManagement />} />
-                      <Route path="roles" element={<RolesManagement />} />
-                      <Route index element={<SystemOverview />} />
-                    </Route>
-                    <Route path="/agent/*" element={<AgentDashboard />} />
-                    <Route path="/employee/*" element={<EmployeeDashboard />} />
-                    <Route path="/customer/*" element={<CustomerDashboard />} />
-                  <Route path="/tenant" element={<TenantAdminRoute><TenantDashboard /></TenantAdminRoute>}>
-                    <Route path="overview" element={<TenantOverview />} />
-                    <Route path="branches" element={<Branches />} />
-                    <Route path="employees" element={<Employees />} />
-                    <Route path="agents" element={<Agents />} />
-                    <Route path="policies" element={<Policies />} />
-                    <Route path="policies/:id" element={<PolicyDetail />} />
-                    <Route path="leads" element={<Leads />} />
-                    <Route path="document-validation" element={<DocumentValidation />} />
-                    <Route path="renewals" element={<Renewals />} />
-                    <Route path="commissions" element={<Commissions />} />
-                    <Route path="payouts" element={<Payouts />} />
-                    <Route path="finance" element={<Finance />} />
-                    <Route path="revenue" element={<Revenue />} />
-                    <Route path="business" element={<Business />} />
-                    <Route path="reports" element={<Reports />} />
-                    <Route path="catalog" element={<TenantCatalog />} />
-                    <Route path="catalog/overrides" element={<TenantOverrides />} />
-                    <Route index element={<TenantOverview />} />
-                  </Route>
-                    <Route path="/tenant-select" element={<TenantSelect />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                  <Toaster />
-                </div>
-              </Router>
-            </MasterDataProvider>
-          </PermissionsProvider>
-        </AuthProvider>
-      </SimpleAuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/select-role" element={<SelectRole />} />
+            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/dashboard/system-admin" element={<Navigate to="/dashboard/system-admin/Overview" replace />} />
+            <Route path="/dashboard/system-admin/Overview" element={<Overview />} />
+            <Route path="/dashboard/system-admin/MDM" element={<MDM />} />
+            <Route path="/dashboard/system-admin/MDM/lobs" element={<Lobs />} />
+            <Route path="/dashboard/system-admin/MDM/product-types" element={<ProductTypes />} />
+            <Route path="/dashboard/system-admin/MDM/vehicle-types" element={<VehicleTypes />} />
+            <Route path="/dashboard/system-admin/MDM/vehicle-data" element={<VehicleData />} />
+            <Route path="/dashboard/system-admin/MDM/cities-pincodes" element={<CitiesPincodes />} />
+            <Route path="/dashboard/system-admin/MDM/relationship-codes" element={<RelationshipCodes />} />
+            <Route path="/dashboard/system-admin/MDM/health-conditions" element={<HealthConditions />} />
+            <Route path="/dashboard/system-admin/MDM/business-categories" element={<BusinessCategories />} />
+            <Route path="/dashboard/system-admin/MDM/occupations" element={<Occupations />} />
+            <Route path="/dashboard/system-admin/MDM/departments" element={<Departments />} />
+            <Route path="/dashboard/system-admin/TenantManagement" element={<TenantManagement />} />
+            <Route path="/dashboard/system-admin/SubscriptionPlans" element={<SubscriptionPlans />} />
+            <Route path="/dashboard/system-admin/RolesPermissions" element={<RolesPermissions />} />
+            <Route path="/dashboard/system-admin/Reports" element={<Reports />} />
+            <Route path="/dashboard/system-admin/Security" element={<Security />} />
+            <Route path="/dashboard/system-admin/Settings" element={<Settings />} />
+            <Route path="/dashboard/it-support" element={<ITSupportDashboard />} />
+            <Route path="/dashboard/tenant-admin" element={<TenantAdminDashboard />} />
+            <Route path="/dashboard/employee" element={<EmployeeDashboard />} />
+            <Route path="/dashboard/agent" element={<AgentDashboard />} />
+            <Route path="/dashboard/customer" element={<CustomerDashboard />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
     </QueryClientProvider>
-  );
-};
+  </HelmetProvider>
+);
 
 export default App;
