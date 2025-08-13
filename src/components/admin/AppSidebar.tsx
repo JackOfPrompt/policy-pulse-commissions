@@ -73,6 +73,13 @@ export function AppSidebar() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={currentPath === "/dashboard/system-admin/MDM/providers"}>
+                  <NavLink to="/dashboard/system-admin/MDM/providers" end>
+                    <span>Insurance Providers</span>
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={currentPath === "/dashboard/system-admin/MDM/vehicle-types"}>
                   <NavLink to="/dashboard/system-admin/MDM/vehicle-types" end>
                     <span>Vehicle Types</span>

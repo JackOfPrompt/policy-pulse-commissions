@@ -13,6 +13,8 @@ export default function MDM() {
       <h2 className="mt-6 text-xl font-semibold">Supporting Data</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2">
         {[
+          { label: "Insurance Providers", to: "/dashboard/system-admin/MDM/providers" },
+          { label: "Product Types", to: "/dashboard/system-admin/MDM/product-types" },
           { label: "Vehicle Types", to: "/dashboard/system-admin/MDM/vehicle-types" },
           { label: "Vehicle Data", to: "/dashboard/system-admin/MDM/vehicle-data" },
           { label: "Cities & Pincodes", to: "/dashboard/system-admin/MDM/cities-pincodes" },
@@ -26,6 +28,7 @@ export default function MDM() {
             {item.label}
           </Link>
         ))}
+
       </div>
     </SystemAdminModulePage>
   );

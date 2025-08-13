@@ -32,6 +32,7 @@ import HealthConditions from "./pages/dashboard/system-admin/mdm/HealthCondition
 import BusinessCategories from "./pages/dashboard/system-admin/mdm/BusinessCategories";
 import Occupations from "./pages/dashboard/system-admin/mdm/Occupations";
 import Departments from "./pages/dashboard/system-admin/mdm/Departments";
+import Providers from "./pages/dashboard/system-admin/mdm/Providers";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,7 @@ const App = () => (
             <Route path="/dashboard/system-admin/MDM" element={<MDM />} />
             <Route path="/dashboard/system-admin/MDM/lobs" element={<Lobs />} />
             <Route path="/dashboard/system-admin/MDM/product-types" element={<ProductTypes />} />
+            <Route path="/dashboard/system-admin/MDM/providers" element={<Providers />} />
             <Route path="/dashboard/system-admin/MDM/vehicle-types" element={<VehicleTypes />} />
             <Route path="/dashboard/system-admin/MDM/vehicle-data" element={<VehicleData />} />
             <Route path="/dashboard/system-admin/MDM/cities-pincodes" element={<CitiesPincodes />} />
