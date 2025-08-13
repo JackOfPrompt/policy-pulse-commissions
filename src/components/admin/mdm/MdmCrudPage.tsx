@@ -12,6 +12,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import BulkImportDialog from "@/components/admin/mdm/BulkImportDialog";
 
 export type FieldType = "text" | "textarea" | "number" | "select";
 
@@ -218,30 +219,38 @@ export default function MdmCrudPage({ table, title, columns, formFields, searchK
             aria-label="Search"
             className="max-w-sm"
           />
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={startCreate}>New</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{editing ? `Edit ${title}` : `Create ${title}`}</DialogTitle>
-              </DialogHeader>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-2">
-                {formFields.map((f) => (
-                  <div key={f.name} className="flex flex-col gap-2">
-                    <Label htmlFor={f.name}>{f.label}{f.required ? " *" : ""}</Label>
-                    {renderField(f)}
-                  </div>
-                ))}
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-                <Button onClick={() => upsertMutation.mutate()} disabled={upsertMutation.isPending}>
-                  {upsertMutation.isPending ? "Saving..." : "Save"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <div className="flex items-center gap-2">
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button onClick={startCreate}>New</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{editing ? `Edit ${title}` : `Create ${title}`}</DialogTitle>
+                </DialogHeader>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-2">
+                  {formFields.map((f) => (
+                    <div key={f.name} className="flex flex-col gap-2">
+                      <Label htmlFor={f.name}>{f.label}{f.required ? " *" : ""}</Label>
+                      {renderField(f)}
+                    </div>
+                  ))}
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+                  <Button onClick={() => upsertMutation.mutate()} disabled={upsertMutation.isPending}>
+                    {upsertMutation.isPending ? "Saving..." : "Save"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+            <BulkImportDialog
+              table={table}
+              title={title}
+              templateFields={formFields.map((f) => f.name)}
+              onComplete={() => qc.invalidateQueries({ queryKey: ["mdm", table] })}
+            />
+          </div>
         </div>
 
         <div className="mt-4 overflow-x-auto">
