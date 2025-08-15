@@ -34,6 +34,7 @@ import ManageVehicleTypes from "./pages/ManageVehicleTypes";
 import ManageRelationshipCodes from "./pages/ManageRelationshipCodes";
 import ManageBusinessCategories from "./pages/ManageBusinessCategories";
 import ManageOccupations from "./pages/ManageOccupations";
+import TenantManagement from "./pages/TenantManagement";
 import PlanComparison from "./pages/PlanComparison";
 import ComparePlans from "./pages/ComparePlans";
 import NotFound from "./pages/NotFound";
@@ -90,6 +91,8 @@ const App: React.FC = () => {
               <Route path="/admin/relationship-codes" element={<ManageRelationshipCodes />} />
               <Route path="/admin/business-categories" element={<ManageBusinessCategories />} />
               <Route path="/admin/occupations" element={<ManageOccupations />} />
+              <Route path="/admin/tenants" element={<TenantManagement />} />
+              <Route path="/admin/create/tenant" element={<TenantManagement />} />
               
               <Route path="/tenant-admin-dashboard" element={<TenantAdminDashboard />} />
               <Route path="/employee-dashboard" element={<EmployeeDashboard />} />

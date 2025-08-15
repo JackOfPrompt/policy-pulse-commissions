@@ -107,6 +107,12 @@ const mdmEntities: MDMEntity[] = [{
   description: 'Additional coverages',
   route: '/admin/add-ons'
 }, {
+  id: 'tenant-management',
+  icon: Building,
+  label: 'Tenant Management',
+  description: 'Manage tenant organizations and subscriptions',
+  route: '/admin/tenants'
+}, {
   id: 'departments',
   icon: Building,
   label: 'Departments',
