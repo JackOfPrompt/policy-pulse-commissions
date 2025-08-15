@@ -983,31 +983,49 @@ export type Database = {
         Row: {
           address: string | null
           contact_email: string | null
+          contact_person: string | null
           contact_phone: string | null
           created_at: string
+          domain: string | null
           id: string
           is_active: boolean
+          logo_url: string | null
           name: string
+          notes: string | null
+          status: string | null
+          tenant_code: string | null
           updated_at: string
         }
         Insert: {
           address?: string | null
           contact_email?: string | null
+          contact_person?: string | null
           contact_phone?: string | null
           created_at?: string
+          domain?: string | null
           id?: string
           is_active?: boolean
+          logo_url?: string | null
           name: string
+          notes?: string | null
+          status?: string | null
+          tenant_code?: string | null
           updated_at?: string
         }
         Update: {
           address?: string | null
           contact_email?: string | null
+          contact_person?: string | null
           contact_phone?: string | null
           created_at?: string
+          domain?: string | null
           id?: string
           is_active?: boolean
+          logo_url?: string | null
           name?: string
+          notes?: string | null
+          status?: string | null
+          tenant_code?: string | null
           updated_at?: string
         }
         Relationships: []
