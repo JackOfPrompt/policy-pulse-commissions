@@ -7,1129 +7,1158 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "13.0.4"
   }
   public: {
     Tables: {
-      login_roles: {
+      addon_category_map: {
         Row: {
+          addon_id: string
+          category_id: string | null
           created_at: string
-          default_landing_page: string | null
-          description: string | null
-          is_tenant_level: boolean | null
-          permissions_json: Json | null
-          role_id: string
-          role_name: string
+          is_active: boolean | null
+          map_id: string
+          subcategory_id: string | null
           updated_at: string
         }
         Insert: {
+          addon_id: string
+          category_id?: string | null
           created_at?: string
-          default_landing_page?: string | null
-          description?: string | null
-          is_tenant_level?: boolean | null
-          permissions_json?: Json | null
-          role_id?: string
-          role_name: string
+          is_active?: boolean | null
+          map_id?: string
+          subcategory_id?: string | null
           updated_at?: string
         }
         Update: {
+          addon_id?: string
+          category_id?: string | null
           created_at?: string
-          default_landing_page?: string | null
-          description?: string | null
-          is_tenant_level?: boolean | null
-          permissions_json?: Json | null
-          role_id?: string
-          role_name?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      mdm_addons: {
-        Row: {
-          addon_id: string | null
-          code: string
-          created_at: string
-          description: string | null
-          id: string
-          name: string
-          price: number
-          status: Database["public"]["Enums"]["mdm_status"]
-          tenant_id: string | null
-          updated_at: string
-        }
-        Insert: {
-          addon_id?: string | null
-          code: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          name: string
-          price?: number
-          status?: Database["public"]["Enums"]["mdm_status"]
-          tenant_id?: string | null
-          updated_at?: string
-        }
-        Update: {
-          addon_id?: string | null
-          code?: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          name?: string
-          price?: number
-          status?: Database["public"]["Enums"]["mdm_status"]
-          tenant_id?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      mdm_business_categories: {
-        Row: {
-          business_category_id: string | null
-          code: string
-          created_at: string
-          description: string | null
-          id: string
-          name: string
-          status: Database["public"]["Enums"]["mdm_status"]
-          tenant_id: string | null
-          updated_at: string
-        }
-        Insert: {
-          business_category_id?: string | null
-          code: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          name: string
-          status?: Database["public"]["Enums"]["mdm_status"]
-          tenant_id?: string | null
-          updated_at?: string
-        }
-        Update: {
-          business_category_id?: string | null
-          code?: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          name?: string
-          status?: Database["public"]["Enums"]["mdm_status"]
-          tenant_id?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      mdm_cities: {
-        Row: {
-          city_id: string | null
-          city_name: string
-          country_code: string | null
-          created_at: string
-          description: string | null
-          id: string
-          pincode: string
-          state_name: string | null
-          status: Database["public"]["Enums"]["mdm_status"]
-          tenant_id: string | null
-          updated_at: string
-        }
-        Insert: {
-          city_id?: string | null
-          city_name: string
-          country_code?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          pincode: string
-          state_name?: string | null
-          status?: Database["public"]["Enums"]["mdm_status"]
-          tenant_id?: string | null
-          updated_at?: string
-        }
-        Update: {
-          city_id?: string | null
-          city_name?: string
-          country_code?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          pincode?: string
-          state_name?: string | null
-          status?: Database["public"]["Enums"]["mdm_status"]
-          tenant_id?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      mdm_departments: {
-        Row: {
-          code: string
-          created_at: string
-          department_id: string | null
-          description: string | null
-          id: string
-          name: string
-          status: Database["public"]["Enums"]["mdm_status"]
-          tenant_id: string | null
-          updated_at: string
-        }
-        Insert: {
-          code: string
-          created_at?: string
-          department_id?: string | null
-          description?: string | null
-          id?: string
-          name: string
-          status?: Database["public"]["Enums"]["mdm_status"]
-          tenant_id?: string | null
-          updated_at?: string
-        }
-        Update: {
-          code?: string
-          created_at?: string
-          department_id?: string | null
-          description?: string | null
-          id?: string
-          name?: string
-          status?: Database["public"]["Enums"]["mdm_status"]
-          tenant_id?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      mdm_health_conditions: {
-        Row: {
-          code: string
-          created_at: string
-          description: string | null
-          health_condition_id: string | null
-          id: string
-          name: string
-          status: Database["public"]["Enums"]["mdm_status"]
-          tenant_id: string | null
-          updated_at: string
-        }
-        Insert: {
-          code: string
-          created_at?: string
-          description?: string | null
-          health_condition_id?: string | null
-          id?: string
-          name: string
-          status?: Database["public"]["Enums"]["mdm_status"]
-          tenant_id?: string | null
-          updated_at?: string
-        }
-        Update: {
-          code?: string
-          created_at?: string
-          description?: string | null
-          health_condition_id?: string | null
-          id?: string
-          name?: string
-          status?: Database["public"]["Enums"]["mdm_status"]
-          tenant_id?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      mdm_lobs: {
-        Row: {
-          created_at: string
-          description: string | null
-          id: string
-          lob_code: string
-          lob_id: string | null
-          lob_name: string
-          status: Database["public"]["Enums"]["mdm_status"]
-          tenant_id: string | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          lob_code: string
-          lob_id?: string | null
-          lob_name: string
-          status?: Database["public"]["Enums"]["mdm_status"]
-          tenant_id?: string | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          lob_code?: string
-          lob_id?: string | null
-          lob_name?: string
-          status?: Database["public"]["Enums"]["mdm_status"]
-          tenant_id?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      mdm_occupations: {
-        Row: {
-          code: string
-          created_at: string
-          description: string | null
-          id: string
-          name: string
-          occupation_id: string | null
-          status: Database["public"]["Enums"]["mdm_status"]
-          tenant_id: string | null
-          updated_at: string
-        }
-        Insert: {
-          code: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          name: string
-          occupation_id?: string | null
-          status?: Database["public"]["Enums"]["mdm_status"]
-          tenant_id?: string | null
-          updated_at?: string
-        }
-        Update: {
-          code?: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          name?: string
-          occupation_id?: string | null
-          status?: Database["public"]["Enums"]["mdm_status"]
-          tenant_id?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      mdm_plan_types: {
-        Row: {
-          created_at: string
-          description: string | null
-          id: string
-          plan_type_code: string
-          plan_type_id: string | null
-          plan_type_name: string
-          policy_type_id: string
-          status: Database["public"]["Enums"]["mdm_status"]
-          tenant_id: string | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          plan_type_code: string
-          plan_type_id?: string | null
-          plan_type_name: string
-          policy_type_id: string
-          status?: Database["public"]["Enums"]["mdm_status"]
-          tenant_id?: string | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          plan_type_code?: string
-          plan_type_id?: string | null
-          plan_type_name?: string
-          policy_type_id?: string
-          status?: Database["public"]["Enums"]["mdm_status"]
-          tenant_id?: string | null
+          is_active?: boolean | null
+          map_id?: string
+          subcategory_id?: string | null
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "mdm_plan_types_policy_type_id_fkey"
-            columns: ["policy_type_id"]
+            foreignKeyName: "addon_category_map_addon_id_fkey"
+            columns: ["addon_id"]
             isOneToOne: false
-            referencedRelation: "mdm_policy_types"
-            referencedColumns: ["id"]
+            referencedRelation: "master_addon"
+            referencedColumns: ["addon_id"]
+          },
+          {
+            foreignKeyName: "addon_category_map_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "master_product_category"
+            referencedColumns: ["category_id"]
+          },
+          {
+            foreignKeyName: "addon_category_map_subcategory_id_fkey"
+            columns: ["subcategory_id"]
+            isOneToOne: false
+            referencedRelation: "product_subcategory"
+            referencedColumns: ["subcategory_id"]
           },
         ]
       }
-      mdm_policy_sub_types: {
+      master_addon: {
         Row: {
+          addon_category: Database["public"]["Enums"]["addon_category_type"]
+          addon_code: string
+          addon_id: string
+          addon_name: string
+          calc_value: number | null
           created_at: string
           description: string | null
-          id: string
-          plan_type_id: string
-          policy_sub_type_id: string | null
-          status: Database["public"]["Enums"]["mdm_status"]
-          sub_type_code: string
-          sub_type_name: string
-          tenant_id: string | null
+          eligibility_json: Json | null
+          is_active: boolean
+          is_mandatory: boolean
+          max_amount: number | null
+          min_amount: number | null
+          premium_basis: Database["public"]["Enums"]["premium_basis"]
+          premium_type: Database["public"]["Enums"]["premium_type"]
           updated_at: string
+          waiting_period_months: number | null
         }
         Insert: {
+          addon_category?: Database["public"]["Enums"]["addon_category_type"]
+          addon_code: string
+          addon_id?: string
+          addon_name: string
+          calc_value?: number | null
           created_at?: string
           description?: string | null
-          id?: string
-          plan_type_id: string
-          policy_sub_type_id?: string | null
-          status?: Database["public"]["Enums"]["mdm_status"]
-          sub_type_code: string
-          sub_type_name: string
-          tenant_id?: string | null
+          eligibility_json?: Json | null
+          is_active?: boolean
+          is_mandatory?: boolean
+          max_amount?: number | null
+          min_amount?: number | null
+          premium_basis?: Database["public"]["Enums"]["premium_basis"]
+          premium_type?: Database["public"]["Enums"]["premium_type"]
           updated_at?: string
+          waiting_period_months?: number | null
         }
         Update: {
+          addon_category?: Database["public"]["Enums"]["addon_category_type"]
+          addon_code?: string
+          addon_id?: string
+          addon_name?: string
+          calc_value?: number | null
           created_at?: string
           description?: string | null
-          id?: string
-          plan_type_id?: string
-          policy_sub_type_id?: string | null
-          status?: Database["public"]["Enums"]["mdm_status"]
-          sub_type_code?: string
-          sub_type_name?: string
-          tenant_id?: string | null
+          eligibility_json?: Json | null
+          is_active?: boolean
+          is_mandatory?: boolean
+          max_amount?: number | null
+          min_amount?: number | null
+          premium_basis?: Database["public"]["Enums"]["premium_basis"]
+          premium_type?: Database["public"]["Enums"]["premium_type"]
           updated_at?: string
+          waiting_period_months?: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "mdm_policy_sub_types_plan_type_id_fkey"
-            columns: ["plan_type_id"]
-            isOneToOne: false
-            referencedRelation: "mdm_plan_types"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
-      mdm_policy_types: {
+      master_business_categories: {
         Row: {
-          created_at: string
+          category_code: string
+          category_id: number
+          category_name: string
+          created_at: string | null
           description: string | null
-          id: string
-          policy_type_code: string
-          policy_type_id: string | null
-          policy_type_name: string
-          product_type_id: string
-          status: Database["public"]["Enums"]["mdm_status"]
-          tenant_id: string | null
-          updated_at: string
+          status: string | null
+          updated_at: string | null
         }
         Insert: {
-          created_at?: string
+          category_code: string
+          category_id?: number
+          category_name: string
+          created_at?: string | null
           description?: string | null
-          id?: string
-          policy_type_code: string
-          policy_type_id?: string | null
-          policy_type_name: string
-          product_type_id: string
-          status?: Database["public"]["Enums"]["mdm_status"]
-          tenant_id?: string | null
-          updated_at?: string
+          status?: string | null
+          updated_at?: string | null
         }
         Update: {
-          created_at?: string
+          category_code?: string
+          category_id?: number
+          category_name?: string
+          created_at?: string | null
           description?: string | null
-          id?: string
-          policy_type_code?: string
-          policy_type_id?: string | null
-          policy_type_name?: string
-          product_type_id?: string
-          status?: Database["public"]["Enums"]["mdm_status"]
-          tenant_id?: string | null
-          updated_at?: string
+          status?: string | null
+          updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "mdm_policy_types_product_type_id_fkey"
-            columns: ["product_type_id"]
-            isOneToOne: false
-            referencedRelation: "mdm_product_types"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
-      mdm_product_types: {
+      master_health_conditions: {
         Row: {
+          category: string
+          condition_id: string
+          condition_name: string
           created_at: string
+          created_by: string | null
           description: string | null
-          id: string
-          lob_id: string
-          product_type_code: string
-          product_type_id: string | null
-          product_type_name: string
-          status: Database["public"]["Enums"]["mdm_status"]
-          tenant_id: string | null
+          is_active: boolean
           updated_at: string
+          updated_by: string | null
+          waiting_period: string | null
         }
         Insert: {
+          category: string
+          condition_id?: string
+          condition_name: string
           created_at?: string
+          created_by?: string | null
           description?: string | null
-          id?: string
-          lob_id: string
-          product_type_code: string
-          product_type_id?: string | null
-          product_type_name: string
-          status?: Database["public"]["Enums"]["mdm_status"]
-          tenant_id?: string | null
+          is_active?: boolean
           updated_at?: string
+          updated_by?: string | null
+          waiting_period?: string | null
         }
         Update: {
+          category?: string
+          condition_id?: string
+          condition_name?: string
           created_at?: string
+          created_by?: string | null
           description?: string | null
-          id?: string
-          lob_id?: string
-          product_type_code?: string
-          product_type_id?: string | null
-          product_type_name?: string
-          status?: Database["public"]["Enums"]["mdm_status"]
-          tenant_id?: string | null
+          is_active?: boolean
           updated_at?: string
+          updated_by?: string | null
+          waiting_period?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "mdm_product_types_lob_id_fkey"
-            columns: ["lob_id"]
-            isOneToOne: false
-            referencedRelation: "mdm_lobs"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
-      mdm_products: {
+      master_insurance_providers: {
         Row: {
-          code: string
-          created_at: string
-          description: string | null
-          id: string
-          name: string
-          product_id: string | null
-          product_type_id: string
-          provider_id: string
-          status: Database["public"]["Enums"]["mdm_status"]
-          tenant_id: string | null
-          updated_at: string
-        }
-        Insert: {
-          code: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          name: string
-          product_id?: string | null
-          product_type_id: string
-          provider_id: string
-          status?: Database["public"]["Enums"]["mdm_status"]
-          tenant_id?: string | null
-          updated_at?: string
-        }
-        Update: {
-          code?: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          name?: string
-          product_id?: string | null
-          product_type_id?: string
-          provider_id?: string
-          status?: Database["public"]["Enums"]["mdm_status"]
-          tenant_id?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "mdm_products_product_type_id_fkey"
-            columns: ["product_type_id"]
-            isOneToOne: false
-            referencedRelation: "mdm_product_types"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "mdm_products_provider_id_fkey"
-            columns: ["provider_id"]
-            isOneToOne: false
-            referencedRelation: "mdm_providers"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      mdm_providers: {
-        Row: {
-          address: string | null
+          address_line1: string | null
+          address_line2: string | null
           contact_email: string | null
-          created_at: string
-          id: string
-          phone_number: string | null
+          contact_person: string | null
+          contact_phone: string | null
+          created_at: string | null
+          irda_license_number: string
+          irda_license_valid_till: string
+          logo_file_path: string | null
+          notes: string | null
+          parent_provider_id: string | null
           provider_code: string
-          provider_id: string | null
+          provider_id: string
           provider_name: string
-          status: Database["public"]["Enums"]["mdm_status"]
-          tenant_id: string | null
-          updated_at: string
+          provider_type: Database["public"]["Enums"]["provider_type"] | null
+          state: string | null
+          status: Database["public"]["Enums"]["provider_status"] | null
+          trade_name: string | null
+          updated_at: string | null
           website_url: string | null
         }
         Insert: {
-          address?: string | null
+          address_line1?: string | null
+          address_line2?: string | null
           contact_email?: string | null
-          created_at?: string
-          id?: string
-          phone_number?: string | null
+          contact_person?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          irda_license_number: string
+          irda_license_valid_till: string
+          logo_file_path?: string | null
+          notes?: string | null
+          parent_provider_id?: string | null
           provider_code: string
-          provider_id?: string | null
+          provider_id?: string
           provider_name: string
-          status?: Database["public"]["Enums"]["mdm_status"]
-          tenant_id?: string | null
-          updated_at?: string
+          provider_type?: Database["public"]["Enums"]["provider_type"] | null
+          state?: string | null
+          status?: Database["public"]["Enums"]["provider_status"] | null
+          trade_name?: string | null
+          updated_at?: string | null
           website_url?: string | null
         }
         Update: {
-          address?: string | null
+          address_line1?: string | null
+          address_line2?: string | null
           contact_email?: string | null
-          created_at?: string
-          id?: string
-          phone_number?: string | null
+          contact_person?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          irda_license_number?: string
+          irda_license_valid_till?: string
+          logo_file_path?: string | null
+          notes?: string | null
+          parent_provider_id?: string | null
           provider_code?: string
-          provider_id?: string | null
+          provider_id?: string
           provider_name?: string
-          status?: Database["public"]["Enums"]["mdm_status"]
-          tenant_id?: string | null
-          updated_at?: string
+          provider_type?: Database["public"]["Enums"]["provider_type"] | null
+          state?: string | null
+          status?: Database["public"]["Enums"]["provider_status"] | null
+          trade_name?: string | null
+          updated_at?: string | null
           website_url?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "master_insurance_providers_parent_provider_id_fkey"
+            columns: ["parent_provider_id"]
+            isOneToOne: false
+            referencedRelation: "master_insurance_providers"
+            referencedColumns: ["provider_id"]
+          },
+        ]
       }
-      mdm_relationship_codes: {
+      master_line_of_business: {
         Row: {
-          code: string
           created_at: string
+          created_by: string | null
           description: string | null
-          id: string
-          name: string
-          relationship_code_id: string | null
-          status: Database["public"]["Enums"]["mdm_status"]
-          tenant_id: string | null
+          icon_file_path: string | null
+          lob_code: string
+          lob_id: string
+          lob_name: string
+          status: Database["public"]["Enums"]["lob_status"]
           updated_at: string
+          updated_by: string | null
         }
         Insert: {
-          code: string
           created_at?: string
+          created_by?: string | null
           description?: string | null
-          id?: string
-          name: string
-          relationship_code_id?: string | null
-          status?: Database["public"]["Enums"]["mdm_status"]
-          tenant_id?: string | null
+          icon_file_path?: string | null
+          lob_code: string
+          lob_id?: string
+          lob_name: string
+          status?: Database["public"]["Enums"]["lob_status"]
           updated_at?: string
+          updated_by?: string | null
         }
         Update: {
-          code?: string
           created_at?: string
+          created_by?: string | null
           description?: string | null
+          icon_file_path?: string | null
+          lob_code?: string
+          lob_id?: string
+          lob_name?: string
+          status?: Database["public"]["Enums"]["lob_status"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      master_locations: {
+        Row: {
+          block: string | null
+          country: string
+          created_at: string
+          created_by: string | null
+          district: string | null
+          division: string | null
+          id: string
+          pincode: string
+          region: string | null
+          state: string
+          status: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          block?: string | null
+          country?: string
+          created_at?: string
+          created_by?: string | null
+          district?: string | null
+          division?: string | null
           id?: string
+          pincode: string
+          region?: string | null
+          state: string
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          block?: string | null
+          country?: string
+          created_at?: string
+          created_by?: string | null
+          district?: string | null
+          division?: string | null
+          id?: string
+          pincode?: string
+          region?: string | null
+          state?: string
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      master_occupations: {
+        Row: {
+          code: string | null
+          created_at: string | null
+          description: string | null
+          name: string
+          occupation_id: number
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string | null
+          description?: string | null
+          name: string
+          occupation_id?: number
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          code?: string | null
+          created_at?: string | null
+          description?: string | null
           name?: string
-          relationship_code_id?: string | null
-          status?: Database["public"]["Enums"]["mdm_status"]
-          tenant_id?: string | null
-          updated_at?: string
+          occupation_id?: number
+          status?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
-      mdm_vehicle_types: {
+      master_plan_types: {
         Row: {
           created_at: string
           description: string | null
-          id: string
-          status: Database["public"]["Enums"]["mdm_status"]
-          tenant_id: string | null
+          is_active: boolean | null
+          lob_id: string
+          plan_type_id: string
+          plan_type_name: string
           updated_at: string
-          vehicle_type_code: string
-          vehicle_type_id: string | null
-          vehicle_type_name: string
         }
         Insert: {
           created_at?: string
           description?: string | null
-          id?: string
-          status?: Database["public"]["Enums"]["mdm_status"]
-          tenant_id?: string | null
+          is_active?: boolean | null
+          lob_id: string
+          plan_type_id?: string
+          plan_type_name: string
           updated_at?: string
-          vehicle_type_code: string
-          vehicle_type_id?: string | null
-          vehicle_type_name: string
         }
         Update: {
           created_at?: string
           description?: string | null
-          id?: string
-          status?: Database["public"]["Enums"]["mdm_status"]
-          tenant_id?: string | null
+          is_active?: boolean | null
+          lob_id?: string
+          plan_type_id?: string
+          plan_type_name?: string
           updated_at?: string
-          vehicle_type_code?: string
-          vehicle_type_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "master_plan_types_lob_id_fkey"
+            columns: ["lob_id"]
+            isOneToOne: false
+            referencedRelation: "master_line_of_business"
+            referencedColumns: ["lob_id"]
+          },
+        ]
+      }
+      master_policy_tenure: {
+        Row: {
+          created_at: string | null
+          duration_unit: string
+          duration_value: number
+          is_active: boolean | null
+          tenure_id: number
+          tenure_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          duration_unit: string
+          duration_value: number
+          is_active?: boolean | null
+          tenure_id?: number
+          tenure_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          duration_unit?: string
+          duration_value?: number
+          is_active?: boolean | null
+          tenure_id?: number
+          tenure_name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      master_policy_types: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          policy_type_description: string | null
+          policy_type_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          policy_type_description?: string | null
+          policy_type_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          policy_type_description?: string | null
+          policy_type_name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      master_premium_frequency: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          frequency_code: string
+          frequency_days: number
+          frequency_id: number
+          frequency_name: string
+          is_active: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          frequency_code: string
+          frequency_days: number
+          frequency_id?: number
+          frequency_name: string
+          is_active?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          frequency_code?: string
+          frequency_days?: number
+          frequency_id?: number
+          frequency_name?: string
+          is_active?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      master_premium_terms: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          premium_term_code: string
+          premium_term_id: number
+          premium_term_name: string
+          status: string
+          term_duration_years: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          premium_term_code: string
+          premium_term_id?: number
+          premium_term_name: string
+          status?: string
+          term_duration_years: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          premium_term_code?: string
+          premium_term_id?: number
+          premium_term_name?: string
+          status?: string
+          term_duration_years?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      master_premium_types: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          premium_type_code: string
+          premium_type_id: number
+          premium_type_name: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          premium_type_code: string
+          premium_type_id?: number
+          premium_type_name: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          premium_type_code?: string
+          premium_type_id?: number
+          premium_type_name?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      master_product_category: {
+        Row: {
+          category_code: string
+          category_desc: string | null
+          category_id: string
+          category_name: string
+          created_at: string
+          is_active: boolean
+          updated_at: string
+        }
+        Insert: {
+          category_code: string
+          category_desc?: string | null
+          category_id?: string
+          category_name: string
+          created_at?: string
+          is_active?: boolean
+          updated_at?: string
+        }
+        Update: {
+          category_code?: string
+          category_desc?: string | null
+          category_id?: string
+          category_name?: string
+          created_at?: string
+          is_active?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      master_product_name: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          lob_id: string
+          plan_type_id: string | null
+          policy_type_id: string
+          product_code: string
+          product_id: string
+          product_name: string
+          provider_id: string | null
+          status: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          lob_id: string
+          plan_type_id?: string | null
+          policy_type_id: string
+          product_code: string
+          product_id?: string
+          product_name: string
+          provider_id?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          lob_id?: string
+          plan_type_id?: string | null
+          policy_type_id?: string
+          product_code?: string
+          product_id?: string
+          product_name?: string
+          provider_id?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_product_provider"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "master_insurance_providers"
+            referencedColumns: ["provider_id"]
+          },
+          {
+            foreignKeyName: "master_product_name_lob_id_fkey"
+            columns: ["lob_id"]
+            isOneToOne: false
+            referencedRelation: "master_line_of_business"
+            referencedColumns: ["lob_id"]
+          },
+          {
+            foreignKeyName: "master_product_name_plan_type_id_fkey"
+            columns: ["plan_type_id"]
+            isOneToOne: false
+            referencedRelation: "master_plan_types"
+            referencedColumns: ["plan_type_id"]
+          },
+          {
+            foreignKeyName: "master_product_name_policy_type_id_fkey"
+            columns: ["policy_type_id"]
+            isOneToOne: false
+            referencedRelation: "master_policy_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      master_relationship_codes: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          is_active: boolean | null
+          relationship_code: string
+          relationship_id: number
+          relationship_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          is_active?: boolean | null
+          relationship_code: string
+          relationship_id?: number
+          relationship_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          is_active?: boolean | null
+          relationship_code?: string
+          relationship_id?: number
+          relationship_name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      master_vehicle_data: {
+        Row: {
+          created_at: string | null
+          cubic_capacity: number | null
+          fuel_type: string | null
+          make: string
+          model: string
+          status: boolean | null
+          updated_at: string | null
+          variant: string | null
+          vehicle_id: number
+          vehicle_type_id: number
+        }
+        Insert: {
+          created_at?: string | null
+          cubic_capacity?: number | null
+          fuel_type?: string | null
+          make: string
+          model: string
+          status?: boolean | null
+          updated_at?: string | null
+          variant?: string | null
+          vehicle_id?: number
+          vehicle_type_id: number
+        }
+        Update: {
+          created_at?: string | null
+          cubic_capacity?: number | null
+          fuel_type?: string | null
+          make?: string
+          model?: string
+          status?: boolean | null
+          updated_at?: string | null
+          variant?: string | null
+          vehicle_id?: number
+          vehicle_type_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "master_vehicle_data_vehicle_type_id_fkey"
+            columns: ["vehicle_type_id"]
+            isOneToOne: false
+            referencedRelation: "master_vehicle_types"
+            referencedColumns: ["vehicle_type_id"]
+          },
+        ]
+      }
+      master_vehicle_types: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          status: boolean | null
+          updated_at: string | null
+          vehicle_type_id: number
+          vehicle_type_name: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          status?: boolean | null
+          updated_at?: string | null
+          vehicle_type_id?: number
+          vehicle_type_name: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          status?: boolean | null
+          updated_at?: string | null
+          vehicle_type_id?: number
           vehicle_type_name?: string
         }
         Relationships: []
       }
-      mdm_vehicles: {
+      product_subcategory: {
         Row: {
-          code: string
+          category_id: string
           created_at: string
-          description: string | null
-          fuel_type: string | null
+          is_active: boolean
+          subcategory_code: string
+          subcategory_desc: string | null
+          subcategory_id: string
+          subcategory_name: string
+          updated_at: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          is_active?: boolean
+          subcategory_code: string
+          subcategory_desc?: string | null
+          subcategory_id?: string
+          subcategory_name: string
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          is_active?: boolean
+          subcategory_code?: string
+          subcategory_desc?: string | null
+          subcategory_id?: string
+          subcategory_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_subcategory_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "master_product_category"
+            referencedColumns: ["category_id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          first_name: string | null
           id: string
-          make: string | null
-          model: string | null
-          name: string
-          status: Database["public"]["Enums"]["mdm_status"]
-          tenant_id: string | null
-          updated_at: string
-          variant: string | null
-          vehicle_id: string | null
-          vehicle_type_id: string
-          year: number | null
-        }
-        Insert: {
-          code: string
-          created_at?: string
-          description?: string | null
-          fuel_type?: string | null
-          id?: string
-          make?: string | null
-          model?: string | null
-          name: string
-          status?: Database["public"]["Enums"]["mdm_status"]
-          tenant_id?: string | null
-          updated_at?: string
-          variant?: string | null
-          vehicle_id?: string | null
-          vehicle_type_id: string
-          year?: number | null
-        }
-        Update: {
-          code?: string
-          created_at?: string
-          description?: string | null
-          fuel_type?: string | null
-          id?: string
-          make?: string | null
-          model?: string | null
-          name?: string
-          status?: Database["public"]["Enums"]["mdm_status"]
-          tenant_id?: string | null
-          updated_at?: string
-          variant?: string | null
-          vehicle_id?: string | null
-          vehicle_type_id?: string
-          year?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "mdm_vehicles_vehicle_type_id_fkey"
-            columns: ["vehicle_type_id"]
-            isOneToOne: false
-            referencedRelation: "mdm_vehicle_types"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      permissions: {
-        Row: {
-          action: string
-          created_at: string
-          created_by: string | null
-          description: string | null
-          module_name: string
-          permission_id: string
-          status: Database["public"]["Enums"]["permission_status"]
-          updated_at: string
-        }
-        Insert: {
-          action: string
-          created_at?: string
-          created_by?: string | null
-          description?: string | null
-          module_name: string
-          permission_id?: string
-          status?: Database["public"]["Enums"]["permission_status"]
-          updated_at?: string
-        }
-        Update: {
-          action?: string
-          created_at?: string
-          created_by?: string | null
-          description?: string | null
-          module_name?: string
-          permission_id?: string
-          status?: Database["public"]["Enums"]["permission_status"]
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "permissions_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["user_id"]
-          },
-        ]
-      }
-      role_permissions: {
-        Row: {
-          can_access: boolean
-          created_at: string
-          permission_id: string
-          role_id: string
-          role_permission_id: string
-          updated_at: string
-        }
-        Insert: {
-          can_access?: boolean
-          created_at?: string
-          permission_id: string
-          role_id: string
-          role_permission_id?: string
-          updated_at?: string
-        }
-        Update: {
-          can_access?: boolean
-          created_at?: string
-          permission_id?: string
-          role_id?: string
-          role_permission_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "role_permissions_permission_id_fkey"
-            columns: ["permission_id"]
-            isOneToOne: false
-            referencedRelation: "permissions"
-            referencedColumns: ["permission_id"]
-          },
-          {
-            foreignKeyName: "role_permissions_role_id_fkey"
-            columns: ["role_id"]
-            isOneToOne: false
-            referencedRelation: "login_roles"
-            referencedColumns: ["role_id"]
-          },
-        ]
-      }
-      subscription_plans: {
-        Row: {
-          annual_price: number | null
-          api_access: boolean | null
-          available_add_ons: Json | null
-          created_at: string
-          created_by: string | null
-          currency_code: string | null
-          description: string | null
-          features: Json | null
-          includes_trial: boolean | null
-          is_active: boolean | null
-          is_default_plan: boolean | null
-          max_agents: number | null
-          max_products: number | null
-          max_users: number | null
-          monthly_price: number
-          plan_code: string
-          plan_id: string
-          plan_name: string
-          regional_prices: Json | null
-          reporting_tools: boolean | null
-          support_level: string
-          trial_days: number | null
-          updated_at: string
-        }
-        Insert: {
-          annual_price?: number | null
-          api_access?: boolean | null
-          available_add_ons?: Json | null
-          created_at?: string
-          created_by?: string | null
-          currency_code?: string | null
-          description?: string | null
-          features?: Json | null
-          includes_trial?: boolean | null
-          is_active?: boolean | null
-          is_default_plan?: boolean | null
-          max_agents?: number | null
-          max_products?: number | null
-          max_users?: number | null
-          monthly_price?: number
-          plan_code: string
-          plan_id?: string
-          plan_name: string
-          regional_prices?: Json | null
-          reporting_tools?: boolean | null
-          support_level?: string
-          trial_days?: number | null
-          updated_at?: string
-        }
-        Update: {
-          annual_price?: number | null
-          api_access?: boolean | null
-          available_add_ons?: Json | null
-          created_at?: string
-          created_by?: string | null
-          currency_code?: string | null
-          description?: string | null
-          features?: Json | null
-          includes_trial?: boolean | null
-          is_active?: boolean | null
-          is_default_plan?: boolean | null
-          max_agents?: number | null
-          max_products?: number | null
-          max_users?: number | null
-          monthly_price?: number
-          plan_code?: string
-          plan_id?: string
-          plan_name?: string
-          regional_prices?: Json | null
-          reporting_tools?: boolean | null
-          support_level?: string
-          trial_days?: number | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "subscription_plans_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["user_id"]
-          },
-        ]
-      }
-      tenant_subscriptions: {
-        Row: {
-          auto_renew: boolean | null
-          billing_cycle: string
-          cancellation_reason: string | null
-          cancelled_on: string | null
-          created_at: string
-          created_by: string | null
-          current_add_ons: Json | null
-          discount_code: string | null
-          end_date: string
-          invoice_reference: string | null
-          is_active: boolean | null
-          last_payment_date: string | null
-          next_renewal_date: string | null
-          payment_method: string | null
-          payment_status: string
-          plan_id: string
-          plan_snapshot: Json | null
-          start_date: string
-          subscription_id: string
-          tenant_id: string
-          trial_end_date: string | null
-          trial_start_date: string | null
-          trial_used: boolean | null
-          updated_at: string
-        }
-        Insert: {
-          auto_renew?: boolean | null
-          billing_cycle: string
-          cancellation_reason?: string | null
-          cancelled_on?: string | null
-          created_at?: string
-          created_by?: string | null
-          current_add_ons?: Json | null
-          discount_code?: string | null
-          end_date: string
-          invoice_reference?: string | null
-          is_active?: boolean | null
-          last_payment_date?: string | null
-          next_renewal_date?: string | null
-          payment_method?: string | null
-          payment_status: string
-          plan_id: string
-          plan_snapshot?: Json | null
-          start_date: string
-          subscription_id?: string
-          tenant_id: string
-          trial_end_date?: string | null
-          trial_start_date?: string | null
-          trial_used?: boolean | null
-          updated_at?: string
-        }
-        Update: {
-          auto_renew?: boolean | null
-          billing_cycle?: string
-          cancellation_reason?: string | null
-          cancelled_on?: string | null
-          created_at?: string
-          created_by?: string | null
-          current_add_ons?: Json | null
-          discount_code?: string | null
-          end_date?: string
-          invoice_reference?: string | null
-          is_active?: boolean | null
-          last_payment_date?: string | null
-          next_renewal_date?: string | null
-          payment_method?: string | null
-          payment_status?: string
-          plan_id?: string
-          plan_snapshot?: Json | null
-          start_date?: string
-          subscription_id?: string
-          tenant_id?: string
-          trial_end_date?: string | null
-          trial_start_date?: string | null
-          trial_used?: boolean | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tenant_subscriptions_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "tenant_subscriptions_plan_id_fkey"
-            columns: ["plan_id"]
-            isOneToOne: false
-            referencedRelation: "subscription_plans"
-            referencedColumns: ["plan_id"]
-          },
-          {
-            foreignKeyName: "tenant_subscriptions_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["tenant_id"]
-          },
-        ]
-      }
-      tenants: {
-        Row: {
-          contact_email: string
-          contact_person: string | null
-          created_at: string
-          industry_type: string | null
-          logo_url: string | null
-          notes: string | null
-          phone_number: string | null
-          status: string
-          tenant_code: string
-          tenant_id: string
-          tenant_name: string
-          timezone: string | null
-          updated_at: string
-        }
-        Insert: {
-          contact_email: string
-          contact_person?: string | null
-          created_at?: string
-          industry_type?: string | null
-          logo_url?: string | null
-          notes?: string | null
-          phone_number?: string | null
-          status?: string
-          tenant_code: string
-          tenant_id?: string
-          tenant_name: string
-          timezone?: string | null
-          updated_at?: string
-        }
-        Update: {
-          contact_email?: string
-          contact_person?: string | null
-          created_at?: string
-          industry_type?: string | null
-          logo_url?: string | null
-          notes?: string | null
-          phone_number?: string | null
-          status?: string
-          tenant_code?: string
-          tenant_id?: string
-          tenant_name?: string
-          timezone?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      users: {
-        Row: {
-          created_at: string
-          failed_login_attempts: number
-          is_email_verified: boolean | null
-          locked_until: string | null
-          role_id: string | null
+          last_name: string | null
+          must_change_password: boolean
+          password_changed_at: string | null
+          phone: string | null
+          role: Database["public"]["Enums"]["app_role"]
           tenant_id: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
-          failed_login_attempts?: number
-          is_email_verified?: boolean | null
-          locked_until?: string | null
-          role_id?: string | null
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          must_change_password?: boolean
+          password_changed_at?: string | null
+          phone?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
           tenant_id?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
-          failed_login_attempts?: number
-          is_email_verified?: boolean | null
-          locked_until?: string | null
-          role_id?: string | null
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          must_change_password?: boolean
+          password_changed_at?: string | null
+          phone?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
           tenant_id?: string | null
           updated_at?: string
           user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "users_role_id_fkey"
-            columns: ["role_id"]
+            foreignKeyName: "profiles_tenant_id_fkey"
+            columns: ["tenant_id"]
             isOneToOne: false
-            referencedRelation: "login_roles"
-            referencedColumns: ["role_id"]
+            referencedRelation: "tenant_organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "user_credentials"
+            referencedColumns: ["id"]
           },
         ]
+      }
+      provider_lob_map: {
+        Row: {
+          created_at: string
+          lob_id: string
+          map_id: string
+          provider_id: string
+        }
+        Insert: {
+          created_at?: string
+          lob_id: string
+          map_id?: string
+          provider_id: string
+        }
+        Update: {
+          created_at?: string
+          lob_id?: string
+          map_id?: string
+          provider_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_lob_map_lob_id_fkey"
+            columns: ["lob_id"]
+            isOneToOne: false
+            referencedRelation: "master_line_of_business"
+            referencedColumns: ["lob_id"]
+          },
+          {
+            foreignKeyName: "provider_lob_map_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "master_insurance_providers"
+            referencedColumns: ["provider_id"]
+          },
+        ]
+      }
+      subscription_plans: {
+        Row: {
+          annual_price: number
+          created_at: string
+          currency_code: string
+          description: string | null
+          features: Json | null
+          id: string
+          is_active: boolean
+          is_default_plan: boolean
+          max_policies: number | null
+          max_users: number | null
+          monthly_price: number
+          plan_code: string
+          plan_name: string
+          updated_at: string
+        }
+        Insert: {
+          annual_price: number
+          created_at?: string
+          currency_code?: string
+          description?: string | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean
+          is_default_plan?: boolean
+          max_policies?: number | null
+          max_users?: number | null
+          monthly_price: number
+          plan_code: string
+          plan_name: string
+          updated_at?: string
+        }
+        Update: {
+          annual_price?: number
+          created_at?: string
+          currency_code?: string
+          description?: string | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean
+          is_default_plan?: boolean
+          max_policies?: number | null
+          max_users?: number | null
+          monthly_price?: number
+          plan_code?: string
+          plan_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tenant_organizations: {
+        Row: {
+          address: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tenant_subscriptions: {
+        Row: {
+          auto_renew: boolean
+          created_at: string
+          end_date: string | null
+          id: string
+          is_active: boolean
+          plan_id: string
+          start_date: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          auto_renew?: boolean
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          is_active?: boolean
+          plan_id: string
+          start_date: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          auto_renew?: boolean
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          is_active?: boolean
+          plan_id?: string
+          start_date?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenant_subscriptions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_credentials: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          is_active: boolean | null
+          password_hash: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          is_active?: boolean | null
+          password_hash: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          is_active?: boolean | null
+          password_hash?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      current_user_role_id: {
+      create_system_admin: {
         Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      current_user_role_name: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      current_user_tenant_id: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      has_permission: {
-        Args: { _module: string; _action: string; _user_id?: string }
-        Returns: boolean
-      }
-      is_admin: {
-        Args: { _user_id?: string }
-        Returns: boolean
-      }
-      is_tenant_admin: {
-        Args: { _user_id?: string }
-        Returns: boolean
-      }
-      mdm_apply_policies: {
-        Args: { tbl: unknown }
         Returns: undefined
+      }
+      get_master_cities_data: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          city_code: string
+          city_id: string
+          city_name: string
+          country_code: string
+          country_name: string
+          created_at: string
+          created_by: string
+          state_code: string
+          state_id: string
+          state_name: string
+          status: string
+          updated_at: string
+          updated_by: string
+        }[]
+      }
+      get_master_pincodes_data: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          area_name: string
+          city_id: string
+          created_at: string
+          created_by: string
+          latitude: number
+          longitude: number
+          pincode: string
+          pincode_id: string
+          status: string
+          updated_at: string
+          updated_by: string
+        }[]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_system_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
     }
     Enums: {
-      mdm_status: "active" | "inactive"
-      permission_status: "active" | "inactive"
+      addon_category_type: "Rider" | "Add-on"
+      app_role:
+        | "system_admin"
+        | "tenant_admin"
+        | "tenant_employee"
+        | "tenant_agent"
+        | "customer"
+      lob_status: "Active" | "Inactive"
+      location_status: "Active" | "Inactive"
+      premium_basis: "PerPolicy" | "PerMember"
+      premium_type: "Flat" | "PercentOfBase" | "AgeBand" | "Slab"
+      provider_status: "Active" | "Inactive" | "Pending"
+      provider_type: "Life" | "General" | "Health" | "Composite"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1257,8 +1286,20 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      mdm_status: ["active", "inactive"],
-      permission_status: ["active", "inactive"],
+      addon_category_type: ["Rider", "Add-on"],
+      app_role: [
+        "system_admin",
+        "tenant_admin",
+        "tenant_employee",
+        "tenant_agent",
+        "customer",
+      ],
+      lob_status: ["Active", "Inactive"],
+      location_status: ["Active", "Inactive"],
+      premium_basis: ["PerPolicy", "PerMember"],
+      premium_type: ["Flat", "PercentOfBase", "AgeBand", "Slab"],
+      provider_status: ["Active", "Inactive", "Pending"],
+      provider_type: ["Life", "General", "Health", "Composite"],
     },
   },
 } as const
