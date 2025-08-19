@@ -363,13 +363,24 @@ export default function ManageLineOfBusiness() {
         size="sm"
         onClick={() => handleEdit(lob)}
         className="h-8 w-8 p-0"
+        title="Edit"
       >
         <Edit className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => handleDelete(lob)}
+        className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+        title="Delete"
+      >
+        <Trash2 className="h-4 w-4" />
       </Button>
       <Switch
         checked={lob.status === 'Active'}
         onCheckedChange={() => handleStatusToggle(lob)}
         className="scale-75"
+        title={`Toggle status (Currently ${lob.status})`}
       />
     </div>
   );
@@ -424,21 +435,160 @@ export default function ManageLineOfBusiness() {
     }
   };
 
-  // Placeholder functions for edit and status toggle
-  const handleEdit = (lob: LOB) => {
-    // TODO: Implement edit functionality
-    toast({
-      title: "Edit LOB",
-      description: `Edit functionality for ${lob.lob_name} will be implemented.`
-    });
+  // Create LOB function
+  const handleCreate = async (data: LOBFormData) => {
+    try {
+      setLoading(true);
+      
+      const { error } = await supabase
+        .from('master_line_of_business')
+        .insert({
+          lob_code: data.lob_code,
+          lob_name: data.lob_name,
+          description: data.description,
+          status: data.status,
+          created_by: profile?.user_id
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Line of Business created successfully"
+      });
+
+      setIsAddDialogOpen(false);
+      form.reset();
+      fetchLOBs();
+    } catch (error) {
+      console.error('Error creating LOB:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create Line of Business",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // Edit LOB function
+  const handleEdit = (lob: LOB) => {
+    setEditingLOB(lob);
+    form.setValue('lob_code', lob.lob_code);
+    form.setValue('lob_name', lob.lob_name);
+    form.setValue('description', lob.description || '');
+    form.setValue('status', lob.status);
+    setIsEditDialogOpen(true);
+  };
+
+  // Update LOB function
+  const handleUpdate = async (data: LOBFormData) => {
+    if (!editingLOB) return;
+    
+    try {
+      setLoading(true);
+      
+      const { error } = await supabase
+        .from('master_line_of_business')
+        .update({
+          lob_code: data.lob_code,
+          lob_name: data.lob_name,
+          description: data.description,
+          status: data.status,
+          updated_by: profile?.user_id,
+          updated_at: new Date().toISOString()
+        })
+        .eq('lob_id', editingLOB.lob_id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Line of Business updated successfully"
+      });
+
+      setIsEditDialogOpen(false);
+      setEditingLOB(null);
+      form.reset();
+      fetchLOBs();
+    } catch (error) {
+      console.error('Error updating LOB:', error);
+      toast({
+        title: "Error", 
+        description: "Failed to update Line of Business",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Status toggle function
   const handleStatusToggle = async (lob: LOB) => {
-    // TODO: Implement status toggle
-    toast({
-      title: "Status Toggle",
-      description: `Status toggle for ${lob.lob_name} will be implemented.`
-    });
+    const newStatus = lob.status === 'Active' ? 'Inactive' : 'Active';
+    
+    try {
+      const { error } = await supabase
+        .from('master_line_of_business')
+        .update({
+          status: newStatus,
+          updated_by: profile?.user_id,
+          updated_at: new Date().toISOString()
+        })
+        .eq('lob_id', lob.lob_id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `${lob.lob_name} status changed to ${newStatus}`
+      });
+
+      fetchLOBs();
+    } catch (error) {
+      console.error('Error toggling LOB status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update status",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Delete LOB function
+  const handleDelete = (lob: LOB) => {
+    setDeletingLOB(lob);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deletingLOB) return;
+    
+    try {
+      const { error } = await supabase
+        .from('master_line_of_business')
+        .delete()
+        .eq('lob_id', deletingLOB.lob_id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Line of Business deleted successfully"
+      });
+
+      setIsDeleteDialogOpen(false);
+      setDeletingLOB(null);
+      fetchLOBs();
+    } catch (error) {
+      console.error('Error deleting LOB:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete Line of Business",
+        variant: "destructive"
+      });
+    }
   };
 
   if (loading) {
@@ -518,6 +668,198 @@ export default function ManageLineOfBusiness() {
 
         {/* Data View */}
         {renderDataView()}
+
+        {/* Add LOB Dialog */}
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Add New Line of Business</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={form.handleSubmit(handleCreate)} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="lob_code">LOB Code *</Label>
+                  <Input
+                    {...form.register('lob_code')}
+                    placeholder="Enter LOB code"
+                    className={form.formState.errors.lob_code ? 'border-destructive' : ''}
+                  />
+                  {form.formState.errors.lob_code && (
+                    <p className="text-sm text-destructive">{form.formState.errors.lob_code.message}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lob_name">LOB Name *</Label>
+                  <Input
+                    {...form.register('lob_name')}
+                    placeholder="Enter LOB name"
+                    className={form.formState.errors.lob_name ? 'border-destructive' : ''}
+                  />
+                  {form.formState.errors.lob_name && (
+                    <p className="text-sm text-destructive">{form.formState.errors.lob_name.message}</p>
+                  )}
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  {...form.register('description')}
+                  placeholder="Enter description (optional)"
+                  className="min-h-[80px]"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="status">Status</Label>
+                <Controller
+                  name="status"
+                  control={form.control}
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Active">Active</SelectItem>
+                        <SelectItem value="Inactive">Inactive</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setIsAddDialogOpen(false);
+                    form.reset();
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={loading}>
+                  {loading ? 'Creating...' : 'Create LOB'}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit LOB Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Edit Line of Business</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={form.handleSubmit(handleUpdate)} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="lob_code">LOB Code *</Label>
+                  <Input
+                    {...form.register('lob_code')}
+                    placeholder="Enter LOB code"
+                    className={form.formState.errors.lob_code ? 'border-destructive' : ''}
+                  />
+                  {form.formState.errors.lob_code && (
+                    <p className="text-sm text-destructive">{form.formState.errors.lob_code.message}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lob_name">LOB Name *</Label>
+                  <Input
+                    {...form.register('lob_name')}
+                    placeholder="Enter LOB name"
+                    className={form.formState.errors.lob_name ? 'border-destructive' : ''}
+                  />
+                  {form.formState.errors.lob_name && (
+                    <p className="text-sm text-destructive">{form.formState.errors.lob_name.message}</p>
+                  )}
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  {...form.register('description')}
+                  placeholder="Enter description (optional)"
+                  className="min-h-[80px]"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="status">Status</Label>
+                <Controller
+                  name="status"
+                  control={form.control}
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Active">Active</SelectItem>
+                        <SelectItem value="Inactive">Inactive</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setIsEditDialogOpen(false);
+                    setEditingLOB(null);
+                    form.reset();
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={loading}>
+                  {loading ? 'Updating...' : 'Update LOB'}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center space-x-2">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+                <span>Delete Line of Business</span>
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p>Are you sure you want to delete <strong>{deletingLOB?.lob_name}</strong>?</p>
+              <Alert>
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  This action cannot be undone. This will permanently delete the LOB and may affect related data.
+                </AlertDescription>
+              </Alert>
+              <div className="flex justify-end space-x-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsDeleteDialogOpen(false);
+                    setDeletingLOB(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={confirmDelete}
+                  disabled={loading}
+                >
+                  {loading ? 'Deleting...' : 'Delete'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Pagination */}
         {(() => {
