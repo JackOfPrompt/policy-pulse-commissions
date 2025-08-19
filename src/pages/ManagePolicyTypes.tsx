@@ -141,11 +141,11 @@ const ManagePolicyTypes = () => {
           {/* Header */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-foreground flex items-center gap-2 py-[25px]">
+              <h1 className="text-foreground flex items-center gap-2 py-[25px] text-2xl font-normal">
                 <FileText className="w-8 h-8 text-primary" />
                 Policy Types
               </h1>
-              <p className="text-muted-foreground">Manage insurance policy types and classifications</p>
+              
             </div>
           </div>
 
@@ -193,7 +193,7 @@ const ManagePolicyTypes = () => {
           {/* Table */}
           <Card>
             <CardHeader>
-              <CardTitle>Policy Types ({totalItems} total)</CardTitle>
+              <CardTitle className="font-normal">Policy Types ({totalItems} total)</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
