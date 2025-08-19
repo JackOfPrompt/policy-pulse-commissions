@@ -10,6 +10,7 @@ import { Search, Shield, Car, Heart, Home, Phone, MessageCircle, Download, Check
 import BreadcrumbNav from "@/components/ui/breadcrumb-nav";
 import useProviders from "@/hooks/useProviders";
 import { Skeleton } from "@/components/ui/skeleton";
+import { BackButton } from "@/components/ui/back-button";
 
 // Enhanced plans data with more details
 const mockPlans = {
@@ -243,6 +244,11 @@ const PlanComparison = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto container-padding section-padding">
+        {/* Back Button */}
+        <div className="mb-6">
+          <BackButton to="/" label="Back to Home" />
+        </div>
+        
         <BreadcrumbNav items={getBreadcrumbItems()} />
 
         {/* Provider Selection Section */}

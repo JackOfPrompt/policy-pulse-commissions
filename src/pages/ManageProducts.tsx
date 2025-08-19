@@ -31,10 +31,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Plus, Edit, Trash2, Search, Filter } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, Filter, Eye, Download, Upload, TreePine } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { CreateEditProductNameModal } from '@/components/CreateEditProductNameModal';
+import { ProductWizard } from '@/components/ProductWizard';
+import { BulkProductUploadModal } from '@/components/BulkProductUploadModal';
 import Header from '@/components/Header';
 import { useLOBs } from '@/hooks/useLOBs';
 import { useProviders } from '@/hooks/useProviders';
@@ -46,7 +47,7 @@ interface ProductName {
   description?: string;
   status: 'Active' | 'Inactive';
   lob_id: string;
-  policy_type_id: string;
+  policy_type_id?: string;
   plan_type_id?: string;
   provider_id?: string;
   created_at: string;
@@ -55,6 +56,32 @@ interface ProductName {
   policy_type_name?: string;
   plan_type_name?: string;
   provider_name?: string;
+  plan_types?: PlanTypeWithVariants[];
+}
+
+interface PlanTypeWithVariants {
+  id?: string;
+  name: string;
+  description?: string;
+  active: boolean;
+  variants?: VariantWithCoverages[];
+}
+
+interface VariantWithCoverages {
+  id?: string;
+  name: string;
+  code: string;
+  active: boolean;
+  coverages?: CoverageOption[];
+}
+
+interface CoverageOption {
+  id?: string;
+  sum_insured: number;
+  policy_term: number;
+  premium_payment_term: number;
+  premium_min: number;
+  premium_max: number;
 }
 
 interface PolicyType {
@@ -78,6 +105,7 @@ const ManageProducts: React.FC = () => {
   const [policyTypeFilter, setPolicyTypeFilter] = useState('all');
   const [planTypeFilter, setPlanTypeFilter] = useState('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<ProductName | null>(null);
   const { toast } = useToast();
   const { lobs } = useLOBs();
@@ -293,6 +321,14 @@ const ManageProducts: React.FC = () => {
                         ))}
                       </SelectContent>
                     </Select>
+                    <Button variant="outline" className="gap-2" onClick={() => setIsBulkUploadOpen(true)}>
+                      <Upload className="h-4 w-4" />
+                      Bulk Upload
+                    </Button>
+                    <Button variant="outline" className="gap-2">
+                      <Download className="h-4 w-4" />
+                      Export
+                    </Button>
                     <Button onClick={openCreateModal} className="gap-2">
                       <Plus className="h-4 w-4" />
                       Add Product
@@ -302,20 +338,19 @@ const ManageProducts: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Product Code</TableHead>
-                        <TableHead>Product Name</TableHead>
-                        <TableHead>Provider</TableHead>
-                        <TableHead>LOB</TableHead>
-                        <TableHead>Policy Type</TableHead>
-                        <TableHead>Plan Type</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Last Updated</TableHead>
-                        <TableHead className="w-[100px]">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>LOB</TableHead>
+                          <TableHead>Provider</TableHead>
+                          <TableHead>Product Name</TableHead>
+                          <TableHead>Plan Types</TableHead>
+                          <TableHead>Variants</TableHead>
+                          <TableHead>Coverage Options</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="w-[140px]">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
                     <TableBody>
                       {loading ? (
                         <TableRow>
@@ -330,59 +365,89 @@ const ManageProducts: React.FC = () => {
                           </TableCell>
                         </TableRow>
                       ) : (
-                        filteredProductNames.map((product) => (
-                          <TableRow key={product.product_id}>
-                            <TableCell className="font-medium">{product.product_code}</TableCell>
-                            <TableCell>{product.product_name}</TableCell>
-                            <TableCell>{product.provider_name || '-'}</TableCell>
-                            <TableCell>{product.lob_name}</TableCell>
-                            <TableCell>{product.policy_type_name}</TableCell>
-                            <TableCell>{product.plan_type_name || '-'}</TableCell>
-                            <TableCell>
-                              <Badge variant={product.status === 'Active' ? 'default' : 'secondary'}>
-                                {product.status}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              {new Date(product.updated_at).toLocaleDateString()}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => openEditModal(product)}
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <Button variant="ghost" size="sm">
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
-                                      <AlertDialogDescription>
-                                        Are you sure you want to deactivate "{product.product_name}"? This action will set its status to Inactive.
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                      <AlertDialogAction
-                                        onClick={() => handleDelete(product.product_id)}
-                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                      >
-                                        Deactivate
-                                      </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))
+                        filteredProductNames.map((product) => {
+                          const planTypesCount = product.plan_types?.length || 0;
+                          const variantsCount = product.plan_types?.reduce((acc, pt) => acc + (pt.variants?.length || 0), 0) || 0;
+                          const coverageCount = product.plan_types?.reduce((acc, pt) => 
+                            acc + (pt.variants?.reduce((vacc, v) => vacc + (v.coverages?.length || 0), 0) || 0), 0) || 0;
+                          
+                          return (
+                            <TableRow key={product.product_id}>
+                              <TableCell>
+                                <Badge variant="outline" className="text-xs">
+                                  {product.lob_name}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>{product.provider_name || 'Direct'}</TableCell>
+                              <TableCell>
+                                <div>
+                                  <span className="font-medium">{product.product_name}</span>
+                                  <div className="text-xs text-muted-foreground">{product.product_code}</div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <TreePine className="h-3 w-3 text-primary" />
+                                  <span className="text-sm">{planTypesCount}</span>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <span className="text-sm">{variantsCount}</span>
+                              </TableCell>
+                              <TableCell>
+                                <span className="text-sm">{coverageCount}</span>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant={product.status === 'Active' ? 'default' : 'secondary'}>
+                                  {product.status}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    title="View Details"
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => openEditModal(product)}
+                                    title="Edit Product"
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button variant="ghost" size="sm" title="Delete Product">
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          Are you sure you want to deactivate "{product.product_name}"? This action will set its status to Inactive.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction
+                                          onClick={() => handleDelete(product.product_id)}
+                                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                        >
+                                          Deactivate
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })
                       )}
                     </TableBody>
                   </Table>
@@ -392,15 +457,19 @@ const ManageProducts: React.FC = () => {
           </TabsContent>
         </Tabs>
 
-        <CreateEditProductNameModal
+        <ProductWizard
           isOpen={isModalOpen}
           onOpenChange={setIsModalOpen}
-          productName={editingProduct}
+          product={editingProduct}
           onSuccess={handleModalSuccess}
           lobs={lobs}
-          policyTypes={policyTypes}
-          planTypes={planTypes}
           providers={providers}
+        />
+
+        <BulkProductUploadModal
+          isOpen={isBulkUploadOpen}
+          onOpenChange={setIsBulkUploadOpen}
+          onSuccess={handleModalSuccess}
         />
       </main>
     </div>

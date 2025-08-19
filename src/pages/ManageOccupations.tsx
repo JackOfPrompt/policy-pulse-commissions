@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Edit2, Trash2 } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,13 +14,16 @@ import { BackButton } from '@/components/ui/back-button';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import BulkImportOccupationsModal from '@/components/BulkImportOccupationsModal';
 
 interface Occupation {
-  occupation_id: number;
-  name: string;
-  code?: string;
+  occupation_id: string;
+  occupation_name: string;
+  occupation_code: string;
   description?: string;
-  status: string;
+  is_active: boolean;
+  category?: string;
+  risk_level?: string;
   created_at: string;
   updated_at: string;
 }
@@ -31,6 +34,7 @@ const ManageOccupations = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
   const [editingOccupation, setEditingOccupation] = useState<Occupation | null>(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -60,7 +64,7 @@ const ManageOccupations = () => {
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
-      setOccupations(data || []);
+      setOccupations((data || []) as unknown as Occupation[]);
     } catch (error) {
       console.error('Error fetching occupations:', error);
       toast({
@@ -81,13 +85,13 @@ const ManageOccupations = () => {
         const { error } = await supabase
           .from('master_occupations')
           .update({
-            name: formData.name,
-            code: formData.code || null,
+            occupation_name: formData.name,
+            occupation_code: formData.code || formData.name.toUpperCase().replace(/\s+/g, '_').slice(0, 32),
             description: formData.description || null,
-            status: formData.status,
+            is_active: formData.status === 'Active',
             updated_at: new Date().toISOString()
           })
-          .eq('occupation_id', editingOccupation.occupation_id);
+          .eq('occupation_id', editingOccupation.occupation_id as string);
 
         if (error) throw error;
 
@@ -99,10 +103,10 @@ const ManageOccupations = () => {
         const { error } = await supabase
           .from('master_occupations')
           .insert({
-            name: formData.name,
-            code: formData.code || null,
+            occupation_name: formData.name,
+            occupation_code: formData.code || formData.name.toUpperCase().replace(/\s+/g, '_').slice(0, 32),
             description: formData.description || null,
-            status: formData.status,
+            is_active: formData.status === 'Active',
             updated_at: new Date().toISOString()
           });
 
@@ -154,10 +158,10 @@ const ManageOccupations = () => {
   const handleEdit = (occupation: Occupation) => {
     setEditingOccupation(occupation);
     setFormData({
-      name: occupation.name,
-      code: occupation.code || '',
+      name: occupation.occupation_name,
+      code: occupation.occupation_code || '',
       description: occupation.description || '',
-      status: occupation.status
+      status: occupation.is_active ? 'Active' : 'Inactive'
     });
     setIsDialogOpen(true);
   };
@@ -171,7 +175,7 @@ const ManageOccupations = () => {
       const { error } = await supabase
         .from('master_occupations')
         .update({ 
-          status: 'Inactive',
+          is_active: false,
           updated_at: new Date().toISOString()
         })
         .eq('occupation_id', occupation.occupation_id);
@@ -201,10 +205,10 @@ const ManageOccupations = () => {
 
   const filteredOccupations = occupations.filter(occupation => {
     const matchesSearch = 
-      occupation.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (occupation.code && occupation.code.toLowerCase().includes(searchTerm.toLowerCase()));
+      occupation.occupation_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (occupation.occupation_code && occupation.occupation_code.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    const matchesStatus = statusFilter === 'All' || occupation.status === statusFilter;
+    const matchesStatus = statusFilter === 'All' || (occupation.is_active ? 'Active' : 'Inactive') === statusFilter;
     
     return matchesSearch && matchesStatus;
   });
@@ -235,10 +239,16 @@ const ManageOccupations = () => {
                 <CardTitle>Occupations</CardTitle>
                 <CardDescription>Manage standard occupation values for customer profiling</CardDescription>
               </div>
-              <Button onClick={openCreateDialog}>
-                <Plus className="w-4 h-4 mr-2" />
-                Add Occupation
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setIsBulkImportOpen(true)}>
+                  <Upload className="w-4 h-4 mr-2" />
+                  Bulk Import
+                </Button>
+                <Button onClick={openCreateDialog}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Occupation
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
@@ -288,12 +298,12 @@ const ManageOccupations = () => {
                   <TableBody>
                     {filteredOccupations.map((occupation) => (
                       <TableRow key={occupation.occupation_id}>
-                        <TableCell className="font-medium">{occupation.name}</TableCell>
-                        <TableCell>{occupation.code || '-'}</TableCell>
+                        <TableCell className="font-medium">{occupation.occupation_name}</TableCell>
+                        <TableCell>{occupation.occupation_code || '-'}</TableCell>
                         <TableCell className="max-w-xs truncate">{occupation.description || '-'}</TableCell>
                         <TableCell>
-                          <Badge variant={occupation.status === 'Active' ? 'default' : 'secondary'}>
-                            {occupation.status}
+                          <Badge variant={occupation.is_active ? 'default' : 'secondary'}>
+                            {occupation.is_active ? 'Active' : 'Inactive'}
                           </Badge>
                         </TableCell>
                         <TableCell>{new Date(occupation.created_at).toLocaleDateString()}</TableCell>
@@ -306,7 +316,7 @@ const ManageOccupations = () => {
                             >
                               <Edit2 className="w-4 h-4" />
                             </Button>
-                            {occupation.status === 'Active' && (
+                            {occupation.is_active && (
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -393,6 +403,13 @@ const ManageOccupations = () => {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Bulk Import Modal */}
+      <BulkImportOccupationsModal
+        isOpen={isBulkImportOpen}
+        onClose={() => setIsBulkImportOpen(false)}
+        onImportComplete={fetchOccupations}
+      />
     </div>
   );
 };

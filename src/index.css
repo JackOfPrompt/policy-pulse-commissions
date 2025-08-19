@@ -6,8 +6,8 @@
 
 @layer base {
   :root {
-    /* Brand Colors - Insurance trust and professionalism */
-    --background: 0 0% 100%;
+    /* CRESTLINE Brand Colors - Clean and minimal */
+    --background: 40 40% 98%; /* Creamy white #FAF9F6 */
     --foreground: 220 26% 14%;
 
     --card: 0 0% 100%;
@@ -45,11 +45,11 @@
 
     --radius: 0.75rem;
 
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(214 84% 25%), hsl(214 84% 35%));
-    --gradient-secondary: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 76% 46%));
-    --gradient-hero: linear-gradient(135deg, hsl(214 84% 25%), hsl(214 84% 35%), hsl(142 76% 36%));
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(220 14% 98%));
+    /* Gradients - Logo inspired (green → blue) */
+    --gradient-primary: linear-gradient(135deg, hsl(142 76% 36%), hsl(214 84% 35%));
+    --gradient-secondary: linear-gradient(135deg, hsl(142 76% 46%), hsl(214 84% 45%));
+    --gradient-hero: linear-gradient(135deg, hsl(142 76% 36%), hsl(214 84% 35%));
+    --gradient-card: linear-gradient(145deg, hsl(40 40% 98%), hsl(40 30% 96%));
 
     /* Shadows */
     --shadow-card: 0 4px 6px -1px hsl(220 26% 14% / 0.1), 0 2px 4px -1px hsl(220 26% 14% / 0.06);
@@ -129,15 +129,15 @@
 @layer components {
   /* Button Variants */
   .btn-hero {
-    @apply bg-gradient-to-r from-primary to-secondary text-primary-foreground px-8 py-4 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300;
+    @apply bg-gradient-to-r from-primary to-secondary text-primary-foreground px-8 py-4 rounded-lg font-normal text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300;
   }
   
   .btn-secondary {
-    @apply bg-transparent border-2 border-primary text-primary px-8 py-4 rounded-lg font-semibold text-lg hover:bg-primary hover:text-primary-foreground transition-all duration-300;
+    @apply bg-transparent border-2 border-primary text-primary px-8 py-4 rounded-lg font-normal text-lg hover:bg-primary hover:text-primary-foreground transition-all duration-300;
   }
   
   .btn-accent {
-    @apply bg-accent text-accent-foreground px-6 py-3 rounded-lg font-semibold hover:bg-accent/90 transition-all duration-300;
+    @apply bg-accent text-accent-foreground px-6 py-3 rounded-lg font-normal hover:bg-accent/90 transition-all duration-300;
   }
 
   /* Card Variants */
@@ -149,13 +149,46 @@
     @apply bg-gradient-to-br from-card to-muted p-3 rounded-lg shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-feature)] transform hover:-translate-y-1 transition-all duration-300 border border-border/30;
   }
 
-  /* Text Styles */
+  /* Text Styles - Using standardized font weights only */
   .text-hero {
-    @apply text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent leading-tight;
+    @apply text-4xl md:text-5xl lg:text-6xl font-light bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent leading-tight;
   }
   
   .text-subtitle {
-    @apply text-base md:text-lg text-muted-foreground leading-relaxed;
+    @apply text-base md:text-lg text-muted-foreground leading-relaxed font-normal;
+  }
+
+  /* Typography Scale */
+  .text-heading-1 {
+    @apply text-3xl md:text-4xl font-light leading-tight;
+  }
+  
+  .text-heading-2 {
+    @apply text-2xl md:text-3xl font-light leading-tight;
+  }
+  
+  .text-heading-3 {
+    @apply text-xl md:text-2xl font-light leading-snug;
+  }
+  
+  .text-body-large {
+    @apply text-lg font-normal leading-relaxed;
+  }
+  
+  .text-body {
+    @apply text-base font-normal leading-relaxed;
+  }
+  
+  .text-body-small {
+    @apply text-sm font-normal leading-normal;
+  }
+  
+  .text-caption {
+    @apply text-xs font-light leading-normal;
+  }
+  
+  .text-label {
+    @apply text-sm font-normal leading-none;
   }
 
   /* Compact spacing */

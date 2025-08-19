@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { BackButton } from '@/components/ui/back-button';
 
 const ChangePassword = () => {
   const [newPassword, setNewPassword] = useState('');
@@ -85,13 +86,21 @@ const ChangePassword = () => {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-primary">LMV Insurance</h1>
+          <img 
+            src="/lovable-uploads/154873ec-48fd-43c5-a8eb-d5a8a3d9fad8.png" 
+            alt="CRESTLINE Logo" 
+            className="h-16 w-auto mb-2 mx-auto"
+          />
           <p className="text-sm text-muted-foreground mt-1">Password Change Required</p>
         </div>
 
         {/* Change Password Card */}
         <Card className="shadow-[var(--shadow-card)] border border-border/50">
           <CardHeader className="text-center">
+            <div className="flex justify-between items-center mb-4">
+              <BackButton to="/login" variant="ghost" size="sm" />
+              <div className="flex-1" />
+            </div>
             <CardTitle className="text-2xl text-foreground">Change Your Password</CardTitle>
             <CardDescription>You must change your password before continuing</CardDescription>
           </CardHeader>

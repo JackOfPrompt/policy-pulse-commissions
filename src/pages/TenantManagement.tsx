@@ -41,7 +41,7 @@ const TenantManagement = () => {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
@@ -69,7 +69,7 @@ const TenantManagement = () => {
           page: currentPage,
           limit: 10,
           search: searchTerm || undefined,
-          status: statusFilter || undefined,
+          status: statusFilter !== 'all' ? statusFilter : undefined,
         }
       });
 
@@ -223,7 +223,7 @@ const TenantManagement = () => {
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Statuses</SelectItem>
+                  <SelectItem value="all">All Statuses</SelectItem>
                   <SelectItem value="Active">Active</SelectItem>
                   <SelectItem value="Inactive">Inactive</SelectItem>
                   <SelectItem value="Suspended">Suspended</SelectItem>

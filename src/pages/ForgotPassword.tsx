@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Mail } from 'lucide-react';
+import { Mail } from 'lucide-react';
+import { BackButton } from '@/components/ui/back-button';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -56,8 +57,12 @@ const ForgotPassword = () => {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-block">
-            <h1 className="text-3xl font-bold text-primary">LMV Insurance</h1>
-            <p className="text-sm text-muted-foreground mt-1">Secure • Trusted • Reliable</p>
+            <img 
+              src="/lovable-uploads/154873ec-48fd-43c5-a8eb-d5a8a3d9fad8.png" 
+              alt="CRESTLINE Logo" 
+              className="h-16 w-auto mb-2"
+            />
+            <p className="text-sm text-muted-foreground mt-1">Insurance CRM Platform</p>
           </Link>
         </div>
 
@@ -119,13 +124,12 @@ const ForgotPassword = () => {
             )}
 
             <div className="mt-6 text-center">
-              <Link 
+              <BackButton 
                 to="/login" 
-                className="inline-flex items-center text-sm text-primary hover:text-primary/80"
-              >
-                <ArrowLeft size={16} className="mr-2" />
-                Back to Login
-              </Link>
+                label="Back to Login" 
+                variant="ghost"
+                size="sm"
+              />
             </div>
           </CardContent>
         </Card>

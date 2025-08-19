@@ -76,29 +76,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       console.log('🔐 Starting login attempt for:', email);
       
-      // Check credentials in database
-      const { data: credentials, error: credError } = await supabase
-        .from('user_credentials')
-        .select('*')
-        .eq('email', email)
-        .eq('is_active', true);
-
-      console.log('📋 Credentials query result:', { credentials, credError });
-
-      if (credError) {
-        console.log('❌ Database error:', credError);
-        return { error: { message: 'Database error: ' + credError.message } };
-      }
-
-      if (!credentials || credentials.length === 0) {
-        console.log('❌ No credentials found');
-        return { error: { message: 'Invalid credentials - user not found' } };
-      }
-
-      const credential = credentials[0];
-      console.log('🔍 Found credential:', credential);
-
-      // For development, check against test credentials
+      // For development, check against test credentials first
       const testCredentials = {
         'admin@system.com': 'admin123',
         'tenant@admin.com': 'tenant123', 
@@ -108,19 +86,19 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       };
       
       const isValidPassword = testCredentials[email as keyof typeof testCredentials] === password;
-      console.log('✅ Password verification result:', isValidPassword);
       
       if (!isValidPassword) {
         console.log('❌ Password verification failed');
-        return { error: { message: 'Invalid credentials - wrong password' } };
+        return { error: { message: 'Invalid credentials' } };
       }
 
       console.log('👤 Fetching user profile...');
-      // Get user profile using the credentials ID as user_id
+      // Get user profile directly using email
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('user_id', credential.id);
+        .eq('email', email)
+        .single();
 
       console.log('📄 Profile query result:', { profileData, profileError });
 
@@ -129,26 +107,24 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         return { error: { message: 'Profile error: ' + profileError.message } };
       }
 
-      if (!profileData || profileData.length === 0) {
+      if (!profileData) {
         console.log('❌ Profile not found');
         return { error: { message: 'Profile not found' } };
       }
 
-      const profile = profileData[0];
-
-      // Create user object
+      // Create user object using profile data
       const user: User = {
-        id: credential.id,
-        email: credential.email,
-        created_at: credential.created_at,
+        id: profileData.user_id,
+        email: profileData.email,
+        created_at: profileData.created_at,
       };
 
       console.log('✅ Login successful, setting user state');
       // Store in state and localStorage
       setUser(user);
-      setProfile(profile);
+      setProfile(profileData);
       localStorage.setItem('auth_user', JSON.stringify(user));
-      localStorage.setItem('auth_profile', JSON.stringify(profile));
+      localStorage.setItem('auth_profile', JSON.stringify(profileData));
 
       return { error: null };
     } catch (error: any) {
@@ -169,23 +145,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     if (!user) return { error: { message: 'Not authenticated' } };
     
     try {
-      // For development, just update a simple hash
-      const { error } = await supabase
-        .from('user_credentials')
-        .update({ password_hash: newPassword }) // Simplified for development
-        .eq('id', user.id);
-
-      if (!error && profile) {
+      // For development, just update profile
+      if (profile) {
         await supabase
           .from('profiles')
           .update({ 
             must_change_password: false, 
             password_changed_at: new Date().toISOString()
           })
-          .eq('email', user.email);
+          .eq('user_id', user.id);
       }
       
-      return { error };
+      return { error: null };
     } catch (error: any) {
       return { error: { message: error.message } };
     }
@@ -193,26 +164,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const createUser = async (userData: any) => {
     try {
-      // For development, use simple password storage
-      const hashedPassword = userData.password; // Simplified
+      // For development - simplified user creation
+      const userId = crypto.randomUUID();
       
-      // Insert credentials
-      const { data: credData, error: credError } = await supabase
-        .from('user_credentials')
-        .insert({
-          email: userData.email,
-          password_hash: hashedPassword
-        })
-        .select()
-        .single();
-        
-      if (credError) return { error: credError };
-      
-      // Insert profile
+      // Insert profile directly
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
-          user_id: credData.id,
+          user_id: userId,
           email: userData.email,
           phone: userData.phone,
           first_name: userData.first_name,

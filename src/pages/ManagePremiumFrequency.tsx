@@ -9,6 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { CreateEditPremiumFrequencyModal } from "@/components/CreateEditPremiumFrequencyModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { ListView, GridView, KanbanView, ViewToggle, useViewMode } from '@/components/ui/list-views';
 
 interface PremiumFrequency {
   frequency_id: number;
@@ -31,6 +32,7 @@ export default function ManagePremiumFrequency() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [frequencyToDelete, setFrequencyToDelete] = useState<PremiumFrequency | null>(null);
   const { toast } = useToast();
+  const { viewMode, setViewMode } = useViewMode({ defaultView: 'list', storageKey: 'premium-frequency-view' });
 
   const fetchFrequencies = async () => {
     try {
@@ -173,6 +175,7 @@ export default function ManagePremiumFrequency() {
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
             </select>
+            <ViewToggle viewMode={viewMode} onViewModeChange={setViewMode} />
           </div>
         </CardHeader>
         <CardContent>

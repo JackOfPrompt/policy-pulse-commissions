@@ -4,7 +4,7 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
-// Force restart to clear cache
+// Force restart to clear cache - rebuild trigger v2
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
@@ -13,9 +13,6 @@ export default defineConfig(({ mode }) => ({
     watch: {
       usePolling: true,
     },
-  },
-  define: {
-    __WS_TOKEN__: JSON.stringify(process.env.WS_TOKEN || ""),
   },
   plugins: [
     react(),

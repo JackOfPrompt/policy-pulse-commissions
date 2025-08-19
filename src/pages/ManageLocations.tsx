@@ -59,6 +59,7 @@ type LocationFormData = z.infer<typeof locationSchema>;
 export default function ManageLocations() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const sb = supabase as any;
   
   // State management
   const [locations, setLocations] = useState<MasterLocation[]>([]);
@@ -101,12 +102,12 @@ export default function ManageLocations() {
   const fetchLocations = useCallback(async () => {
     try {
       // Build base query for counting
-      let countQuery = supabase
+      let countQuery = sb
         .from('master_locations')
         .select('*', { count: 'exact', head: true });
 
       // Build base query for data
-      let query = supabase
+      let query = sb
         .from('master_locations')
         .select('*')
         .order('state', { ascending: true })
@@ -173,12 +174,12 @@ export default function ManageLocations() {
 
       let result;
       if (editingLocation) {
-        result = await supabase
+        result = await sb
           .from('master_locations')
           .update({ ...locationData, updated_by: (await supabase.auth.getUser()).data.user?.id })
           .eq('id', editingLocation.id);
       } else {
-        result = await supabase
+        result = await sb
           .from('master_locations')
           .insert({ ...locationData, created_by: (await supabase.auth.getUser()).data.user?.id });
       }
@@ -226,7 +227,7 @@ export default function ManageLocations() {
     try {
       const newStatus = location.status === 'Active' ? 'Inactive' : 'Active';
       
-      const { error } = await supabase
+      const { error } = await sb
         .from('master_locations')
         .update({ 
           status: newStatus,
@@ -262,7 +263,7 @@ export default function ManageLocations() {
       for (const row of data) {
         try {
           // Check if location exists by pincode
-          const { data: existingLocation } = await supabase
+          const { data: existingLocation } = await sb
             .from('master_locations')
             .select('id')
             .eq('pincode', row.pincode)
@@ -281,7 +282,7 @@ export default function ManageLocations() {
 
           if (existingLocation) {
             // Update existing
-            const { error } = await supabase
+            const { error } = await sb
               .from('master_locations')
               .update(locationData)
               .eq('id', existingLocation.id);
@@ -290,7 +291,7 @@ export default function ManageLocations() {
             updateCount++;
           } else {
             // Insert new
-            const { error } = await supabase
+            const { error } = await sb
               .from('master_locations')
               .insert(locationData);
             
@@ -327,15 +328,15 @@ export default function ManageLocations() {
   // Fetch unique states for filter dropdown
   const fetchUniqueStates = useCallback(async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await sb
         .from('master_locations')
         .select('state')
         .order('state');
       
       if (error) throw error;
       
-      const states = [...new Set(data?.map(item => item.state))].sort();
-      setUniqueStates(states);
+      const states = Array.from(new Set((data as any[])?.map((item: any) => String(item.state)))).sort();
+      setUniqueStates(states as string[]);
     } catch (error) {
       console.error('Error fetching states:', error);
     }

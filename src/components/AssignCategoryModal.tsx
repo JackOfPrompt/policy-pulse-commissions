@@ -275,8 +275,8 @@ const AssignCategoryModal: React.FC<AssignCategoryModalProps> = ({
                     <SelectTrigger>
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">No Category</SelectItem>
+                     <SelectContent>
+                       <SelectItem value="none">No Category</SelectItem>
                       {categories.map((category) => (
                         <SelectItem key={category.category_id} value={category.category_id}>
                           {category.category_name}
@@ -297,8 +297,8 @@ const AssignCategoryModal: React.FC<AssignCategoryModalProps> = ({
                     <SelectTrigger>
                       <SelectValue placeholder="Select subcategory" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">No Subcategory</SelectItem>
+                     <SelectContent>
+                       <SelectItem value="none">No Subcategory</SelectItem>
                       {subcategories.map((subcategory) => (
                         <SelectItem key={subcategory.subcategory_id} value={subcategory.subcategory_id}>
                           {subcategory.subcategory_name}

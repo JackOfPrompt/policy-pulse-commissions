@@ -50,7 +50,7 @@ export const CreateEditTenantModal = ({ isOpen, onClose, onSuccess, mode, tenant
     logo_url: '',
     notes: '',
     status: 'Active',
-    subscription_plan_id: ''
+    subscription_plan_id: 'none'
   });
 
   const { toast } = useToast();
@@ -70,7 +70,7 @@ export const CreateEditTenantModal = ({ isOpen, onClose, onSuccess, mode, tenant
           logo_url: tenant.logo_url || '',
           notes: tenant.notes || '',
           status: tenant.status || 'Active',
-          subscription_plan_id: ''
+          subscription_plan_id: 'none'
         });
       } else {
         setFormData({
@@ -84,7 +84,7 @@ export const CreateEditTenantModal = ({ isOpen, onClose, onSuccess, mode, tenant
           logo_url: '',
           notes: '',
           status: 'Active',
-          subscription_plan_id: ''
+          subscription_plan_id: 'none'
         });
       }
     }
@@ -249,8 +249,9 @@ export const CreateEditTenantModal = ({ isOpen, onClose, onSuccess, mode, tenant
                   <SelectTrigger>
                     <SelectValue placeholder="Select a plan" />
                   </SelectTrigger>
-                  <SelectContent>
-                    {subscriptionPlans.map((plan) => (
+                 <SelectContent>
+                   <SelectItem value="none">No plan selected</SelectItem>
+                   {subscriptionPlans.map((plan) => (
                       <SelectItem key={plan.id} value={plan.id}>
                         {plan.plan_name} ({plan.plan_code})
                       </SelectItem>

@@ -210,8 +210,8 @@ export const CreateEditProductNameModal: React.FC<CreateEditProductNameModalProp
                         <SelectValue placeholder="Select Provider (Optional)" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                     <SelectContent>
+                       <SelectItem value="none">None</SelectItem>
                       {providers.map((provider) => (
                         <SelectItem key={provider.provider_id} value={provider.provider_id}>
                           {provider.provider_name}
@@ -288,8 +288,8 @@ export const CreateEditProductNameModal: React.FC<CreateEditProductNameModalProp
                         <SelectValue placeholder="Select Plan Type (Optional)" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                     <SelectContent>
+                       <SelectItem value="none">None</SelectItem>
                       {planTypes.map((planType) => (
                         <SelectItem key={planType.plan_type_id} value={planType.plan_type_id}>
                           {planType.plan_type_name}

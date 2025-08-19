@@ -32,12 +32,6 @@ const CustomerDashboard = () => {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-4">
               <BackButton to="/" />
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">Customer Dashboard</h1>
-                <p className="text-sm text-muted-foreground">
-                  Welcome back, {profile?.first_name} {profile?.last_name}
-                </p>
-              </div>
             </div>
             <Button variant="outline" onClick={handleSignOut}>
               <LogOut className="w-4 h-4 mr-2" />

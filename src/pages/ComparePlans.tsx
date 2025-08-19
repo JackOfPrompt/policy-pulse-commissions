@@ -13,6 +13,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Heart, Car, Shield, Building, Home, CreditCard, Dog, Plane, Search, Filter, Plus, X, ExternalLink, Star, CheckCircle, Info, TrendingUp } from "lucide-react";
 import compareHero from "@/assets/compare-hero.jpg";
 import Footer from "@/components/Footer";
+import { BackButton } from "@/components/ui/back-button";
 const productTypes = [{
   id: 'health',
   name: 'Health Insurance',
@@ -187,6 +188,12 @@ export default function ComparePlans() {
   };
   return <div className="min-h-screen bg-background">
       <Header />
+      
+      {/* Back Button */}
+      <div className="container mx-auto px-4 py-4">
+        <BackButton to="/" label="Back to Home" />
+      </div>
+      
       {/* Hero Section */}
       <section className="relative py-24 bg-gradient-to-br from-primary to-secondary" style={{
       backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${compareHero})`,

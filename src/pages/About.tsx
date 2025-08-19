@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import useProviders from "@/hooks/useProviders";
+import { BackButton } from "@/components/ui/back-button";
 
 const About = () => {
   const values = [
@@ -30,7 +31,7 @@ const About = () => {
   ];
 
   const journey = [
-    { year: "2013", milestone: "LMV Insurance founded" },
+    { year: "2013", milestone: "CRESTLINE founded" },
     { year: "2015", milestone: "Crossed 10,000 satisfied customers" },
     { year: "2018", milestone: "Launched our digital CRM platform" },
     { year: "2020", milestone: "Partnered with 30+ top insurance providers" },
@@ -70,11 +71,16 @@ const About = () => {
     <div className="min-h-screen">
       <Header />
       <div className="pt-16">
+        {/* Back Button */}
+        <div className="container mx-auto px-4 py-4">
+          <BackButton to="/" label="Back to Home" />
+        </div>
+        
         {/* Hero Section */}
         <section className="bg-gradient-to-br from-primary to-secondary text-primary-foreground py-20">
           <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto text-center">
-              <h1 className="text-5xl md:text-6xl font-bold mb-6">About LMV Insurance</h1>
+             <div className="max-w-4xl mx-auto text-center">
+               <h1 className="text-5xl md:text-6xl font-bold mb-6">About CRESTLINE</h1>
               <p className="text-xl md:text-2xl opacity-90 leading-relaxed">
                 Leading insurance broking company in India, with over 10 years of trusted service, 
                 helping thousands protect their lives, assets, and businesses.
@@ -90,7 +96,7 @@ const About = () => {
               <h2 className="text-4xl font-bold mb-16 text-foreground">Who We Are</h2>
               <div className="prose prose-lg max-w-none text-muted-foreground mb-12">
                 <p className="text-lg leading-relaxed mb-8">
-                  LMV Insurance is a leading insurance broking company in India, with over 10 years of trusted service. 
+                  CRESTLINE is a leading insurance broking company in India, with over 10 years of trusted service.
                   We help thousands of customers protect their lives, assets, and businesses by offering comprehensive 
                   insurance solutions across multiple lines of business, including:
                 </p>
@@ -164,7 +170,7 @@ const About = () => {
             <div className="max-w-4xl mx-auto">
               <h2 className="text-4xl font-bold text-center mb-16 text-foreground">Our Journey</h2>
               <p className="text-lg text-muted-foreground text-center mb-12">
-                LMV Insurance has grown steadily over the past decade, building trust with customers and providers alike:
+                CRESTLINE has grown steadily over the past decade, building trust with customers and providers alike:
               </p>
               <div className="space-y-8">
                 {journey.map((item, index) => (
@@ -237,8 +243,8 @@ const About = () => {
         {/* Why Choose LMV */}
         <section className="py-20 bg-background">
           <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto text-center">
-              <h2 className="text-4xl font-bold mb-12 text-foreground">Why Choose LMV Insurance?</h2>
+             <div className="max-w-4xl mx-auto text-center">
+               <h2 className="text-4xl font-bold mb-12 text-foreground">Why Choose CRESTLINE?</h2>
               <div className="grid md:grid-cols-2 gap-6">
                 {whyChooseReasons.map((benefit, index) => (
                   <div key={index} className="flex items-center gap-3 p-4 rounded-lg bg-muted/50 hover:bg-muted/70 transition-colors">
@@ -256,7 +262,7 @@ const About = () => {
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-4xl font-bold mb-6">Start Your Insurance Journey Today</h2>
             <p className="text-xl mb-8 opacity-90">
-              Compare, choose, and purchase insurance policies online from India's top providers with LMV Insurance.
+              Compare, choose, and purchase insurance policies online from India's top providers with CRESTLINE.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 

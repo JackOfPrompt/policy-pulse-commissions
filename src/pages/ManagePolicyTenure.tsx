@@ -10,6 +10,7 @@ import { CreateEditPolicyTenureModal } from "@/components/CreateEditPolicyTenure
 import { BulkImportDialog } from "@/components/BulkImportDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { ListView, GridView, KanbanView, ViewToggle, useViewMode } from '@/components/ui/list-views';
 
 interface PolicyTenure {
   tenure_id: number;
@@ -33,6 +34,7 @@ export default function ManagePolicyTenure() {
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 20;
   const { toast } = useToast();
+  const { viewMode, setViewMode } = useViewMode({ defaultView: 'list', storageKey: 'policy-tenure-view' });
 
   const fetchPolicyTenures = async () => {
     try {
@@ -196,11 +198,12 @@ export default function ManagePolicyTenure() {
                 <SelectItem value="all">All Units</SelectItem>
                 <SelectItem value="Years">Years</SelectItem>
                 <SelectItem value="Months">Months</SelectItem>
-                <SelectItem value="Days">Days</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardHeader>
+              <SelectItem value="Days">Days</SelectItem>
+            </SelectContent>
+          </Select>
+          <ViewToggle viewMode={viewMode} onViewModeChange={setViewMode} />
+        </div>
+      </CardHeader>
         <CardContent>
           <div className="rounded-md border">
             <Table>

@@ -17,6 +17,7 @@ import Footer from "@/components/Footer";
 import { useLOBs } from "@/hooks/useLOBs";
 import { LOBIcon } from "@/components/LOBIcon";
 import { Skeleton } from "@/components/ui/skeleton";
+import { BackButton } from "@/components/ui/back-button";
 const productTypes = [{
   id: 'health',
   name: 'Health Insurance',
@@ -143,6 +144,11 @@ export default function Products() {
   const popularProducts = sampleProducts.filter(product => product.popular);
   return <div className="min-h-screen bg-background">
       <Header />
+      
+      {/* Back Button */}
+      <div className="container mx-auto px-4 pt-20 pb-4">
+        <BackButton to="/" label="Back to Home" />
+      </div>
       
       {/* Hero Section */}
       <section className="relative py-32 bg-gradient-to-br from-primary to-secondary" style={{
@@ -413,7 +419,7 @@ export default function Products() {
         <div className="container mx-auto px-4 text-center relative z-10">
           <h2 className="text-5xl font-bold mb-6">Start Your Insurance Journey Today</h2>
           <h3 className="text-2xl mb-12 text-white/90 font-light max-w-3xl mx-auto">
-            Join millions of satisfied customers who trust LMV Insurance for their protection needs
+            Join millions of satisfied customers who trust CRESTLINE for their protection needs
           </h3>
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
             <Button size="lg" variant="secondary" onClick={() => window.open('https://www.lmvinsurance.com/', '_blank')} className="bg-white text-primary hover:bg-white/90 px-8 py-4 text-lg font-semibold">
