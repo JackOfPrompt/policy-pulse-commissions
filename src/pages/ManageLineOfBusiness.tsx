@@ -95,23 +95,6 @@ export default function ManageLineOfBusiness() {
   const [deletingLOB, setDeletingLOB] = useState<LOB | null>(null);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [csvData, setCsvData] = useState<any[]>([]);
-  const [csvPreview, setCsvPreview] = useState<any[]>([]);
-  const [errorReport, setErrorReport] = useState<Array<{
-    row: number;
-    data: any;
-    error: string;
-    type: 'validation' | 'database' | 'network';
-  }>>([]);
-  const [isErrorReportOpen, setIsErrorReportOpen] = useState(false);
-  const [bulkImportResults, setBulkImportResults] = useState<{
-    total: number;
-    inserted: number;
-    updated: number;
-    errors: number;
-    timestamp: string;
-  } | null>(null);
 
   // Form setup
   const form = useForm<LOBFormData>({
@@ -212,6 +195,271 @@ export default function ManageLineOfBusiness() {
     fetchLOBs();
     fetchProviders();
   }, [fetchLOBs, fetchProviders]);
+
+  // Image upload handling
+  const handleImageUpload = async (file: File): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('lob_icons')
+        .upload(fileName, file);
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
+
+      return fileName;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast({
+        title: "Error",
+        description: "Failed to upload image",
+        variant: "destructive"
+      });
+      return null;
+    }
+  };
+
+  // Handle image selection
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast({
+          title: "Error",
+          description: "Image size must be less than 5MB",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Error",
+          description: "Please select a valid image file",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onload = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Clear image selection
+  const clearImageSelection = () => {
+    setSelectedImage(null);
+    setImagePreview("");
+  };
+
+  // Get current image URL
+  const getCurrentImageUrl = (iconPath?: string) => {
+    if (!iconPath) return null;
+    const { data } = supabase.storage.from('lob_icons').getPublicUrl(iconPath);
+    return data.publicUrl;
+  };
+
+  // Create LOB function
+  const handleCreate = async (data: LOBFormData) => {
+    try {
+      setLoading(true);
+      
+      let iconPath = null;
+      if (selectedImage) {
+        iconPath = await handleImageUpload(selectedImage);
+        if (!iconPath) return; // Upload failed
+      }
+      
+      const { error } = await supabase
+        .from('master_line_of_business')
+        .insert({
+          lob_code: data.lob_code,
+          lob_name: data.lob_name,
+          description: data.description,
+          status: data.status,
+          icon_file_path: iconPath,
+          created_by: profile?.user_id
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Line of Business created successfully"
+      });
+
+      setIsAddDialogOpen(false);
+      form.reset();
+      clearImageSelection();
+      fetchLOBs();
+    } catch (error) {
+      console.error('Error creating LOB:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create Line of Business",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Edit LOB function
+  const handleEdit = (lob: LOB) => {
+    setEditingLOB(lob);
+    form.setValue('lob_code', lob.lob_code);
+    form.setValue('lob_name', lob.lob_name);
+    form.setValue('description', lob.description || '');
+    form.setValue('status', lob.status);
+    
+    // Set current image preview if exists
+    if (lob.icon_file_path) {
+      const imageUrl = getCurrentImageUrl(lob.icon_file_path);
+      if (imageUrl) {
+        setImagePreview(imageUrl);
+      }
+    }
+    
+    setIsEditDialogOpen(true);
+  };
+
+  // Update LOB function
+  const handleUpdate = async (data: LOBFormData) => {
+    if (!editingLOB) return;
+    
+    try {
+      setLoading(true);
+      
+      let iconPath = editingLOB.icon_file_path; // Keep existing path by default
+      
+      if (selectedImage) {
+        // Upload new image
+        const newIconPath = await handleImageUpload(selectedImage);
+        if (!newIconPath) return; // Upload failed
+        
+        // Delete old image if it exists
+        if (editingLOB.icon_file_path) {
+          const { error: deleteError } = await supabase.storage
+            .from('lob_icons')
+            .remove([editingLOB.icon_file_path]);
+          
+          if (deleteError) {
+            console.error('Error deleting old image:', deleteError);
+          }
+        }
+        
+        iconPath = newIconPath;
+      }
+      
+      const { error } = await supabase
+        .from('master_line_of_business')
+        .update({
+          lob_code: data.lob_code,
+          lob_name: data.lob_name,
+          description: data.description,
+          status: data.status,
+          icon_file_path: iconPath,
+          updated_by: profile?.user_id,
+          updated_at: new Date().toISOString()
+        })
+        .eq('lob_id', editingLOB.lob_id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Line of Business updated successfully"
+      });
+
+      setIsEditDialogOpen(false);
+      setEditingLOB(null);
+      form.reset();
+      clearImageSelection();
+      fetchLOBs();
+    } catch (error) {
+      console.error('Error updating LOB:', error);
+      toast({
+        title: "Error", 
+        description: "Failed to update Line of Business",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Status toggle function
+  const handleStatusToggle = async (lob: LOB) => {
+    const newStatus = lob.status === 'Active' ? 'Inactive' : 'Active';
+    
+    try {
+      const { error } = await supabase
+        .from('master_line_of_business')
+        .update({
+          status: newStatus,
+          updated_by: profile?.user_id,
+          updated_at: new Date().toISOString()
+        })
+        .eq('lob_id', lob.lob_id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `${lob.lob_name} status changed to ${newStatus}`
+      });
+
+      fetchLOBs();
+    } catch (error) {
+      console.error('Error toggling LOB status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update status",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Delete LOB function
+  const handleDelete = (lob: LOB) => {
+    setDeletingLOB(lob);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deletingLOB) return;
+    
+    try {
+      const { error } = await supabase
+        .from('master_line_of_business')
+        .delete()
+        .eq('lob_id', deletingLOB.lob_id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Line of Business deleted successfully"
+      });
+
+      setIsDeleteDialogOpen(false);
+      setDeletingLOB(null);
+      fetchLOBs();
+    } catch (error) {
+      console.error('Error deleting LOB:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete Line of Business",
+        variant: "destructive"
+      });
+    }
+  };
 
   // Get filtered and paginated data
   const getFilteredLOBs = () => {
@@ -435,162 +683,6 @@ export default function ManageLineOfBusiness() {
     }
   };
 
-  // Create LOB function
-  const handleCreate = async (data: LOBFormData) => {
-    try {
-      setLoading(true);
-      
-      const { error } = await supabase
-        .from('master_line_of_business')
-        .insert({
-          lob_code: data.lob_code,
-          lob_name: data.lob_name,
-          description: data.description,
-          status: data.status,
-          created_by: profile?.user_id
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Line of Business created successfully"
-      });
-
-      setIsAddDialogOpen(false);
-      form.reset();
-      fetchLOBs();
-    } catch (error) {
-      console.error('Error creating LOB:', error);
-      toast({
-        title: "Error",
-        description: "Failed to create Line of Business",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Edit LOB function
-  const handleEdit = (lob: LOB) => {
-    setEditingLOB(lob);
-    form.setValue('lob_code', lob.lob_code);
-    form.setValue('lob_name', lob.lob_name);
-    form.setValue('description', lob.description || '');
-    form.setValue('status', lob.status);
-    setIsEditDialogOpen(true);
-  };
-
-  // Update LOB function
-  const handleUpdate = async (data: LOBFormData) => {
-    if (!editingLOB) return;
-    
-    try {
-      setLoading(true);
-      
-      const { error } = await supabase
-        .from('master_line_of_business')
-        .update({
-          lob_code: data.lob_code,
-          lob_name: data.lob_name,
-          description: data.description,
-          status: data.status,
-          updated_by: profile?.user_id,
-          updated_at: new Date().toISOString()
-        })
-        .eq('lob_id', editingLOB.lob_id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Line of Business updated successfully"
-      });
-
-      setIsEditDialogOpen(false);
-      setEditingLOB(null);
-      form.reset();
-      fetchLOBs();
-    } catch (error) {
-      console.error('Error updating LOB:', error);
-      toast({
-        title: "Error", 
-        description: "Failed to update Line of Business",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Status toggle function
-  const handleStatusToggle = async (lob: LOB) => {
-    const newStatus = lob.status === 'Active' ? 'Inactive' : 'Active';
-    
-    try {
-      const { error } = await supabase
-        .from('master_line_of_business')
-        .update({
-          status: newStatus,
-          updated_by: profile?.user_id,
-          updated_at: new Date().toISOString()
-        })
-        .eq('lob_id', lob.lob_id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: `${lob.lob_name} status changed to ${newStatus}`
-      });
-
-      fetchLOBs();
-    } catch (error) {
-      console.error('Error toggling LOB status:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update status",
-        variant: "destructive"
-      });
-    }
-  };
-
-  // Delete LOB function
-  const handleDelete = (lob: LOB) => {
-    setDeletingLOB(lob);
-    setIsDeleteDialogOpen(true);
-  };
-
-  const confirmDelete = async () => {
-    if (!deletingLOB) return;
-    
-    try {
-      const { error } = await supabase
-        .from('master_line_of_business')
-        .delete()
-        .eq('lob_id', deletingLOB.lob_id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Line of Business deleted successfully"
-      });
-
-      setIsDeleteDialogOpen(false);
-      setDeletingLOB(null);
-      fetchLOBs();
-    } catch (error) {
-      console.error('Error deleting LOB:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete Line of Business",
-        variant: "destructive"
-      });
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -700,6 +792,7 @@ export default function ManageLineOfBusiness() {
                   )}
                 </div>
               </div>
+              
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
                 <Textarea
@@ -708,6 +801,56 @@ export default function ManageLineOfBusiness() {
                   className="min-h-[80px]"
                 />
               </div>
+              
+              {/* Image Upload Section */}
+              <div className="space-y-2">
+                <Label>LOB Icon</Label>
+                <div className="flex items-center space-x-4">
+                  <div className="flex-1">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageSelect}
+                      className="hidden"
+                      id="image-upload"
+                    />
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => document.getElementById('image-upload')?.click()}
+                        className="flex items-center space-x-2"
+                      >
+                        <ImageIcon className="h-4 w-4" />
+                        <span>Choose Image</span>
+                      </Button>
+                      {selectedImage && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={clearImageSelection}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Recommended: PNG, JPG, SVG (max 5MB)
+                    </p>
+                  </div>
+                  {imagePreview && (
+                    <div className="w-16 h-16 border rounded-lg flex items-center justify-center bg-muted">
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="w-full h-full object-cover rounded-lg"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="status">Status</Label>
                 <Controller
@@ -726,6 +869,7 @@ export default function ManageLineOfBusiness() {
                   )}
                 />
               </div>
+              
               <div className="flex justify-end space-x-2 pt-4">
                 <Button
                   type="button"
@@ -733,6 +877,7 @@ export default function ManageLineOfBusiness() {
                   onClick={() => {
                     setIsAddDialogOpen(false);
                     form.reset();
+                    clearImageSelection();
                   }}
                 >
                   Cancel
@@ -776,6 +921,7 @@ export default function ManageLineOfBusiness() {
                   )}
                 </div>
               </div>
+              
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
                 <Textarea
@@ -784,6 +930,56 @@ export default function ManageLineOfBusiness() {
                   className="min-h-[80px]"
                 />
               </div>
+              
+              {/* Image Upload Section */}
+              <div className="space-y-2">
+                <Label>LOB Icon</Label>
+                <div className="flex items-center space-x-4">
+                  <div className="flex-1">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageSelect}
+                      className="hidden"
+                      id="image-upload-edit"
+                    />
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => document.getElementById('image-upload-edit')?.click()}
+                        className="flex items-center space-x-2"
+                      >
+                        <ImageIcon className="h-4 w-4" />
+                        <span>{editingLOB?.icon_file_path ? 'Change Image' : 'Choose Image'}</span>
+                      </Button>
+                      {(selectedImage || imagePreview) && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={clearImageSelection}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Recommended: PNG, JPG, SVG (max 5MB)
+                    </p>
+                  </div>
+                  {imagePreview && (
+                    <div className="w-16 h-16 border rounded-lg flex items-center justify-center bg-muted">
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="w-full h-full object-cover rounded-lg"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="status">Status</Label>
                 <Controller
@@ -802,6 +998,7 @@ export default function ManageLineOfBusiness() {
                   )}
                 />
               </div>
+              
               <div className="flex justify-end space-x-2 pt-4">
                 <Button
                   type="button"
@@ -810,6 +1007,7 @@ export default function ManageLineOfBusiness() {
                     setIsEditDialogOpen(false);
                     setEditingLOB(null);
                     form.reset();
+                    clearImageSelection();
                   }}
                 >
                   Cancel
