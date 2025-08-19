@@ -87,7 +87,11 @@ export function ListView<T extends Record<string, any>>({
               >
                 {columns.map((col) => (
                   <TableCell key={col.key} className={col.className}>
-                    {col.render ? col.render(item) : item[col.key]}
+                    {col.render ? col.render(item) : (
+                      typeof item[col.key] === 'object' && item[col.key] !== null 
+                        ? JSON.stringify(item[col.key]) 
+                        : String(item[col.key] ?? '')
+                    )}
                   </TableCell>
                 ))}
                 {actions && (
