@@ -12,7 +12,6 @@ import Header from '@/components/Header';
 import { Search, Plus, Download, Edit, Trash2, Filter } from 'lucide-react';
 import CreateEditBusinessCategoryModal from '@/components/CreateEditBusinessCategoryModal';
 import { supabase } from '@/integrations/supabase/client';
-
 interface BusinessCategory {
   category_id: number;
   category_code: string;
@@ -22,7 +21,6 @@ interface BusinessCategory {
   created_at: string;
   updated_at: string;
 }
-
 const ManageBusinessCategories = () => {
   const [categories, setCategories] = useState<BusinessCategory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,8 +33,9 @@ const ManageBusinessCategories = () => {
   const [selectedCategory, setSelectedCategory] = useState<BusinessCategory | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<BusinessCategory | null>(null);
-  const { toast } = useToast();
-
+  const {
+    toast
+  } = useToast();
   const debounce = (func: Function, wait: number) => {
     let timeout: NodeJS.Timeout;
     return function executedFunction(...args: any[]) {
@@ -48,31 +47,26 @@ const ManageBusinessCategories = () => {
       timeout = setTimeout(later, wait);
     };
   };
-
   const fetchCategories = useCallback(async () => {
     try {
       setLoading(true);
-      
+
       // Build query parameters
       const params = new URLSearchParams();
       if (searchTerm) params.append('search', searchTerm);
       if (statusFilter !== 'all') params.append('status', statusFilter);
       params.append('page', currentPage.toString());
       params.append('limit', pageLimit.toString());
-
       const url = `https://sezbixunulacdednlrtl.supabase.co/functions/v1/business-categories?${params.toString()}`;
-      
       const response = await fetch(url, {
         method: 'GET',
         headers: {
           'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNlemJpeHVudWxhY2RlZG5scnRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUxNDA5NjcsImV4cCI6MjA3MDcxNjk2N30.1e9sTjj8hPhEmnsJsMfXCGgfmLfbevbT6Z0wAPCOuJg',
           'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNlemJpeHVudWxhY2RlZG5scnRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUxNDA5NjcsImV4cCI6MjA3MDcxNjk2N30.1e9sTjj8hPhEmnsJsMfXCGgfmLfbevbT6Z0wAPCOuJg',
-          'Content-Type': 'application/json',
-        },
+          'Content-Type': 'application/json'
+        }
       });
-
       if (!response.ok) throw new Error('Failed to fetch categories');
-      
       const result = await response.json();
       if (result.success) {
         setCategories(result.data);
@@ -91,28 +85,22 @@ const ManageBusinessCategories = () => {
       setLoading(false);
     }
   }, [searchTerm, statusFilter, currentPage, pageLimit, toast]);
-
   const debouncedFetchCategories = useCallback(debounce(fetchCategories, 500), [fetchCategories]);
-
   useEffect(() => {
     debouncedFetchCategories();
   }, [searchTerm, statusFilter, currentPage]);
-
   const handleToggleActive = async (category: BusinessCategory) => {
     try {
       const url = `https://sezbixunulacdednlrtl.supabase.co/functions/v1/business-categories/${category.category_id}`;
-      
       const response = await fetch(url, {
         method: 'PATCH',
         headers: {
           'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNlemJpeHVudWxhY2RlZG5scnRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUxNDA5NjcsImV4cCI6MjA3MDcxNjk2N30.1e9sTjj8hPhEmnsJsMfXCGgfmLfbevbT6Z0wAPCOuJg',
           'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNlemJpeHVudWxhY2RlZG5scnRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUxNDA5NjcsImV4cCI6MjA3MDcxNjk2N30.1e9sTjj8hPhEmnsJsMfXCGgfmLfbevbT6Z0wAPCOuJg',
-          'Content-Type': 'application/json',
-        },
+          'Content-Type': 'application/json'
+        }
       });
-
       if (!response.ok) throw new Error('Failed to toggle status');
-
       const result = await response.json();
       if (result.success) {
         toast({
@@ -132,24 +120,19 @@ const ManageBusinessCategories = () => {
       });
     }
   };
-
   const handleDeleteCategory = async () => {
     if (!categoryToDelete) return;
-
     try {
       const url = `https://sezbixunulacdednlrtl.supabase.co/functions/v1/business-categories/${categoryToDelete.category_id}`;
-      
       const response = await fetch(url, {
         method: 'DELETE',
         headers: {
           'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNlemJpeHVudWxhY2RlZG5scnRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUxNDA5NjcsImV4cCI6MjA3MDcxNjk2N30.1e9sTjj8hPhEmnsJsMfXCGgfmLfbevbT6Z0wAPCOuJg',
           'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNlemJpeHVudWxhY2RlZG5scnRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUxNDA5NjcsImV4cCI6MjA3MDcxNjk2N30.1e9sTjj8hPhEmnsJsMfXCGgfmLfbevbT6Z0wAPCOuJg',
-          'Content-Type': 'application/json',
-        },
+          'Content-Type': 'application/json'
+        }
       });
-
       if (!response.ok) throw new Error('Failed to delete category');
-
       const result = await response.json();
       if (result.success) {
         toast({
@@ -171,7 +154,6 @@ const ManageBusinessCategories = () => {
       });
     }
   };
-
   const handleExportCSV = () => {
     const csvData = categories.map(category => ({
       'Category ID': category.category_id,
@@ -181,13 +163,10 @@ const ManageBusinessCategories = () => {
       'Status': category.status,
       'Last Updated': new Date(category.updated_at).toLocaleDateString()
     }));
-
-    const csvContent = [
-      Object.keys(csvData[0] || {}).join(','),
-      ...csvData.map(row => Object.values(row).map(value => `"${value}"`).join(','))
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const csvContent = [Object.keys(csvData[0] || {}).join(','), ...csvData.map(row => Object.values(row).map(value => `"${value}"`).join(','))].join('\n');
+    const blob = new Blob([csvContent], {
+      type: 'text/csv'
+    });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -195,19 +174,16 @@ const ManageBusinessCategories = () => {
     a.click();
     window.URL.revokeObjectURL(url);
   };
-
   const totalPages = Math.ceil(totalItems / pageLimit);
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       <Header />
       <div className="container-padding section-padding">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Header */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Master Business Categories</h1>
-              <p className="text-muted-foreground">Manage business classification categories</p>
+              <h1 className="text-3xl text-foreground font-normal">Master Business Categories</h1>
+              
             </div>
           </div>
 
@@ -225,12 +201,7 @@ const ManageBusinessCategories = () => {
                   {/* Search */}
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                    <Input
-                      placeholder="Search by name or code..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
-                    />
+                    <Input placeholder="Search by name or code..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10" />
                   </div>
 
                   {/* Status Filter */}
@@ -251,21 +222,14 @@ const ManageBusinessCategories = () => {
 
                 {/* Action Buttons */}
                 <div className="flex gap-2">
-                  <Button
-                    onClick={() => {
-                      setSelectedCategory(null);
-                      setCreateEditModalOpen(true);
-                    }}
-                    className="flex items-center gap-2"
-                  >
+                  <Button onClick={() => {
+                  setSelectedCategory(null);
+                  setCreateEditModalOpen(true);
+                }} className="flex items-center gap-2">
                     <Plus className="w-4 h-4" />
                     New Category
                   </Button>
-                  <Button
-                    variant="outline"
-                    onClick={handleExportCSV}
-                    className="flex items-center gap-2"
-                  >
+                  <Button variant="outline" onClick={handleExportCSV} className="flex items-center gap-2">
                     <Download className="w-4 h-4" />
                     Export CSV
                   </Button>
@@ -277,7 +241,7 @@ const ManageBusinessCategories = () => {
           {/* Table */}
           <Card>
             <CardHeader>
-              <CardTitle>Business Categories ({totalItems} total)</CardTitle>
+              <CardTitle className="font-normal">Business Categories ({totalItems} total)</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
@@ -294,25 +258,19 @@ const ManageBusinessCategories = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {loading ? (
-                      Array.from({ length: 5 }).map((_, index) => (
-                        <TableRow key={index}>
-                          {Array.from({ length: 7 }).map((_, cellIndex) => (
-                            <TableCell key={cellIndex}>
+                    {loading ? Array.from({
+                    length: 5
+                  }).map((_, index) => <TableRow key={index}>
+                          {Array.from({
+                      length: 7
+                    }).map((_, cellIndex) => <TableCell key={cellIndex}>
                               <div className="h-4 bg-muted animate-pulse rounded"></div>
-                            </TableCell>
-                          ))}
-                        </TableRow>
-                      ))
-                    ) : categories.length === 0 ? (
-                      <TableRow>
+                            </TableCell>)}
+                        </TableRow>) : categories.length === 0 ? <TableRow>
                         <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                           No business categories found. Create your first category to get started.
                         </TableCell>
-                      </TableRow>
-                    ) : (
-                      categories.map((category) => (
-                        <TableRow key={category.category_id}>
+                      </TableRow> : categories.map(category => <TableRow key={category.category_id}>
                           <TableCell className="font-mono text-sm">{category.category_id}</TableCell>
                           <TableCell className="font-mono text-sm">{category.category_code}</TableCell>
                           <TableCell className="font-medium">{category.category_name}</TableCell>
@@ -325,80 +283,50 @@ const ManageBusinessCategories = () => {
                           <TableCell>{new Date(category.updated_at).toLocaleDateString()}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => {
-                                  setSelectedCategory(category);
-                                  setCreateEditModalOpen(true);
-                                }}
-                              >
+                              <Button variant="ghost" size="icon" onClick={() => {
+                          setSelectedCategory(category);
+                          setCreateEditModalOpen(true);
+                        }}>
                                 <Edit className="w-4 h-4" />
                               </Button>
-                              <Switch
-                                checked={category.status === 'Active'}
-                                onCheckedChange={() => handleToggleActive(category)}
-                              />
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => {
-                                  setCategoryToDelete(category);
-                                  setDeleteDialogOpen(true);
-                                }}
-                              >
+                              <Switch checked={category.status === 'Active'} onCheckedChange={() => handleToggleActive(category)} />
+                              <Button variant="ghost" size="icon" onClick={() => {
+                          setCategoryToDelete(category);
+                          setDeleteDialogOpen(true);
+                        }}>
                                 <Trash2 className="w-4 h-4" />
                               </Button>
                             </div>
                           </TableCell>
-                        </TableRow>
-                      ))
-                    )}
+                        </TableRow>)}
                   </TableBody>
                 </Table>
               </div>
 
               {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between mt-6">
+              {totalPages > 1 && <div className="flex items-center justify-between mt-6">
                   <div className="text-sm text-muted-foreground">
                     Showing {(currentPage - 1) * pageLimit + 1} to {Math.min(currentPage * pageLimit, totalItems)} of {totalItems} entries
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                      disabled={currentPage === 1}
-                    >
+                    <Button variant="outline" size="sm" onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} disabled={currentPage === 1}>
                       Previous
                     </Button>
                     <span className="text-sm">
                       Page {currentPage} of {totalPages}
                     </span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                      disabled={currentPage === totalPages}
-                    >
+                    <Button variant="outline" size="sm" onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))} disabled={currentPage === totalPages}>
                       Next
                     </Button>
                   </div>
-                </div>
-              )}
+                </div>}
             </CardContent>
           </Card>
         </div>
       </div>
 
       {/* Modals */}
-      <CreateEditBusinessCategoryModal
-        open={createEditModalOpen}
-        onOpenChange={setCreateEditModalOpen}
-        category={selectedCategory}
-        onSuccess={fetchCategories}
-      />
+      <CreateEditBusinessCategoryModal open={createEditModalOpen} onOpenChange={setCreateEditModalOpen} category={selectedCategory} onSuccess={fetchCategories} />
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
@@ -416,8 +344,6 @@ const ManageBusinessCategories = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
-  );
+    </div>;
 };
-
 export default ManageBusinessCategories;
