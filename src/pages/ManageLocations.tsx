@@ -14,14 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import {
-  Search,
-  Plus,
-  Edit,
-  MapPin,
-  Upload,
-  Download
-} from "lucide-react";
+import { Search, Plus, Edit, MapPin, Upload, Download } from "lucide-react";
 import { BulkImportDialog } from "@/components/BulkImportDialog";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 
@@ -45,7 +38,7 @@ interface MasterLocation {
 // Validation schema
 const locationSchema = z.object({
   district: z.string().optional(),
-  division: z.string().optional(), 
+  division: z.string().optional(),
   region: z.string().optional(),
   block: z.string().optional(),
   state: z.string().min(1, "State is required"),
@@ -53,33 +46,33 @@ const locationSchema = z.object({
   pincode: z.string().min(1, "Pincode is required").max(10, "Pincode too long"),
   status: z.enum(['Active', 'Inactive'])
 });
-
 type LocationFormData = z.infer<typeof locationSchema>;
-
 export default function ManageLocations() {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const sb = supabase as any;
-  
+
   // State management
   const [locations, setLocations] = useState<MasterLocation[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Filter states
   const [searchTerm, setSearchTerm] = useState("");
   const [stateFilter, setStateFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  
+
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(50);
   const [totalCount, setTotalCount] = useState(0);
-  
+
   // Dialog states
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
-  
+
   // Form states
   const [editingLocation, setEditingLocation] = useState<MasterLocation | null>(null);
 
@@ -102,17 +95,19 @@ export default function ManageLocations() {
   const fetchLocations = useCallback(async () => {
     try {
       // Build base query for counting
-      let countQuery = sb
-        .from('master_locations')
-        .select('*', { count: 'exact', head: true });
+      let countQuery = sb.from('master_locations').select('*', {
+        count: 'exact',
+        head: true
+      });
 
       // Build base query for data
-      let query = sb
-        .from('master_locations')
-        .select('*')
-        .order('state', { ascending: true })
-        .order('district', { ascending: true })
-        .order('pincode', { ascending: true });
+      let query = sb.from('master_locations').select('*').order('state', {
+        ascending: true
+      }).order('district', {
+        ascending: true
+      }).order('pincode', {
+        ascending: true
+      });
 
       // Apply filters to both queries
       if (stateFilter !== 'all') {
@@ -137,14 +132,15 @@ export default function ManageLocations() {
       query = query.range(from, to);
 
       // Execute both queries
-      const [{ data, error }, { count, error: countError }] = await Promise.all([
-        query,
-        countQuery
-      ]);
-
+      const [{
+        data,
+        error
+      }, {
+        count,
+        error: countError
+      }] = await Promise.all([query, countQuery]);
       if (error) throw error;
       if (countError) throw countError;
-
       setLocations((data || []) as MasterLocation[]);
       setTotalCount(count || 0);
     } catch (error) {
@@ -171,26 +167,23 @@ export default function ManageLocations() {
         status: data.status,
         updated_at: new Date().toISOString()
       };
-
       let result;
       if (editingLocation) {
-        result = await sb
-          .from('master_locations')
-          .update({ ...locationData, updated_by: (await supabase.auth.getUser()).data.user?.id })
-          .eq('id', editingLocation.id);
+        result = await sb.from('master_locations').update({
+          ...locationData,
+          updated_by: (await supabase.auth.getUser()).data.user?.id
+        }).eq('id', editingLocation.id);
       } else {
-        result = await sb
-          .from('master_locations')
-          .insert({ ...locationData, created_by: (await supabase.auth.getUser()).data.user?.id });
+        result = await sb.from('master_locations').insert({
+          ...locationData,
+          created_by: (await supabase.auth.getUser()).data.user?.id
+        });
       }
-
       if (result.error) throw result.error;
-
       toast({
         title: "Success",
         description: `Location ${editingLocation ? 'updated' : 'created'} successfully`
       });
-
       locationForm.reset();
       setIsAddDialogOpen(false);
       setIsEditDialogOpen(false);
@@ -226,22 +219,17 @@ export default function ManageLocations() {
   const handleStatusToggle = async (location: MasterLocation) => {
     try {
       const newStatus = location.status === 'Active' ? 'Inactive' : 'Active';
-      
-      const { error } = await sb
-        .from('master_locations')
-        .update({ 
-          status: newStatus,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', location.id);
-
+      const {
+        error
+      } = await sb.from('master_locations').update({
+        status: newStatus,
+        updated_at: new Date().toISOString()
+      }).eq('id', location.id);
       if (error) throw error;
-
       toast({
         title: "Success",
         description: `Location ${newStatus.toLowerCase()}`
       });
-
       fetchLocations();
     } catch (error) {
       console.error('Error updating location status:', error);
@@ -259,16 +247,12 @@ export default function ManageLocations() {
       let insertCount = 0;
       let updateCount = 0;
       let errorCount = 0;
-
       for (const row of data) {
         try {
           // Check if location exists by pincode
-          const { data: existingLocation } = await sb
-            .from('master_locations')
-            .select('id')
-            .eq('pincode', row.pincode)
-            .maybeSingle();
-
+          const {
+            data: existingLocation
+          } = await sb.from('master_locations').select('id').eq('pincode', row.pincode).maybeSingle();
           const locationData = {
             district: row.district || null,
             division: row.division || null,
@@ -279,22 +263,18 @@ export default function ManageLocations() {
             pincode: row.pincode,
             status: row.status || 'Active'
           };
-
           if (existingLocation) {
             // Update existing
-            const { error } = await sb
-              .from('master_locations')
-              .update(locationData)
-              .eq('id', existingLocation.id);
-            
+            const {
+              error
+            } = await sb.from('master_locations').update(locationData).eq('id', existingLocation.id);
             if (error) throw error;
             updateCount++;
           } else {
             // Insert new
-            const { error } = await sb
-              .from('master_locations')
-              .insert(locationData);
-            
+            const {
+              error
+            } = await sb.from('master_locations').insert(locationData);
             if (error) throw error;
             insertCount++;
           }
@@ -303,12 +283,10 @@ export default function ManageLocations() {
           errorCount++;
         }
       }
-
       toast({
         title: "Locations Import Complete",
         description: `Inserted: ${insertCount}, Updated: ${updateCount}, Errors: ${errorCount}`
       });
-
       fetchLocations();
     } catch (error: any) {
       toast({
@@ -328,13 +306,11 @@ export default function ManageLocations() {
   // Fetch unique states for filter dropdown
   const fetchUniqueStates = useCallback(async () => {
     try {
-      const { data, error } = await sb
-        .from('master_locations')
-        .select('state')
-        .order('state');
-      
+      const {
+        data,
+        error
+      } = await sb.from('master_locations').select('state').order('state');
       if (error) throw error;
-      
       const states = Array.from(new Set((data as any[])?.map((item: any) => String(item.state)))).sort();
       setUniqueStates(states as string[]);
     } catch (error) {
@@ -356,17 +332,12 @@ export default function ManageLocations() {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, stateFilter, statusFilter]);
-
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
+    return <div className="flex items-center justify-center min-h-[400px]">
         <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="container mx-auto p-6 space-y-6">
+  return <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <BackButton to="/admin-dashboard" />
@@ -377,10 +348,8 @@ export default function ManageLocations() {
         <CardHeader className="flex flex-row items-center space-y-0 pb-4">
           <MapPin className="h-8 w-8 text-primary mr-3" />
           <div>
-            <CardTitle>Master Locations Management</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Consolidated location data: District, Division, Region, Block, State, Country, Pincode
-            </p>
+            <CardTitle className="font-normal">Master Locations Management</CardTitle>
+            
           </div>
         </CardHeader>
         <CardContent>
@@ -395,8 +364,8 @@ export default function ManageLocations() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-semibold">Locations Management</h2>
-            <p className="text-muted-foreground">Manage consolidated location master data</p>
+            
+            
           </div>
           
           <div className="flex items-center space-x-2">
@@ -420,83 +389,47 @@ export default function ManageLocations() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="pincode">Pincode *</Label>
-                      <Input
-                        id="pincode"
-                        {...locationForm.register('pincode')}
-                        placeholder="e.g., 400001"
-                      />
-                      {locationForm.formState.errors.pincode && (
-                        <p className="text-sm text-destructive">{locationForm.formState.errors.pincode.message}</p>
-                      )}
+                      <Input id="pincode" {...locationForm.register('pincode')} placeholder="e.g., 400001" />
+                      {locationForm.formState.errors.pincode && <p className="text-sm text-destructive">{locationForm.formState.errors.pincode.message}</p>}
                     </div>
                     
                     <div>
                       <Label htmlFor="state">State *</Label>
-                      <Input
-                        id="state"
-                        {...locationForm.register('state')}
-                        placeholder="e.g., Maharashtra"
-                      />
-                      {locationForm.formState.errors.state && (
-                        <p className="text-sm text-destructive">{locationForm.formState.errors.state.message}</p>
-                      )}
+                      <Input id="state" {...locationForm.register('state')} placeholder="e.g., Maharashtra" />
+                      {locationForm.formState.errors.state && <p className="text-sm text-destructive">{locationForm.formState.errors.state.message}</p>}
                     </div>
 
                     <div>
                       <Label htmlFor="district">District</Label>
-                      <Input
-                        id="district"
-                        {...locationForm.register('district')}
-                        placeholder="e.g., Mumbai"
-                      />
+                      <Input id="district" {...locationForm.register('district')} placeholder="e.g., Mumbai" />
                     </div>
 
                     <div>
                       <Label htmlFor="division">Division</Label>
-                      <Input
-                        id="division"
-                        {...locationForm.register('division')}
-                        placeholder="e.g., Konkan"
-                      />
+                      <Input id="division" {...locationForm.register('division')} placeholder="e.g., Konkan" />
                     </div>
 
                     <div>
                       <Label htmlFor="region">Region</Label>
-                      <Input
-                        id="region"
-                        {...locationForm.register('region')}
-                        placeholder="e.g., Western"
-                      />
+                      <Input id="region" {...locationForm.register('region')} placeholder="e.g., Western" />
                     </div>
 
                     <div>
                       <Label htmlFor="block">Block</Label>
-                      <Input
-                        id="block"
-                        {...locationForm.register('block')}
-                        placeholder="e.g., Fort"
-                      />
+                      <Input id="block" {...locationForm.register('block')} placeholder="e.g., Fort" />
                     </div>
 
                     <div>
                       <Label htmlFor="country">Country *</Label>
-                      <Input
-                        id="country"
-                        {...locationForm.register('country')}
-                        placeholder="e.g., India"
-                      />
-                      {locationForm.formState.errors.country && (
-                        <p className="text-sm text-destructive">{locationForm.formState.errors.country.message}</p>
-                      )}
+                      <Input id="country" {...locationForm.register('country')} placeholder="e.g., India" />
+                      {locationForm.formState.errors.country && <p className="text-sm text-destructive">{locationForm.formState.errors.country.message}</p>}
                     </div>
 
                     <div>
                       <Label htmlFor="status">Status</Label>
-                      <Controller
-                        name="status"
-                        control={locationForm.control}
-                        render={({ field }) => (
-                          <Select onValueChange={field.onChange} value={field.value}>
+                      <Controller name="status" control={locationForm.control} render={({
+                      field
+                    }) => <Select onValueChange={field.onChange} value={field.value}>
                             <SelectTrigger>
                               <SelectValue placeholder="Select status" />
                             </SelectTrigger>
@@ -504,9 +437,7 @@ export default function ManageLocations() {
                               <SelectItem value="Active">Active</SelectItem>
                               <SelectItem value="Inactive">Inactive</SelectItem>
                             </SelectContent>
-                          </Select>
-                        )}
-                      />
+                          </Select>} />
                     </div>
                   </div>
 
@@ -526,12 +457,7 @@ export default function ManageLocations() {
         <div className="flex items-center space-x-4">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-            <Input
-              placeholder="Search pincode, district, state, or block..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+            <Input placeholder="Search pincode, district, state, or block..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10" />
           </div>
 
           <Select value={stateFilter} onValueChange={setStateFilter}>
@@ -540,9 +466,7 @@ export default function ManageLocations() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All States</SelectItem>
-              {uniqueStates.map(state => (
-                <SelectItem key={state} value={state}>{state}</SelectItem>
-              ))}
+              {uniqueStates.map(state => <SelectItem key={state} value={state}>{state}</SelectItem>)}
             </SelectContent>
           </Select>
 
@@ -575,8 +499,7 @@ export default function ManageLocations() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {locations.map((location) => (
-                <TableRow key={location.id} className="cursor-pointer" onClick={() => handleLocationEdit(location)}>
+              {locations.map(location => <TableRow key={location.id} className="cursor-pointer" onClick={() => handleLocationEdit(location)}>
                   <TableCell className="font-medium">{location.pincode}</TableCell>
                   <TableCell>{location.district || '-'}</TableCell>
                   <TableCell>{location.division || '-'}</TableCell>
@@ -589,50 +512,33 @@ export default function ManageLocations() {
                       {location.status}
                     </Badge>
                   </TableCell>
-                  <TableCell onClick={(e) => e.stopPropagation()}>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleStatusToggle(location)}
-                    >
+                  <TableCell onClick={e => e.stopPropagation()}>
+                    <Button variant="outline" size="sm" onClick={() => handleStatusToggle(location)}>
                       Toggle
                     </Button>
                   </TableCell>
-                </TableRow>
-              ))}
+                </TableRow>)}
             </TableBody>
           </Table>
         </div>
 
         {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between">
+        {totalPages > 1 && <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
               Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, totalCount)} of {totalCount} locations
             </p>
             <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(currentPage - 1)}
-                disabled={currentPage === 1}
-              >
+              <Button variant="outline" size="sm" onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1}>
                 Previous
               </Button>
               <span className="text-sm">
                 Page {currentPage} of {totalPages}
               </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(currentPage + 1)}
-                disabled={currentPage === totalPages}
-              >
+              <Button variant="outline" size="sm" onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === totalPages}>
                 Next
               </Button>
             </div>
-          </div>
-        )}
+          </div>}
       </div>
 
       {/* Edit Dialog */}
@@ -646,74 +552,44 @@ export default function ManageLocations() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="edit_pincode">Pincode *</Label>
-                <Input
-                  id="edit_pincode"
-                  {...locationForm.register('pincode')}
-                  placeholder="e.g., 400001"
-                />
+                <Input id="edit_pincode" {...locationForm.register('pincode')} placeholder="e.g., 400001" />
               </div>
               
               <div>
                 <Label htmlFor="edit_state">State *</Label>
-                <Input
-                  id="edit_state"
-                  {...locationForm.register('state')}
-                  placeholder="e.g., Maharashtra"
-                />
+                <Input id="edit_state" {...locationForm.register('state')} placeholder="e.g., Maharashtra" />
               </div>
 
               <div>
                 <Label htmlFor="edit_district">District</Label>
-                <Input
-                  id="edit_district"
-                  {...locationForm.register('district')}
-                  placeholder="e.g., Mumbai"
-                />
+                <Input id="edit_district" {...locationForm.register('district')} placeholder="e.g., Mumbai" />
               </div>
 
               <div>
                 <Label htmlFor="edit_division">Division</Label>
-                <Input
-                  id="edit_division"
-                  {...locationForm.register('division')}
-                  placeholder="e.g., Konkan"
-                />
+                <Input id="edit_division" {...locationForm.register('division')} placeholder="e.g., Konkan" />
               </div>
 
               <div>
                 <Label htmlFor="edit_region">Region</Label>
-                <Input
-                  id="edit_region"
-                  {...locationForm.register('region')}
-                  placeholder="e.g., Western"
-                />
+                <Input id="edit_region" {...locationForm.register('region')} placeholder="e.g., Western" />
               </div>
 
               <div>
                 <Label htmlFor="edit_block">Block</Label>
-                <Input
-                  id="edit_block"
-                  {...locationForm.register('block')}
-                  placeholder="e.g., Fort"
-                />
+                <Input id="edit_block" {...locationForm.register('block')} placeholder="e.g., Fort" />
               </div>
 
               <div>
                 <Label htmlFor="edit_country">Country *</Label>
-                <Input
-                  id="edit_country"
-                  {...locationForm.register('country')}
-                  placeholder="e.g., India"
-                />
+                <Input id="edit_country" {...locationForm.register('country')} placeholder="e.g., India" />
               </div>
 
               <div>
                 <Label htmlFor="edit_status">Status</Label>
-                <Controller
-                  name="status"
-                  control={locationForm.control}
-                  render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
+                <Controller name="status" control={locationForm.control} render={({
+                field
+              }) => <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select status" />
                       </SelectTrigger>
@@ -721,9 +597,7 @@ export default function ManageLocations() {
                         <SelectItem value="Active">Active</SelectItem>
                         <SelectItem value="Inactive">Inactive</SelectItem>
                       </SelectContent>
-                    </Select>
-                  )}
-                />
+                    </Select>} />
               </div>
             </div>
 
@@ -738,8 +612,7 @@ export default function ManageLocations() {
       </Dialog>
 
       {/* Note: BulkImportDialog needs to be updated for locations - using custom import handler for now */}
-      {isBulkImportOpen && (
-        <Dialog open={isBulkImportOpen} onOpenChange={setIsBulkImportOpen}>
+      {isBulkImportOpen && <Dialog open={isBulkImportOpen} onOpenChange={setIsBulkImportOpen}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Bulk Import Locations</DialogTitle>
@@ -751,8 +624,6 @@ export default function ManageLocations() {
               </Button>
             </div>
           </DialogContent>
-        </Dialog>
-      )}
-    </div>
-  );
+        </Dialog>}
+    </div>;
 }
