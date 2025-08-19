@@ -234,11 +234,72 @@ export default function ManageLineOfBusiness() {
 
   // Define list view columns
   const listViewColumns = [
-    { key: 'lob_code', header: 'LOB Code', width: 'w-32' },
-    { key: 'lob_name', header: 'LOB Name', width: 'flex-1' },
-    { key: 'description', header: 'Description', width: 'w-64' },
-    { key: 'linked_providers', header: 'Linked Providers', width: 'w-48' },
-    { key: 'status', header: 'Status', width: 'w-24' },
+    { 
+      key: 'lob_code', 
+      header: 'LOB Code', 
+      className: 'w-32',
+      render: (item: LOB) => <span className="font-medium">{item.lob_code}</span>
+    },
+    { 
+      key: 'lob_name', 
+      header: 'LOB Name', 
+      className: 'flex-1',
+      render: (item: LOB) => (
+        <div className="flex items-center space-x-2">
+          <LOBIcon 
+            iconPath={item.icon_file_path}
+            lobName={item.lob_name}
+            className="h-6 w-6"
+          />
+          <span className="font-medium">{item.lob_name}</span>
+        </div>
+      )
+    },
+    { 
+      key: 'description', 
+      header: 'Description', 
+      className: 'w-64',
+      render: (item: LOB) => (
+        <span className="text-sm text-muted-foreground line-clamp-2">
+          {item.description || 'No description'}
+        </span>
+      )
+    },
+    { 
+      key: 'linked_providers', 
+      header: 'Linked Providers', 
+      className: 'w-48',
+      render: (item: LOB) => (
+        <div className="flex flex-wrap gap-1">
+          {item.linked_providers && item.linked_providers.length > 0 ? (
+            <>
+              {item.linked_providers.slice(0, 2).map(provider => (
+                <Badge key={provider.provider_id} variant="outline" className="text-xs">
+                  {provider.provider_code}
+                </Badge>
+              ))}
+              {item.linked_providers.length > 2 && (
+                <Badge variant="outline" className="text-xs">
+                  +{item.linked_providers.length - 2}
+                </Badge>
+              )}
+            </>
+          ) : (
+            <span className="text-xs text-muted-foreground">None</span>
+          )}
+        </div>
+      )
+    },
+    { 
+      key: 'status', 
+      header: 'Status', 
+      className: 'w-24',
+      render: (item: LOB) => (
+        <Badge variant={item.status === 'Active' ? 'default' : 'secondary'}>
+          {item.status}
+        </Badge>
+      )
+    },
   ];
 
   // Render LOB card for grid and kanban views
