@@ -14,6 +14,85 @@ export type Database = {
   }
   public: {
     Tables: {
+      customers: {
+        Row: {
+          address: Json | null
+          agent_id: string | null
+          created_at: string
+          created_by: string | null
+          customer_name: string
+          dob: string | null
+          email: string | null
+          id: string
+          marital_status: string | null
+          nominee_email: string | null
+          nominee_name: string | null
+          nominee_phone: string | null
+          nominee_relationship: string | null
+          org_id: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: Json | null
+          agent_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_name: string
+          dob?: string | null
+          email?: string | null
+          id?: string
+          marital_status?: string | null
+          nominee_email?: string | null
+          nominee_name?: string | null
+          nominee_phone?: string | null
+          nominee_relationship?: string | null
+          org_id: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: Json | null
+          agent_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_name?: string
+          dob?: string | null
+          email?: string | null
+          id?: string
+          marital_status?: string | null
+          nominee_email?: string | null
+          nominee_name?: string | null
+          nominee_phone?: string | null
+          nominee_relationship?: string | null
+          org_id?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customers_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "customers_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "customers_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           created_at: string
