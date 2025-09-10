@@ -1,10 +1,1 @@
-project_id = "sezbixunulacdednlrtl"
-
-[functions.bulk-import-addons]
-verify_jwt = false
-
-[functions.addons]
-verify_jwt = false
-
-[functions.addon-mappings]
-verify_jwt = false
+project_id = "vchejjnhwuakcxgssazx"
