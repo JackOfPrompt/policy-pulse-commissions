@@ -1,12 +1,28 @@
 import { useState } from "react";
-import { usePolicyCSVParser } from "../hooks/usePolicyCSVParser";
+import { 
+  usePolicyCSVParser, 
+} from "../hooks/usePolicyCSVParser";
+import { 
+  exportInvalidRowsToCSV, 
+  exportSingleFileInvalidRows 
+} from "../lib/utils/csvPolicyParser";
+import { InvalidRowsEditor } from "./InvalidRowsEditor";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { FileText, Upload, AlertCircle, CheckCircle } from "lucide-react";
+import { Separator } from "./ui/separator";
+import { 
+  FileText, 
+  Upload, 
+  AlertCircle, 
+  CheckCircle, 
+  Download,
+  Edit,
+  FileX
+} from "lucide-react";
 
 export function CSVParserDemo() {
   const { 
@@ -19,10 +35,15 @@ export function CSVParserDemo() {
     reset 
   } = usePolicyCSVParser();
 
+  const [editingResult, setEditingResult] = useState<any>(null);
+  const [fixedRows, setFixedRows] = useState<any[]>([]);
+
   const handleSingleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       parseFile(file);
+      setEditingResult(null);
+      setFixedRows([]);
     }
   };
 
@@ -30,8 +51,38 @@ export function CSVParserDemo() {
     const files = event.target.files;
     if (files && files.length > 0) {
       parseMultipleFiles(Array.from(files));
+      setEditingResult(null);
+      setFixedRows([]);
     }
   };
+
+  const handleDownloadInvalidRows = () => {
+    if (singleResult && singleResult.invalidRows.length > 0) {
+      exportSingleFileInvalidRows(singleResult);
+    } else if (multipleResults) {
+      exportInvalidRowsToCSV(multipleResults);
+    }
+  };
+
+  const handleStartEditing = (result: any) => {
+    setEditingResult(result);
+  };
+
+  const handleFixRows = (newFixedRows: any[]) => {
+    setFixedRows(prev => [...prev, ...newFixedRows]);
+  };
+
+  const handleUpdateInvalidRows = (updatedInvalidRows: any[]) => {
+    if (editingResult) {
+      setEditingResult({
+        ...editingResult,
+        invalidRows: updatedInvalidRows
+      });
+    }
+  };
+
+  const totalInvalidRows = singleResult ? singleResult.invalidRows.length : 
+    multipleResults ? multipleResults.reduce((sum, r) => sum + r.invalidRows.length, 0) : 0;
 
   return (
     <div className="space-y-6">
@@ -101,13 +152,43 @@ export function CSVParserDemo() {
             </Alert>
           )}
 
-          {(singleResult || multipleResults) && (
-            <Button onClick={reset} variant="outline" size="sm">
-              Clear Results
-            </Button>
+          {(singleResult || multipleResults || fixedRows.length > 0) && (
+            <div className="flex gap-2">
+              <Button onClick={reset} variant="outline" size="sm">
+                Clear Results
+              </Button>
+              {totalInvalidRows > 0 && (
+                <Button 
+                  onClick={handleDownloadInvalidRows} 
+                  variant="outline" 
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <Download className="h-4 w-4" />
+                  Download Invalid Rows CSV
+                </Button>
+              )}
+            </div>
           )}
         </CardContent>
       </Card>
+
+      {/* Fixed Rows Summary */}
+      {fixedRows.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-green-600">
+              <CheckCircle className="h-5 w-5" />
+              Fixed Rows ({fixedRows.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              {fixedRows.length} rows have been successfully fixed and are ready for database insertion.
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Single File Results */}
       {singleResult && (
@@ -131,11 +212,26 @@ export function CSVParserDemo() {
             </div>
             
             {singleResult.invalidRows.length > 0 && (
-              <div className="space-y-2">
-                <h4 className="text-sm font-semibold">Validation Errors:</h4>
+              <div className="space-y-3">
+                <Separator />
+                <div className="flex justify-between items-center">
+                  <h4 className="text-sm font-semibold text-red-600 flex items-center gap-2">
+                    <FileX className="h-4 w-4" />
+                    Validation Errors ({singleResult.invalidRows.length})
+                  </h4>
+                  <Button
+                    onClick={() => handleStartEditing(singleResult)}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2"
+                  >
+                    <Edit className="h-4 w-4" />
+                    Fix Inline
+                  </Button>
+                </div>
                 <div className="max-h-32 overflow-y-auto space-y-1">
                   {singleResult.invalidRows.slice(0, 5).map((invalid, index) => (
-                    <div key={index} className="text-xs bg-red-50 p-2 rounded">
+                    <div key={index} className="text-xs bg-red-50 p-2 rounded border-l-2 border-red-500">
                       <strong>Row {invalid.rowIndex}:</strong> {invalid.errors.join(", ")}
                     </div>
                   ))}
@@ -202,10 +298,21 @@ export function CSVParserDemo() {
 
                 {result.invalidRows.length > 0 && (
                   <div className="space-y-2">
-                    <h5 className="text-sm font-semibold">First Few Errors:</h5>
+                    <div className="flex justify-between items-center">
+                      <h5 className="text-sm font-semibold text-red-600">First Few Errors:</h5>
+                      <Button
+                        onClick={() => handleStartEditing(result)}
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-1 h-7 px-2"
+                      >
+                        <Edit className="h-3 w-3" />
+                        Fix
+                      </Button>
+                    </div>
                     <div className="max-h-24 overflow-y-auto space-y-1">
                       {result.invalidRows.slice(0, 3).map((invalid, errorIndex) => (
-                        <div key={errorIndex} className="text-xs bg-red-50 p-2 rounded">
+                        <div key={errorIndex} className="text-xs bg-red-50 p-2 rounded border-l-2 border-red-500">
                           <strong>Row {invalid.rowIndex}:</strong> {invalid.errors[0]}
                         </div>
                       ))}
@@ -221,6 +328,16 @@ export function CSVParserDemo() {
             </Card>
           ))}
         </div>
+      )}
+
+      {/* Inline Editor for Invalid Rows */}
+      {editingResult && editingResult.invalidRows.length > 0 && (
+        <InvalidRowsEditor
+          policyType={editingResult.policyType}
+          invalidRows={editingResult.invalidRows}
+          onFix={handleFixRows}
+          onUpdate={handleUpdateInvalidRows}
+        />
       )}
     </div>
   );

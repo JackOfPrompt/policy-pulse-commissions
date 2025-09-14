@@ -1,4 +1,5 @@
 import Papa from "papaparse";
+import { saveAs } from "file-saver";
 import {
   LifePolicyBulkSchema,
   HealthPolicyBulkSchema,
@@ -155,6 +156,47 @@ export async function parseMultiplePolicyCSVs<T>(
   }
 
   return results;
+}
+
+/**
+ * Export invalid rows to CSV for fixing & re-upload
+ * @param parsedResults Results from parseMultiplePolicyCSVs
+ */
+export function exportInvalidRowsToCSV(parsedResults: ParsedCSVResult<any>[]) {
+  parsedResults.forEach(({ fileName, policyType, invalidRows }) => {
+    if (invalidRows.length === 0) return;
+
+    const rowsWithErrors = invalidRows.map((ir) => ({
+      ...ir.row,
+      __errors__: ir.errors.join("; "),
+      __row_number__: ir.rowIndex,
+    }));
+
+    const csv = Papa.unparse(rowsWithErrors);
+
+    const exportName = `${policyType}_invalid_${fileName.replace('.csv', '')}_errors.csv`;
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    saveAs(blob, exportName);
+  });
+}
+
+/**
+ * Export single file's invalid rows to CSV
+ */
+export function exportSingleFileInvalidRows(result: ParsedCSVResult<any>) {
+  if (result.invalidRows.length === 0) return;
+
+  const rowsWithErrors = result.invalidRows.map((ir) => ({
+    ...ir.row,
+    __errors__: ir.errors.join("; "),
+    __row_number__: ir.rowIndex,
+  }));
+
+  const csv = Papa.unparse(rowsWithErrors);
+
+  const exportName = `${result.policyType}_invalid_${result.fileName.replace('.csv', '')}_errors.csv`;
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  saveAs(blob, exportName);
 }
 
 /**
