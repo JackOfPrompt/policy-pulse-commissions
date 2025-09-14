@@ -1,0 +1,47 @@
+[
+  {
+    "id": "CUST-001",
+    "name": "Rajesh Sharma",
+    "email": "rajesh.sharma@gmail.com",
+    "phone": "+91 9876543210",
+    "address": "123 MG Road, Mumbai, Maharashtra 400001",
+    "dateOfBirth": "1985-07-15",
+    "status": "active",
+    "joinDate": "2024-01-15",
+    "totalPolicies": 2,
+    "totalPremium": 37000,
+    "lastActivity": "2024-01-20T10:30:00Z",
+    "agent": "David Kumar",
+    "agentId": "AGT-001"
+  },
+  {
+    "id": "CUST-002",
+    "name": "Priya Patel",
+    "email": "priya.patel@yahoo.com", 
+    "phone": "+91 8765432109",
+    "address": "456 Park Street, Delhi, Delhi 110001",
+    "dateOfBirth": "1990-03-22",
+    "status": "active",
+    "joinDate": "2024-02-10",
+    "totalPolicies": 1,
+    "totalPremium": 12000,
+    "lastActivity": "2024-01-18T14:20:00Z",
+    "agent": "David Kumar",
+    "agentId": "AGT-001"
+  },
+  {
+    "id": "CUST-003",
+    "name": "Amit Singh",
+    "email": "amit.singh@hotmail.com",
+    "phone": "+91 7654321098", 
+    "address": "789 Brigade Road, Bangalore, Karnataka 560001",
+    "dateOfBirth": "1982-11-08",
+    "status": "inactive",
+    "joinDate": "2023-05-20",
+    "totalPolicies": 1,
+    "totalPremium": 18000,
+    "lastActivity": "2023-12-15T09:45:00Z",
+    "agent": "Sarah Wilson",
+    "agentId": "AGT-002"
+  }
+]

@@ -1,0 +1,50 @@
+[
+  {
+    "id": "EMP-001",
+    "name": "Priya Singh",
+    "email": "priya.singh@mumbaiinsurance.com",
+    "phone": "+91 9876543210",
+    "department": "Customer Service",
+    "role": "Senior Executive",
+    "status": "active",
+    "joinDate": "2023-04-15",
+    "salary": 45000,
+    "manager": "Rahul Sharma",
+    "managerId": "USR-001",
+    "branch": "Mumbai Central",
+    "branchId": "BRN-001",
+    "lastActivity": "2024-01-20T16:30:00Z"
+  },
+  {
+    "id": "EMP-002",
+    "name": "Amit Gupta",
+    "email": "amit.gupta@mumbaiinsurance.com",
+    "phone": "+91 8765432109", 
+    "department": "Operations",
+    "role": "Policy Executive",
+    "status": "active",
+    "joinDate": "2023-07-20",
+    "salary": 38000,
+    "manager": "Rahul Sharma",
+    "managerId": "USR-001",
+    "branch": "Mumbai South",
+    "branchId": "BRN-002",
+    "lastActivity": "2024-01-19T14:20:00Z"
+  },
+  {
+    "id": "EMP-003",
+    "name": "Sneha Patel",
+    "email": "sneha.patel@mumbaiinsurance.com",
+    "phone": "+91 7654321098",
+    "department": "Claims",
+    "role": "Claims Processor",
+    "status": "active", 
+    "joinDate": "2023-09-10",
+    "salary": 42000,
+    "manager": "Rahul Sharma",
+    "managerId": "USR-001",
+    "branch": "Mumbai West",
+    "branchId": "BRN-003",
+    "lastActivity": "2024-01-18T11:15:00Z"
+  }
+]

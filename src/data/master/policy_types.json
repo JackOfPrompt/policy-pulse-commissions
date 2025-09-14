@@ -1,0 +1,8 @@
+[
+  { "id": "health", "label": "Health Insurance" },
+  { "id": "motor", "label": "Motor Insurance" },
+  { "id": "life", "label": "Life Insurance" },
+  { "id": "loan", "label": "Loan Protection" },
+  { "id": "travel", "label": "Travel Insurance" },
+  { "id": "home", "label": "Home Insurance" }
+]

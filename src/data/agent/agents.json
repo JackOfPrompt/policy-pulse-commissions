@@ -1,0 +1,44 @@
+[
+  {
+    "id": "AGT-001",
+    "name": "David Kumar",
+    "email": "david.kumar@mumbaiinsurance.com",
+    "phone": "+91 9876543210",
+    "status": "active",
+    "joinDate": "2023-06-15",
+    "commissionRate": 8.5,
+    "totalCommission": 125000,
+    "totalPolicies": 89,
+    "lastActivity": "2024-01-20T10:30:00Z",
+    "branch": "Mumbai Central",
+    "branchId": "BRN-001"
+  },
+  {
+    "id": "AGT-002",
+    "name": "Sarah Wilson", 
+    "email": "sarah.wilson@mumbaiinsurance.com",
+    "phone": "+91 8765432109",
+    "status": "active",
+    "joinDate": "2023-08-20",
+    "commissionRate": 7.5,
+    "totalCommission": 98000,
+    "totalPolicies": 67,
+    "lastActivity": "2024-01-19T15:45:00Z",
+    "branch": "Mumbai South",
+    "branchId": "BRN-002"
+  },
+  {
+    "id": "AGT-003",
+    "name": "Rahul Mehta",
+    "email": "rahul.mehta@mumbaiinsurance.com",
+    "phone": "+91 7654321098",
+    "status": "pending",
+    "joinDate": "2024-01-10",
+    "commissionRate": 6.0,
+    "totalCommission": 15000,
+    "totalPolicies": 12,
+    "lastActivity": "2024-01-18T12:20:00Z",
+    "branch": "Mumbai West",
+    "branchId": "BRN-003"
+  }
+]

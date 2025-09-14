@@ -1,0 +1,160 @@
+{
+  "insurer_details": {
+    "label": "Insurer Details",
+    "fields": [
+      { "field": "insurer_name", "label": "Insurer Name", "type": "string", "required": true },
+      { "field": "insurer_address", "label": "Insurer Address", "type": "string" },
+      { "field": "insurer_type", "label": "Insurer Type", "type": "string" },
+      { "field": "branch_name", "label": "Branch Name", "type": "string" },
+      { "field": "business_type", "label": "Business Type", "type": "string" },
+      { "field": "contact_email", "label": "Contact Email", "type": "string" },
+      { "field": "contact_phone", "label": "Contact Phone", "type": "string" }
+    ]
+  },
+  "policyholder": {
+    "label": "Policyholder Details",
+    "fields": [
+      { "field": "name", "label": "Name", "type": "string", "required": true },
+      { "field": "proposer_details", "label": "Proposer Details", "type": "string" },
+      { "field": "customer_id", "label": "Customer ID", "type": "string" },
+      { "field": "pan", "label": "PAN", "type": "string" },
+      { "field": "aadhaar", "label": "Aadhaar", "type": "string" },
+      { "field": "address", "label": "Address", "type": "string" },
+      { "field": "mobile", "label": "Mobile", "type": "string" },
+      { "field": "email", "label": "Email", "type": "string" },
+      { "field": "occupation", "label": "Occupation", "type": "string" },
+      { "field": "business_type", "label": "Business Type", "type": "string" },
+      { "field": "communication_address", "label": "Communication Address", "type": "string" },
+      { "field": "registration_address", "label": "Registration Address", "type": "string" }
+    ]
+  },
+  "policy_details": {
+    "label": "Policy Details",
+    "fields": [
+      { "field": "policy_number", "label": "Policy Number", "type": "string", "required": true },
+      { "field": "cover_note_number", "label": "Cover Note Number", "type": "string" },
+      { "field": "proposal_number", "label": "Proposal Number", "type": "string" },
+      { "field": "policy_ref_number", "label": "Policy Reference Number", "type": "string" },
+      { "field": "policy_type", "label": "Policy Type", "type": "string" },
+      { "field": "period_start", "label": "Period Start", "type": "date" },
+      { "field": "period_end", "label": "Period End", "type": "date" },
+      { "field": "issue_date", "label": "Issue Date", "type": "date" },
+      { "field": "place_of_issue", "label": "Place of Issue", "type": "string" },
+      { "field": "uin", "label": "UIN", "type": "string" },
+      { "field": "gstin", "label": "GSTIN", "type": "string" },
+      { "field": "sac_code", "label": "SAC Code", "type": "string" },
+      { "field": "stamp_duty_reference", "label": "Stamp Duty Reference", "type": "string" },
+      { "field": "geographical_area", "label": "Geographical Area", "type": "string" }
+    ]
+  },
+  "vehicle_details": {
+    "label": "Vehicle Details",
+    "fields": [
+      { "field": "registration_number", "label": "Registration Number", "type": "string" },
+      { "field": "year_of_manufacture", "label": "Year of Manufacture", "type": "string" },
+      { "field": "invoice_date", "label": "Invoice Date", "type": "date" },
+      { "field": "make", "label": "Make", "type": "string" },
+      { "field": "model", "label": "Model", "type": "string" },
+      { "field": "variant", "label": "Variant", "type": "string" },
+      { "field": "body_type", "label": "Body Type", "type": "string" },
+      { "field": "color", "label": "Color", "type": "string" },
+      { "field": "engine_number", "label": "Engine Number", "type": "string" },
+      { "field": "chassis_number", "label": "Chassis Number", "type": "string" },
+      { "field": "fuel_type", "label": "Fuel Type", "type": "string" },
+      { "field": "cc_kw", "label": "CC/KW", "type": "string" },
+      { "field": "gvw", "label": "GVW", "type": "string" },
+      { "field": "seating_capacity", "label": "Seating Capacity", "type": "number" },
+      { "field": "zone", "label": "Zone", "type": "string" },
+      { "field": "place_of_registration", "label": "Place of Registration", "type": "string" },
+      { "field": "ownership", "label": "Ownership", "type": "string" },
+      { "field": "fleet_details", "label": "Fleet Details", "type": "string" },
+      { "field": "accessories", "label": "Accessories", "type": "string" },
+      { "field": "idv", "label": "IDV", "type": "number" }
+    ]
+  },
+  "premium_details": {
+    "label": "Premium Details",
+    "fields": [
+      { "field": "own_damage", "label": "Own Damage", "type": "string" },
+      { "field": "third_party", "label": "Third Party", "type": "string" },
+      { "field": "add_ons", "label": "Add Ons", "type": "string" },
+      { "field": "gst", "label": "GST", "type": "number" },
+      { "field": "net_premium", "label": "Net Premium", "type": "number" },
+      { "field": "total_premium", "label": "Total Premium", "type": "number" },
+      { "field": "payment_mode", "label": "Payment Mode", "type": "string" },
+      { "field": "receipt_number", "label": "Receipt Number", "type": "string" }
+    ]
+  },
+  "coverage": {
+    "label": "Coverage Details",
+    "fields": [
+      { "field": "own_damage", "label": "Own Damage", "type": "string" },
+      { "field": "third_party_liability", "label": "Third Party Liability", "type": "string" },
+      { "field": "personal_accident", "label": "Personal Accident", "type": "string" },
+      { "field": "deductibles", "label": "Deductibles", "type": "string" },
+      { "field": "limitations", "label": "Limitations", "type": "string" }
+    ]
+  },
+  "nominee": {
+    "label": "Nominee Details",
+    "fields": [
+      { "field": "name", "label": "Name", "type": "string" },
+      { "field": "relation", "label": "Relation", "type": "string" },
+      { "field": "appointee", "label": "Appointee", "type": "string" }
+    ]
+  },
+  "agent": {
+    "label": "Agent Details",
+    "fields": [
+      { "field": "name", "label": "Name", "type": "string" },
+      { "field": "code", "label": "Code", "type": "string" },
+      { "field": "branch", "label": "Branch", "type": "string" },
+      { "field": "contact_info", "label": "Contact Info", "type": "string" }
+    ]
+  },
+  "previous_insurance": {
+    "label": "Previous Insurance Details",
+    "fields": [
+      { "field": "insurer_name", "label": "Insurer Name", "type": "string" },
+      { "field": "policy_number", "label": "Policy Number", "type": "string" },
+      { "field": "cover_note_number", "label": "Cover Note Number", "type": "string" },
+      { "field": "ncb", "label": "NCB", "type": "string" },
+      { "field": "claims_history", "label": "Claims History", "type": "string" },
+      { "field": "purchase_date", "label": "Purchase Date", "type": "date" },
+      { "field": "status", "label": "Status", "type": "string" },
+      { "field": "anti_theft", "label": "Anti Theft", "type": "string" },
+      { "field": "automobile_association", "label": "Automobile Association", "type": "string" }
+    ]
+  },
+  "driver_details": {
+    "label": "Driver Details",
+    "fields": [
+      { "field": "license_status", "label": "License Status", "type": "string" },
+      { "field": "primary_driver_name", "label": "Primary Driver Name", "type": "string" },
+      { "field": "dob", "label": "Date of Birth", "type": "date" },
+      { "field": "accident_history", "label": "Accident History", "type": "string" },
+      { "field": "medical_conditions", "label": "Medical Conditions", "type": "string" }
+    ]
+  },
+  "declarations": {
+    "label": "Declarations",
+    "fields": [
+      { "field": "ncb_declaration", "label": "NCB Declaration", "type": "string" },
+      { "field": "break_in_insurance", "label": "Break in Insurance", "type": "string" },
+      { "field": "politically_exposed", "label": "Politically Exposed", "type": "string" },
+      { "field": "consent_terms", "label": "Consent Terms", "type": "string" },
+      { "field": "rebate_prohibition", "label": "Rebate Prohibition", "type": "string" },
+      { "field": "puc_validity", "label": "PUC Validity", "type": "string" }
+    ]
+  },
+  "servicing_claims": {
+    "label": "Servicing & Claims",
+    "fields": [
+      { "field": "issuing_office", "label": "Issuing Office", "type": "string" },
+      { "field": "servicing_office", "label": "Servicing Office", "type": "string" },
+      { "field": "customer_care", "label": "Customer Care", "type": "string" },
+      { "field": "claims_email", "label": "Claims Email", "type": "string" },
+      { "field": "grievance_contacts", "label": "Grievance Contacts", "type": "string" }
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+[
+  { "id": "MH", "label": "Maharashtra" },
+  { "id": "DL", "label": "Delhi" },
+  { "id": "KA", "label": "Karnataka" },
+  { "id": "TN", "label": "Tamil Nadu" },
+  { "id": "GJ", "label": "Gujarat" },
+  { "id": "RJ", "label": "Rajasthan" },
+  { "id": "UP", "label": "Uttar Pradesh" },
+  { "id": "WB", "label": "West Bengal" },
+  { "id": "PB", "label": "Punjab" },
+  { "id": "HR", "label": "Haryana" }
+]

@@ -1,0 +1,121 @@
+%PDF-1.4
+1 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+
+2 0 obj
+<<
+/Type /Pages
+/Kids [3 0 R]
+/Count 1
+>>
+endobj
+
+3 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/MediaBox [0 0 612 792]
+/Contents 4 0 R
+/Resources <<
+/Font <<
+/F1 5 0 R
+>>
+>>
+>>
+endobj
+
+4 0 obj
+<<
+/Length 800
+>>
+stream
+BT
+/F1 12 Tf
+50 750 Td
+(SAMPLE INSURANCE POLICY DOCUMENT) Tj
+0 -30 Td
+(Policy Number: POL123456789) Tj
+0 -20 Td
+(Customer Name: John Doe) Tj
+0 -20 Td
+(Customer Address: 123 Main Street, Mumbai, Maharashtra, 400001) Tj
+0 -20 Td
+(Phone: +91-9876543210) Tj
+0 -20 Td
+(Email: john.doe@email.com) Tj
+0 -20 Td
+(Date of Birth: 1985-05-15) Tj
+0 -20 Td
+(Gender: Male) Tj
+0 -20 Td
+(Marital Status: Married) Tj
+0 -30 Td
+(POLICY DETAILS:) Tj
+0 -20 Td
+(Gross Premium: Rs. 15000) Tj
+0 -20 Td
+(Net Premium: Rs. 12500) Tj
+0 -20 Td
+(GST: Rs. 2500) Tj
+0 -20 Td
+(Sum Insured: Rs. 500000) Tj
+0 -20 Td
+(Policy Start Date: 2024-01-01) Tj
+0 -20 Td
+(Policy End Date: 2025-01-01) Tj
+0 -20 Td
+(Plan Name: Comprehensive Health Plan) Tj
+0 -20 Td
+(Policy Tenure: 1 Year) Tj
+0 -20 Td
+(Present Policy Company: ABC Insurance Ltd.) Tj
+0 -30 Td
+(VEHICLE DETAILS:) Tj
+0 -20 Td
+(Vehicle Make: Honda) Tj
+0 -20 Td
+(Vehicle Model: City) Tj
+0 -20 Td
+(Vehicle Number: MH01AB1234) Tj
+0 -20 Td
+(Fuel Type: Petrol) Tj
+0 -20 Td
+(Vehicle CC: 1500) Tj
+0 -20 Td
+(IDV: Rs. 800000) Tj
+0 -20 Td
+(Manufacturing Date: 2020-03-15) Tj
+0 -20 Td
+(Registration Date: 2020-04-01) Tj
+ET
+endstream
+endobj
+
+5 0 obj
+<<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+>>
+endobj
+
+xref
+0 6
+0000000000 65535 f 
+0000000010 00000 n 
+0000000053 00000 n 
+0000000109 00000 n 
+0000000265 00000 n 
+0000001117 00000 n 
+trailer
+<<
+/Size 6
+/Root 1 0 R
+>>
+startxref
+1185
+%%EOF

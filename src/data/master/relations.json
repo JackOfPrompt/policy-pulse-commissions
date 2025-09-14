@@ -1,0 +1,9 @@
+[
+  { "id": "spouse", "label": "Spouse" },
+  { "id": "child", "label": "Child" },
+  { "id": "parent", "label": "Parent" },
+  { "id": "sibling", "label": "Sibling" },
+  { "id": "grandparent", "label": "Grandparent" },
+  { "id": "grandchild", "label": "Grandchild" },
+  { "id": "other", "label": "Other" }
+]

@@ -1,0 +1,36 @@
+[
+  {
+    "id": "SUB-001",
+    "organizationId": "ORG-001",
+    "organizationName": "Mumbai Insurance Corp",
+    "planId": "PLAN-003",
+    "planName": "Enterprise",
+    "status": "active",
+    "startDate": "2024-01-15",
+    "nextBilling": "2024-02-15",
+    "monthlyAmount": 19999,
+    "currency": "INR",
+    "users": 1250,
+    "maxUsers": -1,
+    "policies": 1523,
+    "maxPolicies": -1,
+    "lastPayment": "2024-01-15T10:00:00Z"
+  },
+  {
+    "id": "SUB-002",
+    "organizationId": "ORG-002", 
+    "organizationName": "Delhi General Insurance",
+    "planId": "PLAN-002",
+    "planName": "Professional",
+    "status": "active",
+    "startDate": "2024-03-22",
+    "nextBilling": "2024-04-22",
+    "monthlyAmount": 7999,
+    "currency": "INR",
+    "users": 850,
+    "maxUsers": 25,
+    "policies": 987,
+    "maxPolicies": 1000,
+    "lastPayment": "2024-03-22T14:30:00Z"
+  }
+]

@@ -1,0 +1,90 @@
+[
+  {
+    "id": "AGT-001",
+    "name": "Priya Sharma",
+    "email": "priya.sharma@insuretech.com",
+    "phone": "+91-9123456789",
+    "kycStatus": "approved",
+    "totalPolicies": 15,
+    "commissionEarned": 125000,
+    "joinDate": "2023-06-15",
+    "status": "active",
+    "address": "45 Brigade Road, Bangalore",
+    "qualification": "MBA Finance",
+    "experience": "3 years",
+    "documents": {
+      "aadhaar": "verified",
+      "pan": "verified",
+      "photo": "uploaded",
+      "signature": "uploaded"
+    },
+    "assignedCustomers": ["Rajesh Kumar", "Sneha Reddy"],
+    "recentPolicies": ["POL-001", "POL-003"]
+  },
+  {
+    "id": "AGT-002", 
+    "name": "Rohit Singh",
+    "email": "rohit.singh@insuretech.com",
+    "phone": "+91-8123456789",
+    "kycStatus": "approved",
+    "totalPolicies": 22,
+    "commissionEarned": 180000,
+    "joinDate": "2023-03-10",
+    "status": "active",
+    "address": "123 CP Metro, Delhi",
+    "qualification": "B.Com",
+    "experience": "5 years",
+    "documents": {
+      "aadhaar": "verified",
+      "pan": "verified", 
+      "photo": "uploaded",
+      "signature": "uploaded"
+    },
+    "assignedCustomers": ["Amit Patel", "Vikram Singh"],
+    "recentPolicies": ["POL-002", "POL-004", "POL-005"]
+  },
+  {
+    "id": "AGT-003",
+    "name": "Kavita Joshi",
+    "email": "kavita.joshi@insuretech.com",
+    "phone": "+91-7123456789",
+    "kycStatus": "pending",
+    "totalPolicies": 8,
+    "commissionEarned": 45000,
+    "joinDate": "2024-01-05",
+    "status": "active",
+    "address": "67 Law Garden, Ahmedabad",
+    "qualification": "BBA",
+    "experience": "1 year",
+    "documents": {
+      "aadhaar": "uploaded",
+      "pan": "pending",
+      "photo": "uploaded",
+      "signature": "pending"
+    },
+    "assignedCustomers": [],
+    "recentPolicies": []
+  },
+  {
+    "id": "AGT-004",
+    "name": "Arjun Reddy",
+    "email": "arjun.reddy@insuretech.com", 
+    "phone": "+91-6123456789",
+    "kycStatus": "rejected",
+    "totalPolicies": 3,
+    "commissionEarned": 12000,
+    "joinDate": "2024-02-20",
+    "status": "inactive",
+    "address": "89 Jubilee Hills, Hyderabad",
+    "qualification": "B.Tech",
+    "experience": "0 years",
+    "documents": {
+      "aadhaar": "rejected",
+      "pan": "uploaded",
+      "photo": "uploaded",
+      "signature": "uploaded"
+    },
+    "assignedCustomers": [],
+    "recentPolicies": []
+  }
+]

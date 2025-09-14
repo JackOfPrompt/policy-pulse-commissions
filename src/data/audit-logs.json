@@ -1,0 +1,50 @@
+[
+  {
+    "id": "AUDIT-001",
+    "timestamp": "2024-09-10T14:30:00Z",
+    "actor": "Michael Chen",
+    "actorId": "admin-001",
+    "action": "Policy Created",
+    "target": "POL-2024-004",
+    "targetType": "Policy",
+    "details": "Created new Health Insurance policy for Sneha Agarwal",
+    "ipAddress": "192.168.1.100",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  },
+  {
+    "id": "AUDIT-002",
+    "timestamp": "2024-09-10T13:15:00Z",
+    "actor": "Jessica Rodriguez",
+    "actorId": "emp-001", 
+    "action": "Customer Updated",
+    "target": "CUST-002",
+    "targetType": "Customer",
+    "details": "Updated contact information for Priya Patel",
+    "ipAddress": "192.168.1.101",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  },
+  {
+    "id": "AUDIT-003",
+    "timestamp": "2024-09-10T11:45:00Z",
+    "actor": "David Kumar",
+    "actorId": "agent-001",
+    "action": "Commission Claimed",
+    "target": "COMM-002",
+    "targetType": "Commission",
+    "details": "Claimed commission for Motor Insurance policy",
+    "ipAddress": "192.168.1.102", 
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+  },
+  {
+    "id": "AUDIT-004",
+    "timestamp": "2024-09-10T10:20:00Z",
+    "actor": "Sarah Wilson",
+    "actorId": "sa-001",
+    "action": "Organization Approved",
+    "target": "org-002",
+    "targetType": "Organization",
+    "details": "Approved Regional Coverage Ltd partnership",
+    "ipAddress": "192.168.1.103",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "id": "POL-2024-001",
+    "policyNumber": "INS/HL/2024/001",
+    "insurer": "HDFC ERGO",
+    "productType": "Health Insurance",
+    "status": "active",
+    "startDate": "2024-01-15",
+    "endDate": "2025-01-14", 
+    "premium": 25000,
+    "coverage": 500000,
+    "renewalDue": "2025-01-14",
+    "lastClaim": "2024-08-22",
+    "summary": "Comprehensive health coverage for individual and family",
+    "coverageDetails": {
+      "roomRent": "₹5,000 per day",
+      "preHospitalization": "30 days",
+      "postHospitalization": "60 days", 
+      "ambulanceCover": "₹2,000 per emergency",
+      "maternityCover": "₹50,000",
+      "criticalIllness": "₹1,00,000"
+    }
+  },
+  {
+    "id": "POL-2024-002",
+    "policyNumber": "INS/MT/2024/002", 
+    "insurer": "Bajaj Allianz",
+    "productType": "Motor Insurance",
+    "status": "renewal_due",
+    "startDate": "2024-02-10",
+    "endDate": "2025-02-09",
+    "premium": 12000,
+    "coverage": 300000,
+    "renewalDue": "2025-02-09",
+    "lastClaim": null,
+    "summary": "Comprehensive motor insurance for Honda City",
+    "coverageDetails": {
+      "ownDamage": "₹3,00,000",
+      "thirdParty": "Unlimited",
+      "personalAccident": "₹15,00,000",
+      "zeroDepreciation": "Yes",
+      "engineProtection": "Yes", 
+      "roadSideAssistance": "24x7"
+    }
+  },
+  {
+    "id": "POL-2024-003",
+    "policyNumber": "INS/HL/2024/003",
+    "insurer": "Star Health",
+    "productType": "Health Insurance", 
+    "status": "expired",
+    "startDate": "2023-05-20",
+    "endDate": "2024-05-19",
+    "premium": 18000,
+    "coverage": 300000,
+    "renewalDue": "2024-05-19",
+    "lastClaim": "2024-03-15",
+    "summary": "Senior citizen health insurance policy",
+    "coverageDetails": {
+      "roomRent": "₹3,000 per day",
+      "preHospitalization": "30 days",
+      "postHospitalization": "60 days",
+      "ambulanceCover": "₹1,500 per emergency",
+      "healthCheckup": "Annual",
+      "criticalIllness": "₹75,000"
+    }
+  }
+]

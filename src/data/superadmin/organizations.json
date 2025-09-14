@@ -1,0 +1,47 @@
+[
+  {
+    "id": "ORG-001",
+    "name": "Mumbai Insurance Corp",
+    "type": "Insurance Company",
+    "status": "active",
+    "plan": "Enterprise",
+    "employees": 1250,
+    "revenue": 5200000,
+    "joinDate": "2023-01-15",
+    "contact": {
+      "email": "admin@mumbaiinsurance.com",
+      "phone": "+91 22 6789 1234"
+    },
+    "address": "BKC, Mumbai, Maharashtra 400051"
+  },
+  {
+    "id": "ORG-002", 
+    "name": "Delhi General Insurance",
+    "type": "Insurance Company",
+    "status": "active",
+    "plan": "Professional",
+    "employees": 850,
+    "revenue": 3400000,
+    "joinDate": "2023-03-22",
+    "contact": {
+      "email": "contact@delhigeneral.in",
+      "phone": "+91 11 4567 8901"
+    },
+    "address": "Connaught Place, New Delhi 110001"
+  },
+  {
+    "id": "ORG-003",
+    "name": "Bangalore Life Insurance",
+    "type": "Life Insurance",
+    "status": "trial",
+    "plan": "Starter",
+    "employees": 120,
+    "revenue": 890000,
+    "joinDate": "2024-01-10",
+    "contact": {
+      "email": "info@bangalorelife.com",
+      "phone": "+91 80 2345 6789"
+    },
+    "address": "MG Road, Bangalore, Karnataka 560001"
+  }
+]

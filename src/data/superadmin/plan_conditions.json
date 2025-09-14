@@ -1,0 +1,104 @@
+[
+  {
+    "plan_id": "PLAN-001",
+    "plan_name": "Starter",
+    "feature": "AI Extraction",
+    "enabled": false
+  },
+  {
+    "plan_id": "PLAN-001", 
+    "plan_name": "Starter",
+    "feature": "Commission Tracking",
+    "enabled": false
+  },
+  {
+    "plan_id": "PLAN-001",
+    "plan_name": "Starter", 
+    "feature": "Audit Logs",
+    "enabled": false
+  },
+  {
+    "plan_id": "PLAN-001",
+    "plan_name": "Starter",
+    "feature": "Multi-Branch Support",
+    "enabled": false
+  },
+  {
+    "plan_id": "PLAN-001",
+    "plan_name": "Starter",
+    "feature": "Advanced Reporting",
+    "enabled": false
+  },
+  {
+    "plan_id": "PLAN-002",
+    "plan_name": "Professional",
+    "feature": "AI Extraction", 
+    "enabled": true
+  },
+  {
+    "plan_id": "PLAN-002",
+    "plan_name": "Professional",
+    "feature": "Commission Tracking",
+    "enabled": true
+  },
+  {
+    "plan_id": "PLAN-002",
+    "plan_name": "Professional",
+    "feature": "Audit Logs",
+    "enabled": true
+  },
+  {
+    "plan_id": "PLAN-002",
+    "plan_name": "Professional",
+    "feature": "Multi-Branch Support",
+    "enabled": false
+  },
+  {
+    "plan_id": "PLAN-002",
+    "plan_name": "Professional",
+    "feature": "Advanced Reporting",
+    "enabled": true
+  },
+  {
+    "plan_id": "PLAN-003",
+    "plan_name": "Enterprise",
+    "feature": "AI Extraction",
+    "enabled": true
+  },
+  {
+    "plan_id": "PLAN-003",
+    "plan_name": "Enterprise",
+    "feature": "Commission Tracking",
+    "enabled": true
+  },
+  {
+    "plan_id": "PLAN-003",
+    "plan_name": "Enterprise",
+    "feature": "Audit Logs",
+    "enabled": true
+  },
+  {
+    "plan_id": "PLAN-003",
+    "plan_name": "Enterprise",
+    "feature": "Multi-Branch Support",
+    "enabled": true
+  },
+  {
+    "plan_id": "PLAN-003",
+    "plan_name": "Enterprise",
+    "feature": "Advanced Reporting",
+    "enabled": true
+  },
+  {
+    "plan_id": "PLAN-003",
+    "plan_name": "Enterprise",
+    "feature": "Custom Integrations",
+    "enabled": true
+  },
+  {
+    "plan_id": "PLAN-003",
+    "plan_name": "Enterprise",
+    "feature": "White-label Solution",
+    "enabled": true
+  }
+]

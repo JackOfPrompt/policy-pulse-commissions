@@ -1,0 +1,121 @@
+[
+  {
+    "id": "POL-001",
+    "policyNumber": "HDFC-LI-2024-001",
+    "customer": "Rajesh Kumar",
+    "customerEmail": "rajesh.kumar@email.com",
+    "productType": "Life Insurance",
+    "insurer": "HDFC Life",
+    "status": "active",
+    "issueDate": "2024-01-20",
+    "expiryDate": "2049-01-20",
+    "premium": 50000,
+    "sumAssured": 2500000,
+    "agent": "Priya Sharma",
+    "commission": 5000,
+    "members": [
+      {
+        "name": "Rajesh Kumar",
+        "relation": "Self",
+        "age": 39,
+        "sumAssured": 2500000
+      }
+    ]
+  },
+  {
+    "id": "POL-002",
+    "policyNumber": "ICICI-HEALTH-2024-002",
+    "customer": "Amit Patel",
+    "customerEmail": "amit.patel@email.com",
+    "productType": "Health Insurance",
+    "insurer": "ICICI Lombard",
+    "status": "active",
+    "issueDate": "2024-02-15",
+    "expiryDate": "2025-02-15",
+    "premium": 18000,
+    "sumAssured": 500000,
+    "agent": "Rohit Singh",
+    "commission": 1800,
+    "members": [
+      {
+        "name": "Amit Patel",
+        "relation": "Self", 
+        "age": 34,
+        "sumAssured": 500000
+      },
+      {
+        "name": "Nisha Patel",
+        "relation": "Wife",
+        "age": 30,
+        "sumAssured": 500000
+      }
+    ]
+  },
+  {
+    "id": "POL-003",
+    "policyNumber": "TATA-MOTOR-2024-003",
+    "customer": "Rajesh Kumar",
+    "customerEmail": "rajesh.kumar@email.com",
+    "productType": "Motor Insurance",
+    "insurer": "Tata AIG",
+    "status": "pending",
+    "issueDate": "2024-03-10",
+    "expiryDate": "2025-03-10",
+    "premium": 12000,
+    "sumAssured": 800000,
+    "agent": "Priya Sharma",
+    "commission": 1200,
+    "vehicle": {
+      "make": "Maruti Suzuki",
+      "model": "Swift",
+      "year": 2022,
+      "registrationNumber": "KA01AB1234",
+      "engineNumber": "G12B1234567",
+      "chassisNumber": "MA3ERLF1S00123456"
+    }
+  },
+  {
+    "id": "POL-004",
+    "policyNumber": "SBI-LOAN-2024-004",
+    "customer": "Vikram Singh",
+    "customerEmail": "vikram.singh@email.com",
+    "productType": "Loan Protection",
+    "insurer": "SBI Life",
+    "status": "active",
+    "issueDate": "2024-01-25",
+    "expiryDate": "2034-01-25",
+    "premium": 25000,
+    "sumAssured": 1500000,
+    "agent": "Rohit Singh",
+    "commission": 2500,
+    "loan": {
+      "loanAmount": 1500000,
+      "loanType": "Home Loan",
+      "tenure": 10,
+      "bankName": "SBI"
+    }
+  },
+  {
+    "id": "POL-005",
+    "policyNumber": "LIC-TERM-2024-005",
+    "customer": "Vikram Singh",
+    "customerEmail": "vikram.singh@email.com",
+    "productType": "Term Insurance",
+    "insurer": "LIC",
+    "status": "active",
+    "issueDate": "2024-02-01",
+    "expiryDate": "2054-02-01",
+    "premium": 15000,
+    "sumAssured": 5000000,
+    "agent": "Rohit Singh",
+    "commission": 1500,
+    "members": [
+      {
+        "name": "Vikram Singh",
+        "relation": "Self",
+        "age": 36,
+        "sumAssured": 5000000
+      }
+    ]
+  }
+]

@@ -1,0 +1,85 @@
+[
+  {
+    "id": "PLAN-001",
+    "name": "Starter",
+    "description": "Perfect for small insurance agencies",
+    "price": 2999,
+    "billing": "monthly",
+    "currency": "INR",
+    "billing_cycle": "monthly",
+    "features": [
+      "Up to 100 policies",
+      "5 user accounts", 
+      "Basic reporting",
+      "Email support",
+      "Mobile app access"
+    ],
+    "limits": {
+      "policies": 100,
+      "users": 5,
+      "storage": "10GB",
+      "apiCalls": 1000
+    },
+    "max_users": 5,
+    "max_policies": 100,
+    "status": "active",
+    "popular": false,
+    "created_at": "2024-01-15T08:00:00Z"
+  },
+  {
+    "id": "PLAN-002",
+    "name": "Professional", 
+    "description": "For growing insurance companies",
+    "price": 7999,
+    "billing": "monthly",
+    "currency": "INR",
+    "billing_cycle": "monthly",
+    "features": [
+      "Up to 1000 policies",
+      "25 user accounts",
+      "Advanced reporting & analytics",
+      "Priority support",
+      "API access",
+      "Custom integrations"
+    ],
+    "limits": {
+      "policies": 1000,
+      "users": 25,
+      "storage": "100GB",
+      "apiCalls": 10000
+    },
+    "max_users": 25,
+    "max_policies": 1000,
+    "status": "active",
+    "popular": true,
+    "created_at": "2024-01-15T08:00:00Z"
+  },
+  {
+    "id": "PLAN-003",
+    "name": "Enterprise",
+    "description": "For large insurance organizations",
+    "price": 19999,
+    "billing": "monthly",
+    "currency": "INR", 
+    "billing_cycle": "monthly",
+    "features": [
+      "Unlimited policies",
+      "Unlimited users",
+      "White-label solution",
+      "Dedicated support",
+      "Advanced security",
+      "Custom development"
+    ],
+    "limits": {
+      "policies": "unlimited",
+      "users": "unlimited",
+      "storage": "1TB",
+      "apiCalls": "unlimited"
+    },
+    "max_users": -1,
+    "max_policies": -1,
+    "status": "active",
+    "popular": false,
+    "created_at": "2024-01-15T08:00:00Z"
+  }
+]

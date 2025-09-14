@@ -1,0 +1,322 @@
+{
+  "sales": {
+    "id": "sales",
+    "label": "Sales & Distribution",
+    "code": "SALES",
+    "sub_departments": [
+      {
+        "id": "agency",
+        "label": "Agency",
+        "code": "AGENCY"
+      },
+      {
+        "id": "bancassurance",
+        "label": "Bancassurance",
+        "code": "BANCA"
+      },
+      {
+        "id": "direct_sales",
+        "label": "Direct Sales",
+        "code": "DIRECT"
+      },
+      {
+        "id": "digital_online",
+        "label": "Digital/Online",
+        "code": "DIGITAL"
+      },
+      {
+        "id": "brokers",
+        "label": "Brokers",
+        "code": "BROKERS"
+      },
+      {
+        "id": "corporate_sales",
+        "label": "Corporate Sales",
+        "code": "CORP_SALES"
+      },
+      {
+        "id": "partnerships",
+        "label": "Partnerships",
+        "code": "PARTNERS"
+      }
+    ]
+  },
+  "underwriting": {
+    "id": "underwriting",
+    "label": "Underwriting",
+    "code": "UW",
+    "sub_departments": [
+      {
+        "id": "life_underwriting",
+        "label": "Life Underwriting",
+        "code": "LIFE_UW"
+      },
+      {
+        "id": "health_underwriting",
+        "label": "Health Underwriting",
+        "code": "HEALTH_UW"
+      },
+      {
+        "id": "motor_underwriting",
+        "label": "Motor Underwriting",
+        "code": "MOTOR_UW"
+      },
+      {
+        "id": "travel_misc_underwriting",
+        "label": "Travel & Miscellaneous Underwriting",
+        "code": "TRAVEL_UW"
+      },
+      {
+        "id": "reinsurance_liaison",
+        "label": "Reinsurance Liaison",
+        "code": "REINS_UW"
+      }
+    ]
+  },
+  "claims": {
+    "id": "claims",
+    "label": "Claims",
+    "code": "CLAIMS",
+    "sub_departments": [
+      {
+        "id": "life_claims",
+        "label": "Life Claims",
+        "code": "LIFE_CLAIMS"
+      },
+      {
+        "id": "health_claims",
+        "label": "Health Claims",
+        "code": "HEALTH_CLAIMS"
+      },
+      {
+        "id": "motor_claims",
+        "label": "Motor Claims",
+        "code": "MOTOR_CLAIMS"
+      },
+      {
+        "id": "travel_other_claims",
+        "label": "Travel & Other Claims",
+        "code": "TRAVEL_CLAIMS"
+      },
+      {
+        "id": "fraud_investigation",
+        "label": "Fraud Investigation",
+        "code": "FRAUD_INV"
+      }
+    ]
+  },
+  "operations": {
+    "id": "operations",
+    "label": "Policy Servicing & Operations",
+    "code": "OPS",
+    "sub_departments": [
+      {
+        "id": "policy_issuance",
+        "label": "Policy Issuance",
+        "code": "ISSUANCE"
+      },
+      {
+        "id": "renewals",
+        "label": "Renewals",
+        "code": "RENEWALS"
+      },
+      {
+        "id": "endorsements",
+        "label": "Endorsements",
+        "code": "ENDORSE"
+      },
+      {
+        "id": "cancellations",
+        "label": "Cancellations",
+        "code": "CANCEL"
+      },
+      {
+        "id": "customer_support",
+        "label": "Customer Support",
+        "code": "SUPPORT"
+      }
+    ]
+  },
+  "finance": {
+    "id": "finance",
+    "label": "Finance & Accounts",
+    "code": "FINANCE",
+    "sub_departments": [
+      {
+        "id": "commissions_payouts",
+        "label": "Commissions & Payouts",
+        "code": "COMM_PAY"
+      },
+      {
+        "id": "premium_accounting",
+        "label": "Premium Accounting",
+        "code": "PREM_ACC"
+      },
+      {
+        "id": "reinsurance_accounting",
+        "label": "Reinsurance Accounting",
+        "code": "REINS_ACC"
+      },
+      {
+        "id": "investments",
+        "label": "Investments",
+        "code": "INVEST"
+      },
+      {
+        "id": "audit_compliance",
+        "label": "Audit & Compliance",
+        "code": "AUDIT"
+      }
+    ]
+  },
+  "it": {
+    "id": "it",
+    "label": "Technology & IT",
+    "code": "IT",
+    "sub_departments": [
+      {
+        "id": "application_development",
+        "label": "Application Development",
+        "code": "APP_DEV"
+      },
+      {
+        "id": "database_integrations",
+        "label": "Database & Integrations",
+        "code": "DB_INT"
+      },
+      {
+        "id": "security_compliance",
+        "label": "Security & Compliance",
+        "code": "SEC_COMP"
+      },
+      {
+        "id": "infrastructure",
+        "label": "Infrastructure",
+        "code": "INFRA"
+      },
+      {
+        "id": "data_analytics_bi",
+        "label": "Data Analytics & BI",
+        "code": "DATA_BI"
+      }
+    ]
+  },
+  "hr": {
+    "id": "hr",
+    "label": "Human Resources",
+    "code": "HR",
+    "sub_departments": [
+      {
+        "id": "recruitment",
+        "label": "Recruitment",
+        "code": "RECRUIT"
+      },
+      {
+        "id": "training_development",
+        "label": "Training & Development",
+        "code": "TRAINING"
+      },
+      {
+        "id": "performance_management",
+        "label": "Performance Management",
+        "code": "PERF_MGT"
+      },
+      {
+        "id": "payroll_benefits",
+        "label": "Payroll & Benefits",
+        "code": "PAYROLL"
+      },
+      {
+        "id": "employee_engagement",
+        "label": "Employee Engagement",
+        "code": "EMP_ENG"
+      }
+    ]
+  },
+  "product": {
+    "id": "product",
+    "label": "Product Management",
+    "code": "PRODUCT",
+    "sub_departments": [
+      {
+        "id": "life_products",
+        "label": "Life Products",
+        "code": "LIFE_PROD"
+      },
+      {
+        "id": "health_products",
+        "label": "Health Products",
+        "code": "HEALTH_PROD"
+      },
+      {
+        "id": "motor_products",
+        "label": "Motor Products",
+        "code": "MOTOR_PROD"
+      },
+      {
+        "id": "travel_miscellaneous",
+        "label": "Travel & Miscellaneous",
+        "code": "TRAVEL_PROD"
+      },
+      {
+        "id": "pricing_actuarial",
+        "label": "Pricing & Actuarial",
+        "code": "ACTUARIAL"
+      }
+    ]
+  },
+  "legal": {
+    "id": "legal",
+    "label": "Legal & Compliance",
+    "code": "LEGAL",
+    "sub_departments": [
+      {
+        "id": "regulatory_compliance",
+        "label": "Regulatory Compliance (IRDAI)",
+        "code": "REG_COMP"
+      },
+      {
+        "id": "contracts_agreements",
+        "label": "Contracts & Agreements",
+        "code": "CONTRACTS"
+      },
+      {
+        "id": "dispute_resolution",
+        "label": "Dispute Resolution",
+        "code": "DISPUTES"
+      },
+      {
+        "id": "risk_management",
+        "label": "Risk Management",
+        "code": "RISK_MGT"
+      }
+    ]
+  },
+  "marketing": {
+    "id": "marketing",
+    "label": "Marketing & Branding",
+    "code": "MARKETING",
+    "sub_departments": [
+      {
+        "id": "brand_management",
+        "label": "Brand Management",
+        "code": "BRAND_MGT"
+      },
+      {
+        "id": "digital_marketing",
+        "label": "Digital Marketing",
+        "code": "DIGITAL_MKT"
+      },
+      {
+        "id": "campaigns",
+        "label": "Campaigns",
+        "code": "CAMPAIGNS"
+      },
+      {
+        "id": "customer_education",
+        "label": "Customer Education",
+        "code": "CUST_EDU"
+      }
+    ]
+  }
+}

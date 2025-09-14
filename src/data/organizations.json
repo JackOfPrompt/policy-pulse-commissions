@@ -1,0 +1,35 @@
+[
+  {
+    "id": "org-001",
+    "name": "Metro Insurance Group",
+    "type": "Primary Insurer",
+    "status": "active",
+    "employees": 245,
+    "agents": 89,
+    "customers": 12458,
+    "founded": "2019-03-15",
+    "address": "123 Business District, Mumbai, India"
+  },
+  {
+    "id": "org-002", 
+    "name": "Regional Coverage Ltd",
+    "type": "Regional Partner",
+    "status": "active",
+    "employees": 67,
+    "agents": 23,
+    "customers": 3241,
+    "founded": "2021-08-22",
+    "address": "456 Finance Street, Delhi, India"
+  },
+  {
+    "id": "org-003",
+    "name": "SecureLife Insurance",
+    "type": "Life Insurance Specialist", 
+    "status": "pending",
+    "employees": 134,
+    "agents": 45,
+    "customers": 7892,
+    "founded": "2020-11-10",
+    "address": "789 Corporate Park, Bangalore, India"
+  }
+]

@@ -1,0 +1,47 @@
+[
+  {
+    "id": "DOC-001",
+    "fileName": "health_policy_certificate.pdf",
+    "type": "policy",
+    "size": "2.4 MB",
+    "uploadedAt": "2024-01-20T10:30:00Z",
+    "status": "verified",
+    "policyId": "POL-2024-001"
+  },
+  {
+    "id": "DOC-002", 
+    "fileName": "aadhaar_card.jpg",
+    "type": "kyc",
+    "size": "1.2 MB",
+    "uploadedAt": "2024-01-18T14:20:00Z",
+    "status": "verified",
+    "policyId": null
+  },
+  {
+    "id": "DOC-003",
+    "fileName": "medical_certificate.pdf", 
+    "type": "claim",
+    "size": "800 KB",
+    "uploadedAt": "2024-08-22T09:15:00Z",
+    "status": "processing",
+    "policyId": "POL-2024-001"
+  },
+  {
+    "id": "DOC-004",
+    "fileName": "vehicle_registration.pdf",
+    "type": "policy",
+    "size": "1.8 MB", 
+    "uploadedAt": "2024-02-12T16:45:00Z",
+    "status": "verified",
+    "policyId": "POL-2024-002"
+  },
+  {
+    "id": "DOC-005",
+    "fileName": "pan_card.jpg",
+    "type": "kyc",
+    "size": "900 KB",
+    "uploadedAt": "2024-01-19T11:30:00Z",
+    "status": "ai_extracting",
+    "policyId": null
+  }
+]

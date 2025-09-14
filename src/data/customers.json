@@ -1,0 +1,53 @@
+[
+  {
+    "id": "CUST-001",
+    "name": "Rajesh Sharma",
+    "email": "rajesh.sharma@gmail.com",
+    "phone": "+91 9876543210",
+    "address": "123 MG Road, Mumbai, Maharashtra 400001",
+    "dateOfBirth": "1985-07-15",
+    "nomineeDetails": {
+      "name": "Sunita Sharma",
+      "relationship": "Spouse",
+      "phone": "+91 9876543211"
+    },
+    "policies": ["POL-2024-001"],
+    "totalPremium": 25000,
+    "status": "active",
+    "joinDate": "2024-01-15"
+  },
+  {
+    "id": "CUST-002",
+    "name": "Priya Patel", 
+    "email": "priya.patel@yahoo.com",
+    "phone": "+91 8765432109",
+    "address": "456 Park Street, Delhi, Delhi 110001",
+    "dateOfBirth": "1990-03-22",
+    "nomineeDetails": {
+      "name": "Vikram Patel",
+      "relationship": "Spouse",
+      "phone": "+91 8765432108"
+    },
+    "policies": ["POL-2024-002"],
+    "totalPremium": 12000,
+    "status": "active",
+    "joinDate": "2024-02-10"
+  },
+  {
+    "id": "CUST-003",
+    "name": "Amit Singh",
+    "email": "amit.singh@hotmail.com", 
+    "phone": "+91 7654321098",
+    "address": "789 Brigade Road, Bangalore, Karnataka 560001",
+    "dateOfBirth": "1982-11-08",
+    "nomineeDetails": {
+      "name": "Ravi Singh",
+      "relationship": "Brother",
+      "phone": "+91 7654321097"
+    },
+    "policies": ["POL-2024-003"],
+    "totalPremium": 18000,
+    "status": "inactive",
+    "joinDate": "2023-05-20"
+  }
+]

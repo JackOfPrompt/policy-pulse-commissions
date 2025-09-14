@@ -1,0 +1,98 @@
+[
+  {
+    "id": "COMM-001",
+    "policyNumber": "HDFC-LI-2024-001",
+    "customerName": "Rajesh Kumar",
+    "commissionAmount": 5000,
+    "commissionRate": 10,
+    "premium": 50000,
+    "status": "paid",
+    "payoutDate": "2024-02-01",
+    "month": "2024-01",
+    "year": 2024
+  },
+  {
+    "id": "COMM-002",
+    "policyNumber": "ICICI-HEALTH-2024-002",
+    "customerName": "Amit Patel",
+    "commissionAmount": 1800,
+    "commissionRate": 10,
+    "premium": 18000,
+    "status": "paid",
+    "payoutDate": "2024-03-01",
+    "month": "2024-02",
+    "year": 2024
+  },
+  {
+    "id": "COMM-003",
+    "policyNumber": "TATA-MOTOR-2024-003",
+    "customerName": "Sneha Reddy",
+    "commissionAmount": 1200,
+    "commissionRate": 10,
+    "premium": 12000,
+    "status": "pending",
+    "payoutDate": null,
+    "month": "2024-03",
+    "year": 2024
+  },
+  {
+    "id": "COMM-004",
+    "policyNumber": "SBI-LOAN-2024-004",
+    "customerName": "Vikram Singh",
+    "commissionAmount": 2500,
+    "commissionRate": 10,
+    "premium": 25000,
+    "status": "paid",
+    "payoutDate": "2024-02-15",
+    "month": "2024-01",
+    "year": 2024
+  },
+  {
+    "id": "COMM-005",
+    "policyNumber": "LIC-TERM-2024-005",
+    "customerName": "Priya Sharma",
+    "commissionAmount": 1500,
+    "commissionRate": 10,
+    "premium": 15000,
+    "status": "paid",
+    "payoutDate": "2023-03-01",
+    "month": "2023-02",
+    "year": 2023
+  },
+  {
+    "id": "COMM-006",
+    "policyNumber": "BAJAJ-HEALTH-2024-006",
+    "customerName": "Arjun Reddy",
+    "commissionAmount": 2200,
+    "commissionRate": 10,
+    "premium": 22000,
+    "status": "pending",
+    "payoutDate": null,
+    "month": "2024-03",
+    "year": 2024
+  },
+  {
+    "id": "COMM-007",
+    "policyNumber": "STAR-HEALTH-2023-007",
+    "customerName": "Kavita Joshi",
+    "commissionAmount": 1600,
+    "commissionRate": 10,
+    "premium": 16000,
+    "status": "paid",
+    "payoutDate": "2023-12-01",
+    "month": "2023-11",
+    "year": 2023
+  },
+  {
+    "id": "COMM-008",
+    "policyNumber": "MAX-LIFE-2023-008",
+    "customerName": "Rohit Singh",
+    "commissionAmount": 3000,
+    "commissionRate": 10,
+    "premium": 30000,
+    "status": "paid",
+    "payoutDate": "2023-11-15",
+    "month": "2023-10",
+    "year": 2023
+  }
+]

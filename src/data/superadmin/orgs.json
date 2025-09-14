@@ -1,0 +1,127 @@
+[
+  {
+    "id": "ORG-001",
+    "name": "Mumbai Insurance Corp",
+    "domain": "mumbaiinsurance.com",
+    "contactPerson": "Rajesh Sharma",
+    "contactEmail": "rajesh@mumbaiinsurance.com",
+    "contactPhone": "+91 22 6789 1234",
+    "status": "active",
+    "createdDate": "2023-01-15",
+    "address": {
+      "street": "BKC Tower, 15th Floor",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "zipCode": "400051",
+      "country": "India"
+    },
+    "subscriptionPlan": "Enterprise",
+    "tenantId": "TNT-MIC-001",
+    "metadata": {
+      "employees": 1250,
+      "revenue": 5200000,
+      "industry": "Life Insurance",
+      "lastLogin": "2024-12-10"
+    }
+  },
+  {
+    "id": "ORG-002", 
+    "name": "Delhi General Insurance",
+    "domain": "delhigeneral.in",
+    "contactPerson": "Priya Gupta",
+    "contactEmail": "priya@delhigeneral.in",
+    "contactPhone": "+91 11 4567 8901",
+    "status": "active",
+    "createdDate": "2023-03-22",
+    "address": {
+      "street": "Connaught Place, Block A-12",
+      "city": "New Delhi",
+      "state": "Delhi",
+      "zipCode": "110001",
+      "country": "India"
+    },
+    "subscriptionPlan": "Professional",
+    "tenantId": "TNT-DGI-002",
+    "metadata": {
+      "employees": 850,
+      "revenue": 3400000,
+      "industry": "General Insurance",
+      "lastLogin": "2024-12-09"
+    }
+  },
+  {
+    "id": "ORG-003",
+    "name": "Bangalore Life Insurance",
+    "domain": "bangalorelife.com",
+    "contactPerson": "Suresh Kumar",
+    "contactEmail": "suresh@bangalorelife.com",
+    "contactPhone": "+91 80 2345 6789",
+    "status": "suspended",
+    "createdDate": "2024-01-10",
+    "address": {
+      "street": "MG Road, UB City Mall",
+      "city": "Bangalore",
+      "state": "Karnataka",
+      "zipCode": "560001",
+      "country": "India"
+    },
+    "subscriptionPlan": "Starter",
+    "tenantId": "TNT-BLI-003",
+    "metadata": {
+      "employees": 120,
+      "revenue": 890000,
+      "industry": "Life Insurance",
+      "lastLogin": "2024-11-28"
+    }
+  },
+  {
+    "id": "ORG-004",
+    "name": "Chennai Motor Insurance",
+    "domain": "chennaimotor.co.in",
+    "contactPerson": "Lakshmi Narayanan",
+    "contactEmail": "lakshmi@chennaimotor.co.in",
+    "contactPhone": "+91 44 8901 2345",
+    "status": "active",
+    "createdDate": "2023-07-05",
+    "address": {
+      "street": "Anna Salai, Express Towers",
+      "city": "Chennai",
+      "state": "Tamil Nadu",
+      "zipCode": "600002",
+      "country": "India"
+    },
+    "subscriptionPlan": "Professional",
+    "tenantId": "TNT-CMI-004",
+    "metadata": {
+      "employees": 650,
+      "revenue": 2800000,
+      "industry": "Motor Insurance",
+      "lastLogin": "2024-12-10"
+    }
+  },
+  {
+    "id": "ORG-005",
+    "name": "Hyderabad Health Insurance",
+    "domain": "hyderabadhealth.org",
+    "contactPerson": "Venkat Reddy",
+    "contactEmail": "venkat@hyderabadhealth.org",
+    "contactPhone": "+91 40 5678 9012",
+    "status": "active",
+    "createdDate": "2023-11-20",
+    "address": {
+      "street": "Hitec City, Cyber Towers",
+      "city": "Hyderabad",
+      "state": "Telangana",
+      "zipCode": "500081",
+      "country": "India"
+    },
+    "subscriptionPlan": "Enterprise",
+    "tenantId": "TNT-HHI-005",
+    "metadata": {
+      "employees": 940,
+      "revenue": 4100000,
+      "industry": "Health Insurance",
+      "lastLogin": "2024-12-09"
+    }
+  }
+]

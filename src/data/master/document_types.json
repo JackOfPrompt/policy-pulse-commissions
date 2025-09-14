@@ -1,0 +1,8 @@
+[
+  { "id": "aadhaar", "label": "Aadhaar Card" },
+  { "id": "pan", "label": "PAN Card" },
+  { "id": "passport", "label": "Passport" },
+  { "id": "dl", "label": "Driving License" },
+  { "id": "voter_id", "label": "Voter ID" },
+  { "id": "rc", "label": "RC Book" }
+]

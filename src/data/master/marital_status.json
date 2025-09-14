@@ -1,0 +1,6 @@
+[
+  { "id": "single", "label": "Single" },
+  { "id": "married", "label": "Married" },
+  { "id": "divorced", "label": "Divorced" },
+  { "id": "widowed", "label": "Widowed" }
+]

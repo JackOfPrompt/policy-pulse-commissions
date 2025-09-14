@@ -1,0 +1,78 @@
+[
+  {
+    "id": "EMP-CUST-001",
+    "name": "Rajesh Kumar",
+    "phone": "+91-9876543210",
+    "email": "rajesh.kumar@email.com",
+    "assignedAgent": "Priya Sharma",
+    "createdAt": "2024-01-15",
+    "status": "active",
+    "address": "123 MG Road, Bangalore",
+    "dob": "1985-06-20",
+    "aadhaar": "1234-5678-9012",
+    "pan": "ABCDE1234F",
+    "nominee": {
+      "name": "Sunita Kumar",
+      "relation": "Wife",
+      "phone": "+91-9876543211"
+    },
+    "policies": ["POL-001", "POL-003"]
+  },
+  {
+    "id": "EMP-CUST-002", 
+    "name": "Amit Patel",
+    "phone": "+91-8765432109",
+    "email": "amit.patel@email.com",
+    "assignedAgent": "Rohit Singh",
+    "createdAt": "2024-02-10",
+    "status": "active",
+    "address": "456 Ring Road, Ahmedabad",
+    "dob": "1990-03-15",
+    "aadhaar": "2345-6789-0123",
+    "pan": "BCDEF2345G",
+    "nominee": {
+      "name": "Nisha Patel",
+      "relation": "Wife",
+      "phone": "+91-8765432110"
+    },
+    "policies": ["POL-002"]
+  },
+  {
+    "id": "EMP-CUST-003",
+    "name": "Sneha Reddy",
+    "phone": "+91-7654321098",
+    "email": "sneha.reddy@email.com", 
+    "assignedAgent": "Priya Sharma",
+    "createdAt": "2024-03-05",
+    "status": "pending",
+    "address": "789 Hi-Tech City, Hyderabad",
+    "dob": "1992-11-25",
+    "aadhaar": "3456-7890-1234",
+    "pan": "CDEFG3456H",
+    "nominee": {
+      "name": "Kiran Reddy",
+      "relation": "Brother",
+      "phone": "+91-7654321099"
+    },
+    "policies": []
+  },
+  {
+    "id": "EMP-CUST-004",
+    "name": "Vikram Singh",
+    "phone": "+91-6543210987",
+    "email": "vikram.singh@email.com",
+    "assignedAgent": "Rohit Singh", 
+    "createdAt": "2024-01-20",
+    "status": "active",
+    "address": "321 Connaught Place, Delhi",
+    "dob": "1988-08-10",
+    "aadhaar": "4567-8901-2345",
+    "pan": "DEFGH4567I",
+    "nominee": {
+      "name": "Ravi Singh",
+      "relation": "Father",
+      "phone": "+91-6543210988"
+    },
+    "policies": ["POL-004", "POL-005"]
+  }
+]

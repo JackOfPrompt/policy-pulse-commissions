@@ -1,0 +1,10 @@
+{
+  "provider": "ola_maps",
+  "api_key": "YOUR_OLA_MAPS_KEY_HERE",
+  "base_url": "https://api.olamaps.com/v1",
+  "endpoints": {
+    "geocode": "/geocode",
+    "reverse_geocode": "/reverse",
+    "routing": "/route"
+  }
+}

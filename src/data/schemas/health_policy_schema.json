@@ -1,0 +1,72 @@
+{
+  "customer": {
+    "label": "Customer Details",
+    "fields": [
+      { "field": "CUSTOMER_NAME", "label": "Customer Name", "type": "string", "required": true },
+      { "field": "CUSTOMER_ADDRESS", "label": "Customer Address", "type": "string" },
+      { "field": "MARITAL_STATUS", "label": "Marital Status", "type": "select", "options": ["Single", "Married", "Divorced", "Widowed"] },
+      { "field": "GENDER", "label": "Gender", "type": "select", "options": ["Male", "Female", "Other"] },
+      { "field": "CUSTOMER_PHONE", "label": "Phone Number", "type": "string" },
+      { "field": "CUSTOMER_EMAIL", "label": "Email", "type": "string" },
+      { "field": "CUSTOMER_DOB", "label": "Date of Birth", "type": "date" },
+      { "field": "DOCUMENT_TYPE", "label": "Document Type", "type": "string" },
+      { "field": "DOCUMENT_NUMBER", "label": "Document Number", "type": "string" },
+      { "field": "NOMINEE_NAME", "label": "Nominee Name", "type": "string" },
+      { "field": "NOMINEE_DOB", "label": "Nominee DOB", "type": "date" },
+      { "field": "NOMINEE_RELATION", "label": "Nominee Relation", "type": "string" }
+    ]
+  },
+  "insurance_provider": {
+    "label": "Insurance Provider Details",
+    "fields": [
+      { "field": "PROVIDER_NAME", "label": "Provider Name", "type": "string" },
+      { "field": "PROVIDER_UIN", "label": "UIN", "type": "string" },
+      { "field": "PROVIDER_ADDRESS", "label": "Provider Address", "type": "string" },
+      { "field": "PROVIDER_EMAIL", "label": "Contact Email", "type": "string" },
+      { "field": "PROVIDER_PHONE", "label": "Contact Phone", "type": "string" },
+      { "field": "PROVIDER_BRANCH", "label": "Branch", "type": "string" }
+    ]
+  },
+  "business_details": {
+    "label": "Business Details",
+    "fields": [
+      { "field": "CUSTOMER_TYPE", "label": "Customer Type", "type": "select", "options": ["Individual", "Corporate"] },
+      { "field": "OCCUPATION_OR_BUSINESS_TYPE", "label": "Occupation/Business Type", "type": "string" },
+      { "field": "GSTIN", "label": "GSTIN", "type": "string" },
+      { "field": "SAC_CODE", "label": "SAC Code", "type": "string" },
+      { "field": "BRANCH_CODE", "label": "Branch Code", "type": "string" }
+    ]
+  },
+  "policy": {
+    "label": "Policy Details",
+    "fields": [
+      { "field": "POLICY_NUMBER", "label": "Policy Number", "type": "string", "required": true },
+      { "field": "POLICY_START_DATE", "label": "Policy Start Date", "type": "date" },
+      { "field": "POLICY_END_DATE", "label": "Policy End Date", "type": "date" },
+      { "field": "POLICY_ISSUE_DATE", "label": "Policy Issue Date", "type": "date" },
+      { "field": "GROSS_PREMIUM", "label": "Gross Premium", "type": "number" },
+      { "field": "NET_PREMIUM", "label": "Net Premium", "type": "number" },
+      { "field": "GST", "label": "GST", "type": "number" },
+      { "field": "SUM_INSURED", "label": "Sum Insured", "type": "number" },
+      { "field": "PRODUCT_TYPE", "label": "Product Type", "type": "string" },
+      { "field": "POLICY_TYPE", "label": "Policy Type", "type": "string" },
+      { "field": "PLAN_NAME", "label": "Plan Name", "type": "string" },
+      { "field": "POLICY_TENURE", "label": "Policy Tenure (Years)", "type": "number" },
+      { "field": "PREVIOUS_MEDICAL_CONDITION", "label": "Previous Medical Condition", "type": "string" },
+      { "field": "MEMBER_COUNT", "label": "Member Count", "type": "number" },
+      { "field": "INSURED_PERSONS", "label": "Insured Persons", "type": "array", "arrayType": "object", "schema": [
+        { "field": "name", "label": "Full Name", "type": "string", "required": true },
+        { "field": "dob", "label": "Date of Birth", "type": "date", "required": true },
+        { "field": "gender", "label": "Gender", "type": "select", "options": ["Male", "Female", "Other"], "required": true },
+        { "field": "age", "label": "Age", "type": "number" },
+        { "field": "relationship_with_proposer", "label": "Relationship with Proposer", "type": "string", "required": true },
+        { "field": "member_id", "label": "Member ID", "type": "string" },
+        { "field": "pre_existing_diseases", "label": "Pre-existing Diseases", "type": "string" },
+        { "field": "date_insured_since", "label": "Date Insured Since", "type": "date" }
+      ]},
+      { "field": "COVER_TILL_AGE", "label": "Cover Till Age", "type": "number" },
+      { "field": "PREVIOUS_POLICY_COMPANY_NAME", "label": "Previous Policy Company", "type": "string" },
+      { "field": "PREVIOUS_POLICY_NUMBER", "label": "Previous Policy Number", "type": "string" }
+    ]
+  }
+}

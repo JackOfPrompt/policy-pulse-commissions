@@ -1,0 +1,90 @@
+[
+  {
+    "id": "BR-001",
+    "name": "Mumbai Central",
+    "address": "12th Floor, Business Plaza, Nariman Point, Mumbai 400021",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "pincode": "400021",
+    "manager": {
+      "id": "EMP-003",
+      "name": "Rahul Mehta",
+      "email": "rahul.mehta@metroinsurance.com",
+      "phone": "+91 9123456789"
+    },
+    "employeesCount": 12,
+    "agentsCount": 8,
+    "policiesCount": 156,
+    "monthlyTarget": 200,
+    "monthlyAchieved": 132,
+    "status": "active",
+    "openingDate": "2023-01-15",
+    "performanceRating": "Excellent"
+  },
+  {
+    "id": "BR-002",
+    "name": "Delhi NCR Hub",
+    "address": "5th Floor, Corporate Tower, Connaught Place, New Delhi 110001",
+    "city": "New Delhi",
+    "state": "Delhi",
+    "pincode": "110001",
+    "manager": {
+      "id": "EMP-004",
+      "name": "Anjali Singh",
+      "email": "anjali.singh@metroinsurance.com",
+      "phone": "+91 8987654321"
+    },
+    "employeesCount": 15,
+    "agentsCount": 12,
+    "policiesCount": 203,
+    "monthlyTarget": 250,
+    "monthlyAchieved": 189,
+    "status": "active",
+    "openingDate": "2023-03-10",
+    "performanceRating": "Good"
+  },
+  {
+    "id": "BR-003",
+    "name": "Bangalore Tech City",
+    "address": "Tech Park, 8th Floor, Electronic City, Bangalore 560100",
+    "city": "Bangalore",
+    "state": "Karnataka",
+    "pincode": "560100",
+    "manager": {
+      "id": "EMP-005",
+      "name": "Karthik Rao",
+      "email": "karthik.rao@metroinsurance.com",
+      "phone": "+91 7876543210"
+    },
+    "employeesCount": 10,
+    "agentsCount": 6,
+    "policiesCount": 98,
+    "monthlyTarget": 150,
+    "monthlyAchieved": 112,
+    "status": "active",
+    "openingDate": "2023-06-20",
+    "performanceRating": "Average"
+  },
+  {
+    "id": "BR-004",
+    "name": "Chennai Marina",
+    "address": "Marina Plaza, 3rd Floor, Anna Salai, Chennai 600002",
+    "city": "Chennai",
+    "state": "Tamil Nadu",
+    "pincode": "600002",
+    "manager": {
+      "id": "EMP-006",
+      "name": "Lakshmi Krishnan",
+      "email": "lakshmi.krishnan@metroinsurance.com",
+      "phone": "+91 6765432109"
+    },
+    "employeesCount": 8,
+    "agentsCount": 5,
+    "policiesCount": 67,
+    "monthlyTarget": 120,
+    "monthlyAchieved": 78,
+    "status": "under_review",
+    "openingDate": "2023-09-01",
+    "performanceRating": "Needs Improvement"
+  }
+]

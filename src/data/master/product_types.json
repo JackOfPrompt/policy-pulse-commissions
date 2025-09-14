@@ -1,0 +1,50 @@
+{
+  "life": {
+    "subtypes": ["term", "endowment", "whole_life", "ULIP", "money_back", "child_plan", "pension"],
+    "fields": ["policy_term", "premium_payment_term", "maturity_date", "sum_assured", "benefits", "tax_benefits", "plan_type"]
+  },
+  "health": {
+    "subtypes": ["individual", "family_floater", "critical_illness", "top_up", "maternity", "senior_citizen", "hospital_cash"],
+    "fields": ["cover_type", "policy_type", "benefits", "exclusions", "insured_members", "waiting_period", "co_pay"]
+  },
+  "motor": {
+    "subtypes": ["third_party", "comprehensive", "two_wheeler", "commercial_vehicle"],
+    "fields": ["policy_type", "policy_sub_type", "idv", "ncb", "vehicle_id", "previous_claim", "previous_policy_number", "engine_number", "chassis_number"]
+  },
+  "travel": {
+    "subtypes": ["domestic", "international", "student", "senior_citizen"],
+    "fields": ["trip_type", "departure_date", "return_date", "destination", "coverage", "trip_purpose", "sum_insured"]
+  },
+  "pet": {
+    "subtypes": ["dog", "cat", "other"],
+    "fields": ["pet_type", "breed", "dob", "coverage", "pre_existing_conditions"]
+  },
+  "loan": {
+    "subtypes": ["home", "personal", "vehicle", "education", "business"],
+    "fields": ["loan_amount", "loan_type", "tenure_years", "interest_rate", "cover_type", "co_borrower"]
+  },
+  "home": {
+    "subtypes": ["owner_occupied", "rented", "apartment", "independent_house"],
+    "fields": ["property_value", "construction_type", "contents_value", "coverage_type", "natural_calamities_coverage", "fire_coverage", "theft_coverage"]
+  },
+  "personal_accident": {
+    "subtypes": ["individual", "group"],
+    "fields": ["sum_insured", "cover_type", "benefits", "disability_coverage", "accidental_death"]
+  },
+  "cyber": {
+    "subtypes": ["individual", "business"],
+    "fields": ["coverage_limit", "breach_type", "data_recovery_costs", "liability_cover", "ransomware_coverage"]
+  },
+  "security": {
+    "subtypes": ["burglary", "theft", "kidnap_ransom"],
+    "fields": ["coverage_limit", "security_type", "premises_type", "risk_zone", "response_time"]
+  },
+  "marine": {
+    "subtypes": ["cargo", "ship", "port_liability"],
+    "fields": ["cargo_value", "voyage_type", "perils_covered", "policy_type", "insured_party"]
+  },
+  "business": {
+    "subtypes": ["liability", "property", "interruption"],
+    "fields": ["business_type", "sum_insured", "coverage_type", "premises_value", "inventory_value", "liability_limit"]
+  }
+}

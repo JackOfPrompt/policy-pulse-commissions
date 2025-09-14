@@ -1,0 +1,10 @@
+{
+  "id": "CUST-001",
+  "name": "Rajesh Sharma", 
+  "email": "rajesh.sharma@email.com",
+  "phone": "+91 98765 43210",
+  "address": "123 MG Road, Mumbai, Maharashtra 400001",
+  "joinDate": "2024-01-15",
+  "status": "active",
+  "role": "customer"
+}

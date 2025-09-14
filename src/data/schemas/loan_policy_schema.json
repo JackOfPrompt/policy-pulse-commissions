@@ -1,0 +1,36 @@
+{
+  "customer": {
+    "label": "Customer Details", 
+    "fields": [
+      { "field": "CUSTOMER_NAME", "label": "Customer Name", "type": "string", "required": true },
+      { "field": "CUSTOMER_ADDRESS", "label": "Customer Address", "type": "string" },
+      { "field": "CUSTOMER_PHONE", "label": "Phone Number", "type": "string" },
+      { "field": "CUSTOMER_EMAIL", "label": "Email", "type": "string" },
+      { "field": "CUSTOMER_DOB", "label": "Date of Birth", "type": "date" },
+      { "field": "DOCUMENT_TYPE", "label": "Document Type", "type": "string" },
+      { "field": "DOCUMENT_NUMBER", "label": "Document Number", "type": "string" },
+      { "field": "NOMINEE_NAME", "label": "Nominee Name", "type": "string" },
+      { "field": "NOMINEE_RELATION", "label": "Nominee Relation", "type": "string" }
+    ]
+  },
+  "policy": {
+    "label": "Policy Details",
+    "fields": [
+      { "field": "POLICY_NUMBER", "label": "Policy Number", "type": "string", "required": true },
+      { "field": "POLICY_START_DATE", "label": "Policy Start Date", "type": "date" },
+      { "field": "POLICY_END_DATE", "label": "Policy End Date", "type": "date" },
+      { "field": "GROSS_PREMIUM", "label": "Gross Premium", "type": "number" },
+      { "field": "NET_PREMIUM", "label": "Net Premium", "type": "number" },
+      { "field": "GST", "label": "GST", "type": "number" },
+      { "field": "SUM_INSURED", "label": "Sum Insured", "type": "number" },
+      { "field": "PRODUCT_TYPE", "label": "Product Type", "type": "string" },
+      { "field": "POLICY_TYPE", "label": "Policy Type", "type": "string" },
+      { "field": "PLAN_NAME", "label": "Plan Name", "type": "string" },
+      { "field": "LOAN_AMOUNT", "label": "Loan Amount", "type": "number" },
+      { "field": "LOAN_TENURE", "label": "Loan Tenure (Years)", "type": "number" },
+      { "field": "LOAN_DISBURSAL_DATE", "label": "Loan Disbursal Date", "type": "date" },
+      { "field": "ACCOUNT_NUMBER", "label": "Account Number", "type": "string" },
+      { "field": "PAYMENT_MODE", "label": "Payment Mode", "type": "string" }
+    ]
+  }
+}

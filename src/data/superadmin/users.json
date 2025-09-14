@@ -1,0 +1,38 @@
+[
+  {
+    "id": "USR-001",
+    "name": "Rahul Sharma",
+    "email": "rahul.sharma@mumbaiinsurance.com",
+    "role": "admin",
+    "organization": "Mumbai Insurance Corp",
+    "organizationId": "ORG-001",
+    "status": "active",
+    "lastLogin": "2024-01-20T10:30:00Z",
+    "joinDate": "2023-01-20",
+    "permissions": ["manage_policies", "view_reports", "manage_agents"]
+  },
+  {
+    "id": "USR-002",
+    "name": "Priya Patel", 
+    "email": "priya.patel@delhigeneral.in",
+    "role": "employee",
+    "organization": "Delhi General Insurance",
+    "organizationId": "ORG-002",
+    "status": "active",
+    "lastLogin": "2024-01-19T15:45:00Z",
+    "joinDate": "2023-04-01",
+    "permissions": ["view_customers", "manage_policies"]
+  },
+  {
+    "id": "USR-003",
+    "name": "Amit Kumar",
+    "email": "amit.kumar@bangalorelife.com", 
+    "role": "agent",
+    "organization": "Bangalore Life Insurance",
+    "organizationId": "ORG-003",
+    "status": "pending",
+    "lastLogin": null,
+    "joinDate": "2024-01-15",
+    "permissions": ["view_policies", "manage_commissions"]
+  }
+]

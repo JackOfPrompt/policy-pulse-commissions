@@ -1,0 +1,95 @@
+{
+  "insurer_details": {
+    "label": "Insurer Details",
+    "fields": [
+      { "field": "insurer_name", "label": "Insurer Name", "type": "string", "required": true },
+      { "field": "insurer_address", "label": "Insurer Address", "type": "string" },
+      { "field": "insurer_type", "label": "Insurer Type", "type": "string" },
+      { "field": "branch_name", "label": "Branch Name", "type": "string" },
+      { "field": "business_type", "label": "Business Type", "type": "string" },
+      { "field": "contact_email", "label": "Contact Email", "type": "string" },
+      { "field": "contact_phone", "label": "Contact Phone", "type": "string" }
+    ]
+  },
+  "policyholder": {
+    "label": "Policyholder Details",
+    "fields": [
+      { "field": "name", "label": "Name", "type": "string", "required": true },
+      { "field": "dob", "label": "Date of Birth", "type": "date" },
+      { "field": "age", "label": "Age", "type": "number" },
+      { "field": "gender", "label": "Gender", "type": "select", "options": ["Male", "Female", "Other"] },
+      { "field": "address", "label": "Address", "type": "string" },
+      { "field": "mobile", "label": "Mobile", "type": "string" },
+      { "field": "email", "label": "Email", "type": "string" },
+      { "field": "pan", "label": "PAN", "type": "string" }
+    ]
+  },
+  "policy_details": {
+    "label": "Policy Details",
+    "fields": [
+      { "field": "policy_number", "label": "Policy Number", "type": "string", "required": true },
+      { "field": "application_number", "label": "Application Number", "type": "string" },
+      { "field": "issue_date", "label": "Issue Date", "type": "date" },
+      { "field": "acceptance_date", "label": "Acceptance Date", "type": "date" },
+      { "field": "policy_term", "label": "Policy Term", "type": "string" },
+      { "field": "premium_payment_term", "label": "Premium Payment Term", "type": "string" },
+      { "field": "premium_payment_frequency", "label": "Premium Payment Frequency", "type": "string" },
+      { "field": "last_premium_due_date", "label": "Last Premium Due Date", "type": "date" },
+      { "field": "maturity_date", "label": "Maturity Date", "type": "date" },
+      { "field": "plan_name", "label": "Plan Name", "type": "string" },
+      { "field": "uin", "label": "UIN", "type": "string" },
+      { "field": "plan_type", "label": "Plan Type", "type": "string" }
+    ]
+  },
+  "premium_details": {
+    "label": "Premium Details",
+    "fields": [
+      { "field": "installment_premium", "label": "Installment Premium", "type": "number" },
+      { "field": "gst", "label": "GST", "type": "number" },
+      { "field": "total_premium", "label": "Total Premium", "type": "number" },
+      { "field": "mode_of_payment", "label": "Mode of Payment", "type": "string" },
+      { "field": "transaction_number", "label": "Transaction Number", "type": "string" },
+      { "field": "total_premiums_paid", "label": "Total Premiums Paid", "type": "number" },
+      { "field": "tax_benefits", "label": "Tax Benefits", "type": "string" }
+    ]
+  },
+  "benefits": {
+    "label": "Benefits",
+    "fields": [
+      { "field": "sum_assured_on_death", "label": "Sum Assured on Death", "type": "number" },
+      { "field": "survival_benefits", "label": "Survival Benefits", "type": "string" },
+      { "field": "maturity_benefit", "label": "Maturity Benefit", "type": "string" },
+      { "field": "cashback", "label": "Cashback", "type": "string" },
+      { "field": "bonuses", "label": "Bonuses", "type": "string" }
+    ]
+  },
+  "nominee": {
+    "label": "Nominee Details",
+    "fields": [
+      { "field": "name", "label": "Name", "type": "string" },
+      { "field": "dob", "label": "Date of Birth", "type": "date" },
+      { "field": "gender", "label": "Gender", "type": "select", "options": ["Male", "Female", "Other"] },
+      { "field": "relation", "label": "Relation", "type": "string" },
+      { "field": "share_percentage", "label": "Share Percentage", "type": "number" },
+      { "field": "appointee", "label": "Appointee", "type": "string" }
+    ]
+  },
+  "agent": {
+    "label": "Agent Details",
+    "fields": [
+      { "field": "name", "label": "Name", "type": "string" },
+      { "field": "license_number", "label": "License Number", "type": "string" },
+      { "field": "code", "label": "Code", "type": "string" },
+      { "field": "contact_info", "label": "Contact Info", "type": "string" }
+    ]
+  },
+  "other": {
+    "label": "Other Details",
+    "fields": [
+      { "field": "policy_status", "label": "Policy Status", "type": "string" },
+      { "field": "servicing_branch", "label": "Servicing Branch", "type": "string" },
+      { "field": "grievance_contacts", "label": "Grievance Contacts", "type": "string" },
+      { "field": "tax_tds_rules", "label": "Tax TDS Rules", "type": "string" }
+    ]
+  }
+}

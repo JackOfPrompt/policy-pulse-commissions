@@ -1,1 +1,10 @@
 project_id = "uisgtrxxgwlggvuejgrq"
+
+[functions.extract-policy]
+verify_jwt = false
+
+[functions.save-policy]
+verify_jwt = false
+
+[functions.create-tenant-admin]
+verify_jwt = true

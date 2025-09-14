@@ -1,0 +1,37 @@
+{
+  "superadmin": {
+    "id": "sa-001",
+    "name": "Sarah Wilson",
+    "email": "sarah@insuratech.com",
+    "role": "Super Admin",
+    "avatar": "/api/placeholder/40/40"
+  },
+  "admin": {
+    "id": "admin-001", 
+    "name": "Michael Chen",
+    "email": "michael@metroinsurance.com",
+    "role": "Admin",
+    "avatar": "/api/placeholder/40/40"
+  },
+  "employee": {
+    "id": "emp-001",
+    "name": "Jessica Rodriguez",
+    "email": "jessica@metroinsurance.com",
+    "role": "Employee",
+    "avatar": "/api/placeholder/40/40"
+  },
+  "agent": {
+    "id": "agent-001",
+    "name": "David Kumar",
+    "email": "david@metroinsurance.com", 
+    "role": "Agent",
+    "avatar": "/api/placeholder/40/40"
+  },
+  "customer": {
+    "id": "cust-001",
+    "name": "Emily Johnson",
+    "email": "emily@gmail.com",
+    "role": "Customer",
+    "avatar": "/api/placeholder/40/40"
+  }
+}

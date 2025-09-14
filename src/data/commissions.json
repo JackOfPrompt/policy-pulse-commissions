@@ -1,0 +1,58 @@
+[
+  {
+    "id": "COMM-001",
+    "agentId": "agent-001",
+    "agentName": "David Kumar",
+    "policyId": "POL-2024-001",
+    "customerName": "Rajesh Sharma",
+    "policyType": "Health Insurance",
+    "premium": 25000,
+    "commissionRate": 15,
+    "commissionAmount": 3750,
+    "status": "paid",
+    "paidDate": "2024-02-15",
+    "quarter": "Q1 2024"
+  },
+  {
+    "id": "COMM-002",
+    "agentId": "agent-001", 
+    "agentName": "David Kumar",
+    "policyId": "POL-2024-002",
+    "customerName": "Priya Patel",
+    "policyType": "Motor Insurance",
+    "premium": 12000,
+    "commissionRate": 12,
+    "commissionAmount": 1440,
+    "status": "pending",
+    "paidDate": null,
+    "quarter": "Q1 2024"
+  },
+  {
+    "id": "COMM-003",
+    "agentId": "agent-002",
+    "agentName": "Sarah Wilson",
+    "policyId": "POL-2024-003", 
+    "customerName": "Amit Singh",
+    "policyType": "Home Loan Insurance",
+    "premium": 18000,
+    "commissionRate": 18,
+    "commissionAmount": 3240,
+    "status": "paid",
+    "paidDate": "2024-06-20",
+    "quarter": "Q2 2024"
+  },
+  {
+    "id": "COMM-004",
+    "agentId": "agent-001",
+    "agentName": "David Kumar",
+    "policyId": "POL-2024-004",
+    "customerName": "Sneha Agarwal",
+    "policyType": "Health Insurance",
+    "premium": 30000,
+    "commissionRate": 15,
+    "commissionAmount": 4500,
+    "status": "processing",
+    "paidDate": null,
+    "quarter": "Q3 2024"
+  }
+]
