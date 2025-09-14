@@ -6,19 +6,23 @@ import {
 } from "../schemas/policySchemas";
 
 export interface ParsedCSVResult<T> {
+  fileName: string;
+  policyType: "life" | "health" | "motor";
   validRows: T[];
   invalidRows: { row: any; errors: string[]; rowIndex: number }[];
-  policyType: "life" | "health" | "motor";
 }
 
 // Utility: detect policy type from file name
 function detectPolicyType(fileName: string): "life" | "health" | "motor" {
   const lower = fileName.toLowerCase();
-  if (lower.includes("life")) return "life";
-  if (lower.includes("health")) return "health";
-  if (lower.includes("motor")) return "motor";
+  
+  // Check for exact matches first
+  if (lower.includes("life") || lower.includes("term") || lower.includes("endowment")) return "life";
+  if (lower.includes("health") || lower.includes("medical") || lower.includes("mediclaim")) return "health";
+  if (lower.includes("motor") || lower.includes("vehicle") || lower.includes("auto") || lower.includes("car")) return "motor";
+  
   throw new Error(
-    "Could not detect policy type. File name must include 'life', 'health', or 'motor'."
+    `❌ Could not detect policy type for "${fileName}". File name must include keywords like 'life', 'health', 'motor', 'vehicle', 'medical', etc.`
   );
 }
 
@@ -69,13 +73,88 @@ export async function parsePolicyCSV<T>(
           }
         });
 
-        resolve({ validRows, invalidRows, policyType });
+        resolve({ fileName: file.name, policyType, validRows, invalidRows });
       },
       error: (error) => {
         reject(error);
       },
     });
   });
+}
+
+// Parse a single CSV file
+function parseSingleCSV<T>(
+  file: File,
+  policyType: "life" | "health" | "motor",
+  schema: any
+): Promise<ParsedCSVResult<T>> {
+  return new Promise((resolve, reject) => {
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (results) => {
+        const validRows: T[] = [];
+        const invalidRows: { row: any; errors: string[]; rowIndex: number }[] = [];
+
+        results.data.forEach((row: any, index: number) => {
+          const parsed = schema.safeParse(row);
+
+          if (parsed.success) {
+            validRows.push(parsed.data as T);
+          } else {
+            invalidRows.push({
+              row,
+              errors: parsed.error.errors.map(
+                (err) => `${err.path.join(".")}: ${err.message}`
+              ),
+              rowIndex: index + 2, // account for header row
+            });
+          }
+        });
+
+        resolve({
+          fileName: file.name,
+          policyType,
+          validRows,
+          invalidRows,
+        });
+      },
+      error: (error) => reject(error),
+    });
+  });
+}
+
+/**
+ * Parse multiple CSV files → JSON with Zod validation
+ * @param files File[] (from <input type="file" multiple />)
+ */
+export async function parseMultiplePolicyCSVs<T>(
+  files: File[]
+): Promise<ParsedCSVResult<T>[]> {
+  const results: ParsedCSVResult<T>[] = [];
+
+  for (const file of files) {
+    try {
+      const policyType = detectPolicyType(file.name);
+      const schema = getSchema(policyType);
+      const parsed = await parseSingleCSV<T>(file, policyType, schema);
+      results.push(parsed);
+    } catch (error) {
+      // Add failed file with error information
+      results.push({
+        fileName: file.name,
+        policyType: "life", // fallback
+        validRows: [],
+        invalidRows: [{
+          row: {},
+          errors: [error instanceof Error ? error.message : "Failed to parse file"],
+          rowIndex: 0
+        }]
+      });
+    }
+  }
+
+  return results;
 }
 
 /**

@@ -47,6 +47,7 @@ import SubscriptionUpgrade from "./pages/admin/SubscriptionUpgrade";
 import PolicyIssuance from "./pages/employee/PolicyIssuance";
 import AgentEarningsTracker from "./pages/agent/EarningsTracker";
 import NotFound from "./pages/NotFound";
+import { CSVParserDemo } from "./components/CSVParserDemo";
 
 const queryClient = new QueryClient();
 
@@ -126,6 +127,7 @@ const App = () => (
           
           {/* Policy Management Routes */}
           <Route path="/policy-extraction" element={<PolicyExtraction />} />
+          <Route path="/csv-parser" element={<CSVParserDemo />} />
           
           {/* Admin Routes */}
           <Route path="/admin" element={
