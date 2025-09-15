@@ -156,7 +156,18 @@ export function BusinessSourceAssignment({
       });
       return;
     }
-    onSave(extractedData);
+    
+    // Merge extracted data with business source assignment
+    const policyWithSource = {
+      ...extractedData,
+      source_type: businessSource.sourceType,
+      employee_id: businessSource.sourceType === 'employee' ? businessSource.sourceId : null,
+      posp_id: businessSource.sourceType === 'posp' ? businessSource.sourceId : null,
+      misp_id: businessSource.sourceType === 'misp' ? businessSource.sourceId : null,
+      broker_company: businessSource.brokerCompany || null
+    };
+    
+    onSave(policyWithSource);
   };
 
   return (
