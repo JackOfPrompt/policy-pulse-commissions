@@ -37,6 +37,7 @@ interface Agent {
 interface Misp {
   id: string;
   channel_partner_name: string;
+  type_of_dealer?: string;
 }
 
 export function BusinessSourceAssignment({
@@ -82,7 +83,7 @@ export function BusinessSourceAssignment({
       // Load MISPs
       const { data: mispData, error: mispError } = await supabase
         .from('misps')
-        .select('id, channel_partner_name')
+        .select('id, channel_partner_name, type_of_dealer')
         .order('channel_partner_name');
 
       if (mispError) throw mispError;
@@ -114,7 +115,7 @@ export function BusinessSourceAssignment({
       case 'misp':
         return misps.map(misp => ({
           value: misp.id,
-          label: misp.channel_partner_name
+          label: `${misp.channel_partner_name}${misp.type_of_dealer ? ` (${misp.type_of_dealer})` : ''}`
         }));
       default:
         return [];
@@ -164,7 +165,8 @@ export function BusinessSourceAssignment({
       employee_id: businessSource.sourceType === 'employee' ? businessSource.sourceId : null,
       posp_id: businessSource.sourceType === 'posp' ? businessSource.sourceId : null,
       misp_id: businessSource.sourceType === 'misp' ? businessSource.sourceId : null,
-      broker_company: businessSource.brokerCompany || null
+      broker_company: businessSource.brokerCompany || null,
+      policy_status: 'reviewed'
     };
     
     onSave(policyWithSource);
