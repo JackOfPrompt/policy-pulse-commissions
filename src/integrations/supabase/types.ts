@@ -1323,6 +1323,7 @@ export type Database = {
       policies: {
         Row: {
           agent_id: string | null
+          broker_company: string | null
           created_at: string | null
           created_by: string | null
           customer_id: string
@@ -1332,21 +1333,25 @@ export type Database = {
           gst: number | null
           id: string
           issue_date: string | null
+          misp_id: string | null
           org_id: string
           pdf_link: string | null
           plan_name: string | null
           policy_number: string
           policy_status: string | null
+          posp_id: string | null
           premium_with_gst: number | null
           premium_without_gst: number | null
           product_type_id: string
           provider: string | null
+          source_type: string | null
           start_date: string | null
           updated_at: string | null
           updated_by: string | null
         }
         Insert: {
           agent_id?: string | null
+          broker_company?: string | null
           created_at?: string | null
           created_by?: string | null
           customer_id: string
@@ -1356,21 +1361,25 @@ export type Database = {
           gst?: number | null
           id?: string
           issue_date?: string | null
+          misp_id?: string | null
           org_id: string
           pdf_link?: string | null
           plan_name?: string | null
           policy_number: string
           policy_status?: string | null
+          posp_id?: string | null
           premium_with_gst?: number | null
           premium_without_gst?: number | null
           product_type_id: string
           provider?: string | null
+          source_type?: string | null
           start_date?: string | null
           updated_at?: string | null
           updated_by?: string | null
         }
         Update: {
           agent_id?: string | null
+          broker_company?: string | null
           created_at?: string | null
           created_by?: string | null
           customer_id?: string
@@ -1380,15 +1389,18 @@ export type Database = {
           gst?: number | null
           id?: string
           issue_date?: string | null
+          misp_id?: string | null
           org_id?: string
           pdf_link?: string | null
           plan_name?: string | null
           policy_number?: string
           policy_status?: string | null
+          posp_id?: string | null
           premium_with_gst?: number | null
           premium_without_gst?: number | null
           product_type_id?: string
           provider?: string | null
+          source_type?: string | null
           start_date?: string | null
           updated_at?: string | null
           updated_by?: string | null
@@ -1416,10 +1428,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "policies_misp_id_fkey"
+            columns: ["misp_id"]
+            isOneToOne: false
+            referencedRelation: "misps"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "policies_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "policies_posp_id_fkey"
+            columns: ["posp_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
             referencedColumns: ["id"]
           },
           {
