@@ -1,11 +1,12 @@
 import React from 'react';
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { EnhancedPolicyCommissionReport } from '@/components/admin/EnhancedPolicyCommissionReport';
+import { RevenueTableReport } from '@/components/admin/RevenueTableReport';
 import { useEnhancedCommissionReport } from '@/hooks/useEnhancedCommissionReport';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RefreshCw, Calculator, TrendingUp, Users, Building } from "lucide-react";
+import { RefreshCw, Calculator, TrendingUp, Users, Building, DollarSign } from "lucide-react";
 
 export default function CommissionReports() {
   const { 
@@ -117,11 +118,16 @@ export default function CommissionReports() {
           </div>
         )}
         
-        <Tabs defaultValue="detailed" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+        <Tabs defaultValue="revenue" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="revenue">Revenue Table - Live</TabsTrigger>
             <TabsTrigger value="detailed">Detailed Commission Reports</TabsTrigger>
             <TabsTrigger value="analytics">Commission Analytics</TabsTrigger>
           </TabsList>
+          
+          <TabsContent value="revenue" className="mt-6">
+            <RevenueTableReport />
+          </TabsContent>
           
           <TabsContent value="detailed" className="mt-6">
             <EnhancedPolicyCommissionReport />

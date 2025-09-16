@@ -101,13 +101,6 @@ export type Database = {
             referencedRelation: "policies"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "agent_commission_history_policy_id_fkey"
-            columns: ["policy_id"]
-            isOneToOne: false
-            referencedRelation: "revenue_table"
-            referencedColumns: ["policy_id"]
-          },
         ]
       }
       agents: {
@@ -855,13 +848,6 @@ export type Database = {
             referencedRelation: "policies"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "health_policy_details_policy_id_fkey"
-            columns: ["policy_id"]
-            isOneToOne: true
-            referencedRelation: "revenue_table"
-            referencedColumns: ["policy_id"]
-          },
         ]
       }
       insured_members: {
@@ -1060,13 +1046,6 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "policies"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "life_policy_details_policy_id_fkey"
-            columns: ["policy_id"]
-            isOneToOne: true
-            referencedRelation: "revenue_table"
-            referencedColumns: ["policy_id"]
           },
         ]
       }
@@ -1443,13 +1422,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "motor_policy_details_policy_id_fkey"
-            columns: ["policy_id"]
-            isOneToOne: true
-            referencedRelation: "revenue_table"
-            referencedColumns: ["policy_id"]
-          },
-          {
             foreignKeyName: "motor_policy_details_vehicle_id_fkey"
             columns: ["vehicle_id"]
             isOneToOne: false
@@ -1823,6 +1795,105 @@ export type Database = {
           },
         ]
       }
+      revenue_table: {
+        Row: {
+          agent_commission: number | null
+          agent_id: string | null
+          agent_name: string | null
+          base_rate: number | null
+          bonus_rate: number | null
+          broker_share: number | null
+          calc_date: string | null
+          commission_status: string | null
+          created_at: string | null
+          customer_name: string | null
+          employee_commission: number | null
+          employee_id: string | null
+          employee_name: string | null
+          id: string
+          insurer_commission: number | null
+          misp_id: string | null
+          misp_name: string | null
+          org_id: string | null
+          policy_id: string | null
+          policy_number: string | null
+          premium: number | null
+          product_type: string | null
+          provider: string | null
+          reporting_employee_commission: number | null
+          reporting_employee_id: string | null
+          reporting_employee_name: string | null
+          reward_rate: number | null
+          source_type: string | null
+          total_rate: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          agent_commission?: number | null
+          agent_id?: string | null
+          agent_name?: string | null
+          base_rate?: number | null
+          bonus_rate?: number | null
+          broker_share?: number | null
+          calc_date?: string | null
+          commission_status?: string | null
+          created_at?: string | null
+          customer_name?: string | null
+          employee_commission?: number | null
+          employee_id?: string | null
+          employee_name?: string | null
+          id?: string
+          insurer_commission?: number | null
+          misp_id?: string | null
+          misp_name?: string | null
+          org_id?: string | null
+          policy_id?: string | null
+          policy_number?: string | null
+          premium?: number | null
+          product_type?: string | null
+          provider?: string | null
+          reporting_employee_commission?: number | null
+          reporting_employee_id?: string | null
+          reporting_employee_name?: string | null
+          reward_rate?: number | null
+          source_type?: string | null
+          total_rate?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          agent_commission?: number | null
+          agent_id?: string | null
+          agent_name?: string | null
+          base_rate?: number | null
+          bonus_rate?: number | null
+          broker_share?: number | null
+          calc_date?: string | null
+          commission_status?: string | null
+          created_at?: string | null
+          customer_name?: string | null
+          employee_commission?: number | null
+          employee_id?: string | null
+          employee_name?: string | null
+          id?: string
+          insurer_commission?: number | null
+          misp_id?: string | null
+          misp_name?: string | null
+          org_id?: string | null
+          policy_id?: string | null
+          policy_number?: string | null
+          premium?: number | null
+          product_type?: string | null
+          provider?: string | null
+          reporting_employee_commission?: number | null
+          reporting_employee_id?: string | null
+          reporting_employee_name?: string | null
+          reward_rate?: number | null
+          source_type?: string | null
+          total_rate?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       subscription_requests: {
         Row: {
           created_at: string | null
@@ -2187,26 +2258,7 @@ export type Database = {
       }
     }
     Views: {
-      revenue_table: {
-        Row: {
-          agent_commission: number | null
-          base_rate: number | null
-          bonus_rate: number | null
-          broker_share: number | null
-          employee_commission: number | null
-          insurer_commission: number | null
-          policy_id: string | null
-          policy_number: string | null
-          premium: number | null
-          product_type: string | null
-          reporting_employee_commission: number | null
-          reward_rate: number | null
-          source_name: string | null
-          source_type: string | null
-          total_rate: number | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       calculate_commission_amount: {
@@ -2507,6 +2559,10 @@ export type Database = {
         Returns: undefined
       }
       sync_enhanced_comprehensive_commissions: {
+        Args: { p_org_id?: string }
+        Returns: undefined
+      }
+      sync_revenue_table: {
         Args: { p_org_id?: string }
         Returns: undefined
       }
