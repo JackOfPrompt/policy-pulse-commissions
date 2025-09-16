@@ -36,9 +36,24 @@ export function useCommissionCalculation() {
     }
   };
 
+  const syncCommissions = async () => {
+    setLoading(true);
+    try {
+      // Placeholder for syncing commissions
+      console.log('Commission syncing temporarily disabled - types being regenerated');
+      return [];
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Sync failed');
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     calculateCommissions,
     saveCommissions,
+    syncCommissions,
     loading,
     error,
     isCalculating: loading
