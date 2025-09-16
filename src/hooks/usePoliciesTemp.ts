@@ -1,13 +1,50 @@
 import { useState } from 'react';
 
-// Export required interfaces  
+// Export required interfaces that match the database schema
 export interface Policy {
   id: string;
   policy_number: string;
   customer_id: string;
-  product_type: string;
+  product_type: string | { name: string; category: string };
   premium_amount: number;
   status: string;
+  org_id: string;
+  agent_id?: string;
+  employee_id?: string;
+  misp_id?: string;
+  provider?: string;
+  plan_name?: string;
+  start_date?: string;
+  end_date?: string;
+  issue_date?: string;
+  premium_without_gst?: number;
+  gst?: number;
+  premium_with_gst?: number;
+  gross_premium?: number;
+  policy_status?: string;
+  source_type?: string;
+  product_type_id?: string;
+  dynamic_details?: any;
+  customer?: {
+    first_name?: string;
+    last_name?: string;
+    company_name?: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+  };
+  agent?: {
+    agent_name?: string;
+    agent_code?: string;
+    email?: string;
+  };
+  employee?: {
+    name?: string;
+    employee_code?: string;
+    email?: string;
+  };
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface PolicyFormData {
@@ -16,6 +53,17 @@ export interface PolicyFormData {
   product_type: string;
   premium_amount: number;
   status: string;
+  provider?: string;
+  plan_name?: string;
+  start_date?: string;
+  end_date?: string;
+  issue_date?: string;
+  premium_without_gst?: number;
+  gst?: number;
+  premium_with_gst?: number;
+  gross_premium?: number;
+  policy_status?: string;
+  source_type?: string;
 }
 
 export const useCustomers = () => ({ customers: [], loading: false, error: null });
@@ -43,11 +91,11 @@ export function usePolicies() {
     return { success: true };
   };
 
-  const updatePolicy = async (id: string, data: PolicyFormData) => {
+  const updatePolicy = async (id: string, data: PolicyFormData): Promise<{ success: boolean; error?: string }> => {
     return { success: true };
   };
 
-  const deletePolicy = async (id: string) => {
+  const deletePolicy = async (id: string): Promise<{ success: boolean; error?: string }> => {
     return { success: true };
   };
 
@@ -57,8 +105,8 @@ export function usePolicies() {
     error,
     fetchPolicies,
     addPolicy: async () => true,
-    updatePolicy: async () => true,
-    deletePolicy: async () => true,
+    updatePolicy,
+    deletePolicy,
     createPolicy,
     refetch: fetchPolicies
   };

@@ -1,5 +1,3 @@
-// Add missing types that components need
-export { Policy, PolicyFormData, useCustomers, useProductTypes } from '@/hooks/usePoliciesTemp';
-
-// Temporarily export the simplified version
-export { usePolicies } from '@/hooks/usePoliciesTemp';
+// Add missing types that components need  
+export type { Policy, PolicyFormData } from '@/hooks/usePoliciesTemp';
+export { usePolicies, useCustomers, useProductTypes } from '@/hooks/usePoliciesTemp';

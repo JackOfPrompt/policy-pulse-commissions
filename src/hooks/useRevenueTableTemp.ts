@@ -29,11 +29,33 @@ export function useRevenueTable() {
     }
   };
 
+  const syncRevenueTable = async () => {
+    console.log('Revenue sync temporarily disabled');
+  };
+
+  const exportToCSV = () => {
+    console.log('CSV export temporarily disabled');
+  };
+
   return {
     revenueData: [],
+    data: [],
     loading,
     error,
     fetchRevenueData,
+    syncRevenueTable,
+    exportToCSV,
+    totals: {
+      totalCommission: 0,
+      totalInsurer: 0,
+      totalAgent: 0,
+      totalMisp: 0,
+      totalEmployee: 0,
+      totalBroker: 0,
+      totalPremium: 0,
+      avgBaseRate: 0,
+      count: 0
+    },
     refetch: fetchRevenueData
   };
 }

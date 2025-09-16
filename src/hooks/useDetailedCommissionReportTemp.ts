@@ -18,16 +18,20 @@ export function useDetailedCommissionReport() {
     }
   };
 
-  const refetch = (filters?: any) => {
-    console.log('Report refetch temporarily disabled');  
-  };
-
   const exportToCSV = () => {
     console.log('CSV export temporarily disabled');
   };
 
+  const refetch = (filters?: any) => {
+    console.log('Report refetch temporarily disabled - filters:', filters);  
+    return Promise.resolve();
+  };
+
   return {
-    generateDetailedReport: (filters?: any) => generateDetailedReport(),
+    generateDetailedReport: (filters?: any) => {
+      console.log('generateDetailedReport called with filters:', filters);
+      return generateDetailedReport();
+    },
     data: [],
     loading,
     error,

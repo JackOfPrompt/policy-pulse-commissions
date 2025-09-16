@@ -20,9 +20,13 @@ export function useReportsData() {
 
   return {
     reportsData: [],
+    data: [],
     loading,
     error,
-    fetchReportsData,
+    fetchReportsData: (filters?: any) => {
+      console.log('Reports data fetch with filters:', filters);
+      return fetchReportsData();
+    },
     refetch: fetchReportsData
   };
 }
