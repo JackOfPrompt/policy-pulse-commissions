@@ -46,12 +46,15 @@ export function useRevenueTable() {
       setLoading(true);
       setError(null);
 
-      // Call the sync function
+      // Call the sync function using RPC
       const { error: syncError } = await supabase.rpc('sync_revenue_table', {
         p_org_id: profile.org_id
       });
 
-      if (syncError) throw syncError;
+      if (syncError) {
+        console.error('Sync error:', syncError);
+        throw syncError;
+      }
 
       // Fetch the updated data
       await fetchRevenueData();
@@ -70,13 +73,46 @@ export function useRevenueTable() {
       setLoading(true);
       setError(null);
 
+      // Use a simple select query to avoid type issues
       const { data: revenueData, error } = await supabase
         .from('revenue_table')
-        .select('*')
+        .select(`
+          id,
+          policy_id,
+          policy_number,
+          provider,
+          product_type,
+          source_type,
+          employee_id,
+          agent_id,
+          misp_id,
+          employee_name,
+          agent_name,
+          misp_name,
+          reporting_employee_id,
+          reporting_employee_name,
+          customer_name,
+          org_id,
+          premium,
+          base_rate,
+          reward_rate,
+          bonus_rate,
+          total_rate,
+          insurer_commission,
+          agent_commission,
+          employee_commission,
+          reporting_employee_commission,
+          broker_share,
+          commission_status,
+          calc_date
+        `)
         .eq('org_id', profile.org_id)
         .order('calc_date', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Fetch error:', error);
+        throw error;
+      }
 
       setData(revenueData || []);
     } catch (err) {

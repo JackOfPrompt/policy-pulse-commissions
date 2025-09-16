@@ -6,7 +6,16 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Download, RefreshCw, DollarSign, TrendingUp, Users } from "lucide-react";
 import { useRevenueTable } from "@/hooks/useRevenueTable";
-import { formatCurrency } from "@/lib/utils";
+
+// Simple currency formatter function
+const formatCurrency = (amount: number): string => {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+};
 
 export function RevenueTableReport() {
   const { 
