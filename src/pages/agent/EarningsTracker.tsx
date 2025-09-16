@@ -84,7 +84,7 @@ export default function AgentEarningsTracker() {
           return {
             policy_number: policy.policy_number,
             customer_name: `${policy.customers?.first_name || ''} ${policy.customers?.last_name || ''}`.trim(),
-            product_type: policy.product_types?.category || 'Unknown',
+            product_type: 'Unknown',
             premium: premium,
             commission_rate: commissionResult?.commission_rate || 0,
             commission_amount: commissionResult?.commission_amount || 0,

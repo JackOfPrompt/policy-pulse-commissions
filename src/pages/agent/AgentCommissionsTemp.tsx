@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 
-export default function AgentCommissions() {
+function AgentCommissions() {
   const [loading, setLoading] = useState(false);
 
   const handleRefresh = () => {
@@ -45,3 +45,5 @@ export default function AgentCommissions() {
     </div>
   );
 }
+
+export default AgentCommissions;

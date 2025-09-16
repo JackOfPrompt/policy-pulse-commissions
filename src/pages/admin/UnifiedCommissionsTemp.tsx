@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 
-export default function UnifiedCommissions() {
+function UnifiedCommissions() {
   const [loading, setLoading] = useState(false);
 
   const handleRefresh = () => {
@@ -48,3 +48,5 @@ export default function UnifiedCommissions() {
     </AdminLayout>
   );
 }
+
+export default UnifiedCommissions;

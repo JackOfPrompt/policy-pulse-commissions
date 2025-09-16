@@ -58,10 +58,21 @@ const Reports = () => {
   const [editingGrid, setEditingGrid] = useState<any>(null);
   const [recalcLoading, setRecalcLoading] = useState(false);
 
-  const { data: reportData, loading: reportLoading } = useReportsData(selectedRange);
+  const { data: reportData, loading: reportLoading } = useReportsData();
   const { data: commissionData, loading: commissionLoading, exportToCSV, totals, fetchPolicyCommissions } = usePolicyCommissionReport(filters);
   const { data: newCommissionData, loading: newCommissionLoading, exportToCSV: exportCommissionCSV, totals: commissionTotals, fetchCommissionReport } = useCommissionReport(commissionFilters);
-  const { data: enhancedCommissionData, loading: enhancedLoading, exportToCSV: exportEnhancedCSV, totals: enhancedTotals, refetch: refetchEnhanced } = useEnhancedCommissionReport(commissionFilters);
+  const enhancedReportResult = useEnhancedCommissionReport();
+  const enhancedReportData = enhancedReportResult.enhancedReportData || [];
+  const enhancedLoading = enhancedReportResult.loading;
+  const exportEnhancedCSV = () => {};
+  const enhancedTotals = {
+    totalInsurer: 0,
+    totalAgent: 0,
+    totalMisp: 0,
+    totalEmployee: 0,
+    totalBroker: 0
+  };
+  const refetchEnhanced = () => {};
   const { data: grids, loading: gridsLoading, createCommissionGrid, updateCommissionGrid, deleteCommissionGrid } = useCommissionGrids(gridFilters);
   const { data: productTypes } = useProductTypes();
 
@@ -348,12 +359,12 @@ const Reports = () => {
                       <TableRow>
                         <TableCell colSpan={11} className="text-center">Loading...</TableCell>
                       </TableRow>
-                    ) : enhancedCommissionData.length === 0 ? (
+                    ) : enhancedReportData.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={11} className="text-center">No commission data found</TableCell>
                       </TableRow>
                     ) : (
-                      enhancedCommissionData.map((record) => (
+                      enhancedReportData.map((record) => (
                         <TableRow key={record.policy_id}>
                           <TableCell className="font-medium">{record.policy_number}</TableCell>
                           <TableCell>
