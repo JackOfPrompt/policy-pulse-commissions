@@ -82,12 +82,6 @@ export default function AdminDashboard() {
                 New Policy
               </Link>
             </Button>
-            <Button variant="outline" asChild>
-              <Link to="/admin/reports">
-                <FileText className="mr-2 h-4 w-4" />
-                Reports
-              </Link>
-            </Button>
           </div>
         </div>
 
@@ -179,14 +173,6 @@ export default function AdminDashboard() {
                   </Link>
                 </Button>
                 
-                <Button variant="outline" className="h-auto p-4" asChild>
-                  <Link to="/admin/reports">
-                    <div className="flex flex-col items-center space-y-2">
-                      <TrendingUp className="h-6 w-6" />
-                      <span className="text-sm">Reports</span>
-                    </div>
-                  </Link>
-                </Button>
               </div>
             </CardContent>
           </Card>

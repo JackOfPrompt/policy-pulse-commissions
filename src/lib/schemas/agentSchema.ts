@@ -25,6 +25,8 @@ export const AgentSchema = z.object({
   qualification: z.string().optional(),
   reference: z.string().optional(),
   percentage: z.coerce.number().min(0).max(100).optional(),
+  commission_tier_id: z.string().uuid().optional(),
+  override_percentage: z.coerce.number().min(0).max(100).optional(),
   status: z.enum(["active", "inactive"]).default("active"),
 
   pan_card: z.string().optional(),
@@ -46,6 +48,8 @@ export const AgentSchema = z.object({
   mobilepermissions: z.boolean().default(true),
   emailpermissions: z.boolean().default(true),
   kyc_status: z.enum(["approved", "pending", "rejected"]).default("pending"),
+  reporting_manager_id: z.string().uuid().optional(),
+  reporting_manager_name: z.string().optional(),
 });
 
 export const agentSchema = AgentSchema;

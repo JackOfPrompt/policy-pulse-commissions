@@ -36,7 +36,7 @@ export function EditEmployeeModal({ employee, open, onOpenChange, onUpdate }: Ed
     state: '',
     pincode: '',
     status: 'active',
-    reporting_manager: '',
+    reporting_manager: 'none',
     qualification: '',
     reference: '',
     account_name: '',
@@ -88,7 +88,7 @@ export function EditEmployeeModal({ employee, open, onOpenChange, onUpdate }: Ed
         state: employee.state || '',
         pincode: employee.pincode || '',
         status: employee.status || 'active',
-        reporting_manager: employee.reporting_manager || '',
+        reporting_manager: employee.reporting_manager || 'none',
         qualification: employee.qualification || '',
         reference: employee.reference || '',
         account_name: employee.account_name || '',
@@ -130,7 +130,7 @@ export function EditEmployeeModal({ employee, open, onOpenChange, onUpdate }: Ed
           state: formData.state || null,
           pincode: formData.pincode || null,
           status: formData.status,
-          reporting_manager: formData.reporting_manager || null,
+          reporting_manager: formData.reporting_manager === 'none' ? null : formData.reporting_manager || null,
           qualification: formData.qualification || null,
           reference: formData.reference || null,
           account_name: formData.account_name || null,
@@ -280,8 +280,8 @@ export function EditEmployeeModal({ employee, open, onOpenChange, onUpdate }: Ed
                   <SelectTrigger>
                     <SelectValue placeholder="Select reporting manager" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">No Manager</SelectItem>
+                   <SelectContent>
+                     <SelectItem value="none">No Manager</SelectItem>
                     {managers
                       .filter(emp => emp.id !== employee.id)
                       .map(emp => (

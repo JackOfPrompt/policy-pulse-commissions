@@ -23,7 +23,7 @@ const navigationItems = [
   { title: "Policy Upload", url: "/admin/policy-upload", icon: FileText },
   { title: "Policy Review", url: "/admin/policy-review", icon: FileText },
   { title: "Commissions", url: "/admin/unified-commissions", icon: DollarSign },
-  { title: "Reports", url: "/admin/reports", icon: FileText },
+  
 ];
 
 export function AdminSidebar() {

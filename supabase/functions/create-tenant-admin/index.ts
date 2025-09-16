@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
       .eq('id', currentUser.user.id)
       .single();
 
-    if (profileError || profile?.role !== 'super_admin') {
+    if (profileError || profile?.role !== 'superadmin') {
       return new Response(
         JSON.stringify({ error: 'Unauthorized: Super admin access required' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

@@ -6,48 +6,90 @@ import { StatusChip } from "@/components/ui/status-chip";
 import { Button } from "@/components/ui/button";
 import { LocalAdminManagement } from "@/components/admin/LocalAdminManagement";
 import { PasswordChangeModal } from "@/components/auth/PasswordChangeModal";
-import users from "@/data/users.json";
-import policies from "@/data/policies.json";
-import customers from "@/data/customers.json";
-import commissions from "@/data/commissions.json";
+import { useDashboardStats } from "@/hooks/useDashboardStats";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AdminDashboard() {
-  const user = users.admin;
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
+  const { data: dashboardData, loading, error } = useDashboardStats();
+
+  // Mock user for now - in a real app, this would come from auth context
+  const user = { name: "Admin User", email: "admin@company.com", role: "admin" };
+
+  if (loading) {
+    return (
+      <DashboardLayout role="admin" user={user}>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
+              <p className="text-muted-foreground">Loading dashboard data...</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <Skeleton className="h-4 w-[100px]" />
+                  <Skeleton className="h-4 w-4" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-8 w-[60px]" />
+                  <Skeleton className="h-3 w-[120px] mt-2" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <DashboardLayout role="admin" user={user}>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
+              <p className="text-destructive">Error loading dashboard: {error}</p>
+            </div>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   const stats = [
     {
       title: "Total Customers",
-      value: customers.length,
+      value: dashboardData.totalCustomers,
       change: "+12% from last month",
       icon: Users,
       color: "text-primary"
     },
     {
       title: "Active Policies", 
-      value: policies.filter(p => p.status === 'active').length,
+      value: dashboardData.activePolicies,
       change: "+5 this week",
       icon: Shield,
       color: "text-success"
     },
     {
       title: "Pending Commissions",
-      value: `₹${commissions.filter(c => c.status === 'pending').reduce((sum, c) => sum + c.commissionAmount, 0).toLocaleString()}`,
-      change: "2 agents pending",
+      value: `₹${dashboardData.pendingCommissions.toLocaleString()}`,
+      change: "Awaiting payout",
       icon: DollarSign,
       color: "text-warning"
     },
     {
-      title: "Monthly Growth",
-      value: "23.4%",
-      change: "Premium collection",
+      title: "Total Premium",
+      value: `₹${(dashboardData.totalPremium / 100000).toFixed(1)}L`,
+      change: `${dashboardData.monthlyGrowth}% growth`,
       icon: TrendingUp,
       color: "text-info"
     }
   ];
-
-  const recentPolicies = policies.slice(0, 5);
-  const pendingExtractions = policies.filter(p => p.extractionStatus === 'pending' || p.extractionStatus === 'processing');
 
   return (
     <DashboardLayout role="admin" user={user}>
@@ -107,24 +149,28 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {recentPolicies.map((policy) => (
+                {dashboardData.recentPolicies.length > 0 ? dashboardData.recentPolicies.map((policy) => (
                   <div key={policy.id} className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium">{policy.id}</p>
+                      <p className="font-medium">{policy.policy_number}</p>
                       <p className="text-sm text-muted-foreground">
-                        {policy.customerName} • {policy.type}
+                        {policy.customer_name} • {policy.product_type}
                       </p>
                     </div>
                     <StatusChip 
                       variant={
-                        policy.status === 'active' ? 'success' :
-                        policy.status === 'pending' ? 'warning' : 'destructive'
+                        policy.policy_status === 'active' ? 'success' :
+                        policy.policy_status === 'pending' ? 'warning' : 'destructive'
                       }
                     >
-                      {policy.status}
+                      {policy.policy_status}
                     </StatusChip>
                   </div>
-                ))}
+                )) : (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    No recent policies found
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -141,12 +187,12 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {pendingExtractions.map((policy) => (
+                {dashboardData.pendingExtractions.length > 0 ? dashboardData.pendingExtractions.map((policy) => (
                   <div key={policy.id} className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium">{policy.id}</p>
+                      <p className="font-medium">{policy.policy_number}</p>
                       <p className="text-sm text-muted-foreground">
-                        {policy.customerName}
+                        {policy.customer_name}
                       </p>
                     </div>
                     <StatusChip 
@@ -158,8 +204,7 @@ export default function AdminDashboard() {
                       {policy.extractionStatus}
                     </StatusChip>
                   </div>
-                ))}
-                {pendingExtractions.length === 0 && (
+                )) : (
                   <p className="text-sm text-muted-foreground text-center py-4">
                     No pending extractions
                   </p>

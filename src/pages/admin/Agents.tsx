@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Users, Plus, Search, Edit, Eye, Trash2, Trophy, TrendingUp, Upload } from "lucide-react";
+import { Users, Plus, Search, Edit, Eye, Trash2, Trophy, TrendingUp, Upload, Settings } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusChip } from "@/components/ui/status-chip";
 import { Button } from "@/components/ui/button";
@@ -8,16 +8,22 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAgents, type Agent } from "@/hooks/useAgents";
 import { AgentForm } from "@/components/forms/AgentForm";
 import { AgentFormData } from "@/lib/schemas/agentSchema";
 import { useToast } from "@/hooks/use-toast";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { BulkUploadModal } from "@/components/admin/BulkUploadModal";
+import { CommissionTiersManagement } from "@/components/admin/CommissionTiersManagement";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCommissionTiers } from "@/hooks/useCommissionTiers";
 
 export default function AdminAgents() {
-  const { agents, loading, error, createAgent, updateAgent, deleteAgent } = useAgents();
+  const { profile } = useAuth();
+  const { agents, loading, error, createAgent, updateAgent, deleteAgent } = useAgents(profile?.org_id);
+  const { tiers } = useCommissionTiers();
   const { toast } = useToast();
   
   const [searchTerm, setSearchTerm] = useState("");
@@ -59,8 +65,8 @@ export default function AdminAgents() {
   const handleFormSubmit = async (data: AgentFormData) => {
     setFormLoading(true);
     try {
-      // Add org_id (simulate current org)
-      const agentData = { ...data, org_id: 'default-org-id' };
+      // Add org_id from current user's profile
+      const agentData = { ...data, org_id: profile?.org_id || null };
       
       if (editingAgent) {
         const result = await updateAgent(editingAgent.id, agentData);
@@ -123,68 +129,75 @@ export default function AdminAgents() {
             Add Agent
           </Button>
         </div>
-      </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Agents</CardTitle>
-              <Users className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{loading ? '...' : agents.length}</div>
-              <p className="text-xs text-muted-foreground">Active agents</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Agents</CardTitle>
-              <Trophy className="h-4 w-4 text-success" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {loading ? '...' : agents.filter(a => a.status === 'active').length}
-              </div>
-              <p className="text-xs text-muted-foreground">Currently active</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Agent Types</CardTitle>
-              <TrendingUp className="h-4 w-4 text-info" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {loading ? '...' : new Set(agents.map(a => a.agent_type).filter(Boolean)).size}
-              </div>
-              <p className="text-xs text-muted-foreground">Different types</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">KYC Approved</CardTitle>
-              <Users className="h-4 w-4 text-warning" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {loading ? '...' : agents.filter(a => a.kyc_status === 'approved').length}
-              </div>
-              <p className="text-xs text-muted-foreground">Verified agents</p>
-            </CardContent>
-          </Card>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Agent Directory</CardTitle>
-            <CardDescription>
-              View and manage insurance agents and their performance metrics
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+        <Tabs defaultValue="agents" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="agents">Agents Directory</TabsTrigger>
+            <TabsTrigger value="commission-tiers">Commission Tiers</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="agents" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Agents</CardTitle>
+                  <Users className="h-4 w-4 text-primary" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{loading ? '...' : agents.length}</div>
+                  <p className="text-xs text-muted-foreground">Active agents</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Active Agents</CardTitle>
+                  <Trophy className="h-4 w-4 text-success" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {loading ? '...' : agents.filter(a => a.status === 'active').length}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Currently active</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Commission Tiers</CardTitle>
+                  <Settings className="h-4 w-4 text-info" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {tiers?.length || 0}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Active tiers</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">KYC Approved</CardTitle>
+                  <Users className="h-4 w-4 text-warning" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {loading ? '...' : agents.filter(a => a.kyc_status === 'approved').length}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Verified agents</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Agent Directory</CardTitle>
+                <CardDescription>
+                  View and manage insurance agents and their performance metrics
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
             <div className="mb-4 flex space-x-2">
               <div className="relative flex-1 max-w-sm">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -255,8 +268,21 @@ export default function AdminAgents() {
                           {agent.kyc_status}
                         </StatusChip>
                       </TableCell>
-                      <TableCell>₹{(agent.percentage || 0).toLocaleString()}</TableCell>
-                      <TableCell>{new Date(agent.created_date).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        {agent.commission_tier_id ? (
+                          (() => {
+                            const tier = tiers?.find(t => t.id === agent.commission_tier_id);
+                            return tier ? `${tier.name} (${tier.base_percentage}%)` : 'Tier Not Found';
+                          })()
+                        ) : agent.override_percentage ? (
+                          `Override: ${agent.override_percentage}%`
+                        ) : agent.percentage ? (
+                          `Legacy: ${agent.percentage}%`
+                        ) : (
+                          'No Commission Set'
+                        )}
+                      </TableCell>
+                      <TableCell>{agent.created_at ? new Date(agent.created_at).toLocaleDateString() : 'N/A'}</TableCell>
                       <TableCell>
                         <div className="flex space-x-2">
                           <Button variant="ghost" size="sm" onClick={() => handleEditAgent(agent)}>
@@ -274,6 +300,12 @@ export default function AdminAgents() {
             </Table>
           </CardContent>
         </Card>
+      </TabsContent>
+
+      <TabsContent value="commission-tiers">
+        <CommissionTiersManagement />
+      </TabsContent>
+    </Tabs>
 
         {/* Agent Form Dialog */}
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
@@ -326,7 +358,7 @@ export default function AdminAgents() {
             'state',
             'pincode',
             'qualification',
-            'percentage',
+            'override_percentage',
             'status'
           ]}
           requiredFields={['agent_code', 'agent_name']}
@@ -352,8 +384,8 @@ export default function AdminAgents() {
       errors.push('Phone must be 10 digits');
     }
 
-    if (row.percentage && (isNaN(row.percentage) || row.percentage < 0 || row.percentage > 100)) {
-      errors.push('Percentage must be between 0 and 100');
+    if (row.override_percentage && (isNaN(row.override_percentage) || row.override_percentage < 0 || row.override_percentage > 100)) {
+      errors.push('Override percentage must be between 0 and 100');
     }
 
     return {
@@ -368,7 +400,10 @@ export default function AdminAgents() {
         agent_code: row.agent_code,
         agent_name: row.agent_name,
         agent_type: row.agent_type || null,
-        dob: row.dob ? new Date(row.dob).toISOString().split('T')[0] : null,
+        dob: row.dob ? (() => {
+          const date = new Date(row.dob);
+          return !isNaN(date.getTime()) ? date.toISOString().split('T')[0] : null;
+        })() : null,
         phone: row.phone || null,
         email: row.email || null,
         gender: row.gender || null,
@@ -377,18 +412,19 @@ export default function AdminAgents() {
         state: row.state || null,
         pincode: row.pincode || null,
         qualification: row.qualification || null,
-        percentage: row.percentage ? parseFloat(row.percentage) : null,
+        override_percentage: row.override_percentage ? parseFloat(row.override_percentage) : null,
         status: row.status?.toLowerCase() || 'active',
-        org_id: 'default-org-id', // Replace with actual org_id
-        created_by: 'current-user-id' // Replace with actual user_id
+        org_id: profile?.org_id || null, // Use current user's org_id
+        created_by: profile?.id || null // Use current user's id
       }));
 
       let results;
       if (isUpdate) {
+        // Use upsert for updates - will insert if not exists, update if exists
         const { data: result, error } = await supabase
           .from('agents')
           .upsert(processedData, {
-            onConflict: 'agent_code,org_id',
+            onConflict: 'email',
             ignoreDuplicates: false
           })
           .select();
@@ -396,9 +432,13 @@ export default function AdminAgents() {
         if (error) throw error;
         results = processedData.map(() => ({ success: true, message: 'Updated successfully' }));
       } else {
+        // For new inserts, use upsert to handle duplicates gracefully
         const { data: result, error } = await supabase
           .from('agents')
-          .insert(processedData)
+          .upsert(processedData, {
+            onConflict: 'email',
+            ignoreDuplicates: true
+          })
           .select();
         
         if (error) throw error;

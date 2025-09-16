@@ -1,0 +1,4 @@
+agent_name,agent_code,email,phone,commission_tier_name,override_percentage
+John Doe,AG123,john@example.com,9876543210,Silver,15
+Jane Smith,AG124,jane@example.com,9876543211,Gold,
+Robert Johnson,AG125,robert@example.com,9876543212,,20

@@ -31,7 +31,7 @@ serve(async (req) => {
       const { data: upd, error: updErr } = await supabase.auth.admin.updateUserById(user.id, {
         password,
         email_confirm: true,
-        user_metadata: { role: 'super_admin', full_name: 'Super Admin' },
+        user_metadata: { role: 'superadmin', full_name: 'Super Admin' },
       });
       if (updErr) throw updErr;
       user = upd.user ?? user;
@@ -41,7 +41,7 @@ serve(async (req) => {
         email,
         password,
         email_confirm: true,
-        user_metadata: { role: 'super_admin', full_name: 'Super Admin' },
+        user_metadata: { role: 'superadmin', full_name: 'Super Admin' },
       });
       if (createErr) throw createErr;
       user = created.user;
@@ -53,7 +53,7 @@ serve(async (req) => {
         id: user.id,
         email: user.email,
         full_name: 'Super Admin',
-        role: 'super_admin',
+        role: 'superadmin',
         org_id: null,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'id' });

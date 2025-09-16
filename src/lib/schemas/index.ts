@@ -5,3 +5,4 @@ export * from './agentSchema';
 export * from './mispSchema';
 export * from './bulkSchemas';
 export * from './policySchemas';
+export * from './bulkUploadSchemas';

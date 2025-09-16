@@ -8,6 +8,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Agent } from "@/hooks/useAgents";
+import { useCommissionTiers } from "@/hooks/useCommissionTiers";
+import { ReportingManagerSelector } from "@/components/admin/ReportingManagerSelector";
 
 interface AgentFormProps {
   agent?: Agent;
@@ -17,6 +19,8 @@ interface AgentFormProps {
 }
 
 export function AgentForm({ agent, onSubmit, onCancel, loading }: AgentFormProps) {
+  const { tiers } = useCommissionTiers();
+  
   const form = useForm<AgentFormData>({
     resolver: zodResolver(agentSchema),
     defaultValues: {
@@ -47,6 +51,8 @@ export function AgentForm({ agent, onSubmit, onCancel, loading }: AgentFormProps
       mobilepermissions: agent?.mobilepermissions ?? true,
       emailpermissions: agent?.emailpermissions ?? true,
       kyc_status: (agent?.kyc_status as any) || 'pending',
+      commission_tier_id: agent?.commission_tier_id || undefined,
+      reporting_manager_id: agent?.reporting_manager_id || undefined,
     },
   });
 
@@ -313,6 +319,22 @@ export function AgentForm({ agent, onSubmit, onCancel, loading }: AgentFormProps
                   </FormItem>
                 )}
               />
+
+              <FormField
+                control={form.control}
+                name="reporting_manager_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <ReportingManagerSelector
+                      value={field.value || ""}
+                      onChange={field.onChange}
+                      label="Reporting Manager"
+                      placeholder="Select reporting manager..."
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </CardContent>
           </Card>
 
@@ -402,15 +424,66 @@ export function AgentForm({ agent, onSubmit, onCancel, loading }: AgentFormProps
 
               <FormField
                 control={form.control}
-                name="percentage"
+                name="commission_tier_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Commission %</FormLabel>
+                    <FormLabel>Commission Tier</FormLabel>
+                     <Select 
+                       onValueChange={(value) => field.onChange(value === 'none' ? undefined : value)} 
+                       value={field.value || 'none'}
+                      >
+                       <FormControl>
+                         <SelectTrigger>
+                           <SelectValue placeholder="Select commission tier" />
+                         </SelectTrigger>
+                       </FormControl>
+                        <SelectContent>
+                          <SelectItem value="none">No Tier</SelectItem>
+                          {tiers?.map((tier) => (
+                            <SelectItem key={tier.id} value={tier.id}>
+                              {tier.name} ({tier.base_percentage}%)
+                            </SelectItem>
+                          ))}
+                       </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="override_percentage"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Override Commission %</FormLabel>
                     <FormControl>
                       <Input 
                         type="number" 
                         min="0" 
                         max="100" 
+                        placeholder="Leave empty to use tier percentage"
+                        {...field}
+                        onChange={(e) => field.onChange(parseFloat(e.target.value) || undefined)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="percentage"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Legacy Commission % (deprecated)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        min="0" 
+                        max="100" 
+                        disabled
                         {...field}
                         onChange={(e) => field.onChange(parseFloat(e.target.value) || undefined)}
                       />

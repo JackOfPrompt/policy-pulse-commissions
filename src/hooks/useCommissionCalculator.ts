@@ -92,6 +92,64 @@ export function useCommissionCalculator() {
     }
   };
 
+  const calculateAndSaveCommission = async (policyId: string): Promise<boolean> => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const { error } = await supabase
+        .rpc('manual_calculate_policy_commission', { p_policy_id: policyId });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Commission calculated and saved successfully",
+      });
+      return true;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to calculate and save commission';
+      setError(errorMessage);
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const recalculateAllCommissions = async (): Promise<boolean> => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const { error } = await supabase
+        .rpc('recalculate_all_policy_commissions');
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "All policy commissions recalculated successfully",
+      });
+      return true;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to recalculate all commissions';
+      setError(errorMessage);
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const calculateBulkCommissions = async (policyIds: string[]): Promise<CommissionCalculation[]> => {
     try {
       setLoading(true);
@@ -128,5 +186,7 @@ export function useCommissionCalculator() {
     calculateCommission,
     calculateCommissionAmount,
     calculateBulkCommissions,
+    calculateAndSaveCommission,
+    recalculateAllCommissions,
   };
 }

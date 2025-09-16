@@ -49,9 +49,10 @@ const roleNavigation: Record<string, NavigationItem[]> = {
     { title: "Customers", href: "/admin/customers", icon: Users },
     { title: "Policies", href: "/admin/policies", icon: Shield },
     { title: "Commissions", href: "/admin/commissions", icon: DollarSign },
+    { title: "Commission Reports", href: "/admin/commission-reports", icon: BarChart3 },
     { title: "Employees", href: "/admin/employees", icon: UserCheck },
     { title: "Agents", href: "/admin/agents", icon: Users },
-    { title: "Reports", href: "/admin/reports", icon: BarChart3 },
+    
     { title: "Branch Management", href: "/admin/branches", icon: Building2 },
     { title: "Subscription", href: "/admin/subscription", icon: Activity },
     { title: "Request Upgrade", href: "/admin/subscription/upgrade", icon: Upload },

@@ -46,6 +46,10 @@ export interface Agent {
   kyc_status?: string; // Adding missing property
   agent_plan_id?: string; // Adding missing property
   delete_flag?: boolean; // Adding missing property
+  commission_tier_id?: string; // Adding commission tier field
+  override_percentage?: number; // Adding override percentage field
+  reporting_manager_id?: string; // Adding reporting manager field
+  reporting_manager_name?: string; // Adding reporting manager name field
   created_at?: string;
   updated_at?: string;
   created_by?: string;
@@ -69,7 +73,7 @@ export interface Qualification {
   name: string;
 }
 
-export function useAgents() {
+export function useAgents(orgId?: string) {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -77,10 +81,17 @@ export function useAgents() {
   const fetchAgents = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      let query = supabase
         .from('agents')
         .select('*')
         .order('created_at', { ascending: false });
+      
+      // Filter by organization if orgId is provided
+      if (orgId) {
+        query = query.eq('org_id', orgId);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setAgents(data || []);
@@ -93,9 +104,27 @@ export function useAgents() {
 
   const createAgent = async (agentData: Partial<Agent>) => {
     try {
+      // If no commission_tier_id is provided, set default Bronze tier
+      if (!agentData.commission_tier_id && agentData.org_id) {
+        const { data: bronzeTier } = await supabase
+          .from('commission_tiers')
+          .select('id')
+          .eq('org_id', agentData.org_id)
+          .ilike('name', 'bronze')
+          .limit(1);
+        
+        if (bronzeTier && bronzeTier.length > 0) {
+          agentData.commission_tier_id = bronzeTier[0].id;
+        }
+      }
+
       const { data, error } = await supabase
         .from('agents')
-        .insert(agentData as any)
+        .insert({
+          ...agentData,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        } as any)
         .select()
         .single();
 
@@ -112,9 +141,31 @@ export function useAgents() {
 
   const updateAgent = async (id: string, agentData: Partial<Agent>) => {
     try {
+      // If no commission_tier_id is provided but org exists, set default Bronze tier
+      if (!agentData.commission_tier_id && !agentData.org_id) {
+        // Get Bronze tier for this org
+        const orgId = agentData.org_id || agents.find(a => a.id === id)?.org_id;
+        
+        if (orgId) {
+          const { data: bronzeTier } = await supabase
+            .from('commission_tiers')
+            .select('id')
+            .eq('org_id', orgId)
+            .ilike('name', 'bronze')
+            .limit(1);
+          
+          if (bronzeTier && bronzeTier.length > 0) {
+            agentData.commission_tier_id = bronzeTier[0].id;
+          }
+        }
+      }
+
       const { data, error } = await supabase
         .from('agents')
-        .update(agentData)
+        .update({
+          ...agentData,
+          updated_at: new Date().toISOString(),
+        })
         .eq('id', id)
         .select()
         .single();
@@ -150,7 +201,7 @@ export function useAgents() {
 
   useEffect(() => {
     fetchAgents();
-  }, []);
+  }, [orgId]);
 
   return {
     agents,

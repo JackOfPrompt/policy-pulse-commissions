@@ -63,7 +63,7 @@ export function usePolicies() {
         .select(`
           *,
           customers(first_name, last_name, email, phone),
-          agents(agent_name, email),
+          agents!policies_agent_id_fkey(agent_name, email),
           employees(name, email),
           product_types(name, category)
         `)
@@ -86,21 +86,48 @@ export function usePolicies() {
 
   const createPolicy = async (policyData: PolicyFormData) => {
     try {
-      // Get current user's org_id
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      // Get current user's org_id and role
       const { data: userOrg } = await supabase
         .from('user_organizations')
-        .select('org_id')
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+        .select('org_id, role')
+        .eq('user_id', user.id)
         .single();
 
       if (!userOrg) throw new Error('User organization not found');
+
+      // Get the appropriate ID based on user role
+      let createdById = user.id; // Default to auth user ID
+      
+      if (userOrg.role === 'employee') {
+        const { data: employee } = await supabase
+          .from('employees')
+          .select('id')
+          .eq('org_id', userOrg.org_id)
+          .or(`email.eq.${user.email},id.eq.${user.id}`)
+          .single();
+        
+        if (employee) createdById = employee.id;
+      } else if (userOrg.role === 'agent') {
+        const { data: agent } = await supabase
+          .from('agents')
+          .select('id')
+          .eq('org_id', userOrg.org_id)
+          .or(`email.eq.${user.email},id.eq.${user.id}`)
+          .single();
+        
+        if (agent) createdById = agent.id;
+      }
+      // For admin role, we keep the auth user ID as admin ID
 
       const { data, error } = await supabase
         .from('policies')
         .insert({
           ...policyData,
           org_id: userOrg.org_id,
-          created_by: (await supabase.auth.getUser()).data.user?.id,
+          created_by: createdById,
         })
         .select()
         .single();
@@ -127,17 +154,69 @@ export function usePolicies() {
 
   const updatePolicy = async (id: string, policyData: Partial<PolicyFormData>) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      // Get current user's org_id and role
+      const { data: userOrg } = await supabase
+        .from('user_organizations')
+        .select('org_id, role')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!userOrg) throw new Error('User organization not found');
+
+      // Get the appropriate ID based on user role
+      let updatedById = user.id; // Default to auth user ID
+      
+      if (userOrg.role === 'employee') {
+        const { data: employee } = await supabase
+          .from('employees')
+          .select('id')
+          .eq('org_id', userOrg.org_id)
+          .or(`email.eq.${user.email},id.eq.${user.id}`)
+          .single();
+        
+        if (employee) updatedById = employee.id;
+      } else if (userOrg.role === 'agent') {
+        const { data: agent } = await supabase
+          .from('agents')
+          .select('id')
+          .eq('org_id', userOrg.org_id)
+          .or(`email.eq.${user.email},id.eq.${user.id}`)
+          .single();
+        
+        if (agent) updatedById = agent.id;
+      }
+      // For admin role, we keep the auth user ID as admin ID
+
+      // Clean data - remove undefined values
+      const cleanedData = Object.fromEntries(
+        Object.entries(policyData).filter(([_, value]) => value !== undefined)
+      );
+
       const { data, error } = await supabase
         .from('policies')
         .update({
-          ...policyData,
-          updated_by: (await supabase.auth.getUser()).data.user?.id,
+          ...cleanedData,
+          updated_by: updatedById,
         })
         .eq('id', id)
         .select()
         .single();
 
       if (error) throw error;
+
+      // Recalculate commission if premium fields were updated
+      const premiumFieldsUpdated = 'premium_without_gst' in policyData || 'premium_with_gst' in policyData || 'gst' in policyData;
+      if (premiumFieldsUpdated && data) {
+        try {
+          await supabase.rpc('manual_calculate_policy_commission', { p_policy_id: data.id });
+        } catch (commissionError) {
+          console.warn('Failed to recalculate commission:', commissionError);
+          // Don't fail the entire update if commission calculation fails
+        }
+      }
       
       await fetchPolicies();
       toast({

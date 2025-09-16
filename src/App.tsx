@@ -17,6 +17,7 @@ import EmployeePolicyUpload from "./pages/employee/PolicyUpload";
 import AgentDashboard from "./pages/dashboards/AgentDashboard";
 import AgentPolicies from "./pages/agent/Policies";
 import AgentCommissions from "./pages/agent/Commissions";
+import AgentCommissionsManagement from "./pages/agent/AgentCommissions";
 import CustomerDashboard from "./pages/customer/CustomerDashboard";
 import CustomerPolicies from "./pages/customer/CustomerPolicies";
 import CustomerDocuments from "./pages/customer/CustomerDocuments";
@@ -37,9 +38,11 @@ import PolicyUpload from "./pages/admin/PolicyUpload";
 import PolicyList from "./pages/admin/PolicyList";
 import PolicyReview from "./pages/admin/PolicyReview";
 import UnifiedCommissions from "./pages/admin/UnifiedCommissions";
+import CommissionReports from "./pages/admin/CommissionReports";
 import AdminEmployees from "./pages/admin/Employees";
 import AdminAgents from "./pages/admin/Agents";
-import AdminReports from "./pages/admin/Reports";
+import CommissionTiers from "./pages/admin/CommissionTiers";
+
 import BranchManagement from "./pages/admin/BranchManagement";
 import MispManagement from "./pages/admin/MispManagement";
 import Subscription from "./pages/admin/Subscription";
@@ -60,7 +63,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
           <Route path="/" element={<Auth />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<Auth />} />
           <Route path="/auth" element={<Auth />} />
           
           {/* Super Admin Routes */}
@@ -170,6 +173,11 @@ const App = () => (
               <PolicyExtraction />
             </ProtectedRoute>
           } />
+          <Route path="/admin/commission-reports" element={
+            <ProtectedRoute requiredRole="admin">
+              <CommissionReports />
+            </ProtectedRoute>
+          } />
           <Route path="/admin/commissions" element={
             <ProtectedRoute requiredRole="admin">
               <UnifiedCommissions />
@@ -185,9 +193,9 @@ const App = () => (
               <AdminAgents />
             </ProtectedRoute>
           } />
-          <Route path="/admin/reports" element={
+          <Route path="/admin/commission-tiers" element={
             <ProtectedRoute requiredRole="admin">
-              <AdminReports />
+              <CommissionTiers />
             </ProtectedRoute>
           } />
           <Route path="/admin/branches" element={
@@ -272,6 +280,11 @@ const App = () => (
           <Route path="/agent/earnings" element={
             <ProtectedRoute requiredRole="agent">
               <AgentEarningsTracker />
+            </ProtectedRoute>
+          } />
+          <Route path="/agents/commissions" element={
+            <ProtectedRoute allowedRoles={['admin', 'agent']}>
+              <AgentCommissionsManagement />
             </ProtectedRoute>
           } />
           

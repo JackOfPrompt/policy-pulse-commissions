@@ -1,0 +1,1 @@
+UPDATE policy_commission_report SET product_type = product_name;

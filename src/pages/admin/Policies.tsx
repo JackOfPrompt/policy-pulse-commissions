@@ -1,4 +1,4 @@
-import { Shield, Upload, Search, Eye, Edit, Filter, FileSpreadsheet } from "lucide-react";
+import { Shield, Upload, Search, Eye, Edit, Filter, FileSpreadsheet, Trash2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { StatusChip } from "@/components/ui/status-chip";
@@ -6,15 +6,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PolicyBulkUploadModal } from "@/components/admin/PolicyBulkUploadModal";
-import users from "@/data/users.json";
-import policies from "@/data/policies.json";
+import { ViewPolicyModal } from "@/components/admin/ViewPolicyModal";
+import { EditPolicyModal } from "@/components/admin/EditPolicyModal";
+import { DeletePolicyModal } from "@/components/admin/DeletePolicyModal";
+import { usePolicies, Policy } from "@/hooks/usePolicies";
+import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 export default function AdminPolicies() {
-  const user = users.admin;
+  const { profile } = useAuth();
   const navigate = useNavigate();
+  const { policies, loading, updatePolicy, deletePolicy, fetchPolicies } = usePolicies();
   const [showBulkUpload, setShowBulkUpload] = useState(false);
+  const [viewPolicy, setViewPolicy] = useState<Policy | null>(null);
+  const [editPolicy, setEditPolicy] = useState<Policy | null>(null);
+  const [deletePolicyModal, setDeletePolicyModal] = useState<Policy | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const getStatusVariant = (status: string) => {
     switch (status) {
@@ -36,8 +44,31 @@ export default function AdminPolicies() {
     }
   };
 
+  const filteredPolicies = useMemo(() => {
+    if (!searchTerm) return policies;
+    return policies.filter(
+      policy =>
+        policy.policy_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        policy.provider?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        policy.customer?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        policy.customer?.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [policies, searchTerm]);
+
+  const formatCurrency = (amount?: number) => {
+    if (!amount) return "₹0";
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+    }).format(amount);
+  };
+
   return (
-    <DashboardLayout role="admin" user={user}>
+    <DashboardLayout role="admin" user={{
+      name: profile?.full_name || "Admin User",
+      email: profile?.email || "",
+      role: profile?.role || "admin"
+    }}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -72,6 +103,8 @@ export default function AdminPolicies() {
                 <Input
                   placeholder="Search policies..."
                   className="pl-10"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
               <Button variant="outline">
@@ -93,39 +126,71 @@ export default function AdminPolicies() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {policies.map((policy) => (
-                  <TableRow key={policy.id}>
-                    <TableCell>
-                      <div className="flex items-center space-x-2">
-                        <Shield className="h-4 w-4 text-primary" />
-                        <span className="font-medium">{policy.id}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{policy.customerName}</TableCell>
-                    <TableCell className="capitalize">{policy.type}</TableCell>
-                    <TableCell>
-                      <StatusChip variant={getStatusVariant(policy.status)}>
-                        {policy.status}
-                      </StatusChip>
-                    </TableCell>
-                    <TableCell>
-                      <StatusChip variant={getExtractionVariant(policy.extractionStatus)}>
-                        {policy.extractionStatus}
-                      </StatusChip>
-                    </TableCell>
-                    <TableCell>₹{policy.premium.toLocaleString()}</TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button variant="ghost" size="sm">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </div>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8">
+                      Loading policies...
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : filteredPolicies.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8">
+                      {searchTerm ? "No policies match your search." : "No policies found. Upload your first policy to get started."}
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredPolicies.map((policy) => (
+                    <TableRow key={policy.id}>
+                      <TableCell>
+                        <div className="flex items-center space-x-2">
+                          <Shield className="h-4 w-4 text-primary" />
+                          <span className="font-medium font-mono text-sm">{policy.policy_number}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {policy.customer ? `${policy.customer.first_name || ''} ${policy.customer.last_name || ''}`.trim() : "N/A"}
+                      </TableCell>
+                      <TableCell className="capitalize">{policy.product_type?.category || policy.product_type?.name || "N/A"}</TableCell>
+                      <TableCell>
+                        <StatusChip variant={getStatusVariant(policy.policy_status || 'active')}>
+                          {policy.policy_status || 'active'}
+                        </StatusChip>
+                      </TableCell>
+                      <TableCell>
+                        <StatusChip variant="success">
+                          completed
+                        </StatusChip>
+                      </TableCell>
+                      <TableCell>{formatCurrency(policy.premium_with_gst || policy.premium_without_gst)}</TableCell>
+                      <TableCell>
+                        <div className="flex space-x-1">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => setViewPolicy(policy)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => setEditPolicy(policy)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => setDeletePolicyModal(policy)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </CardContent>
@@ -135,10 +200,27 @@ export default function AdminPolicies() {
       <PolicyBulkUploadModal
         open={showBulkUpload}
         onOpenChange={setShowBulkUpload}
-        onUploadComplete={() => {
-          // Refresh policies list
-          window.location.reload();
-        }}
+        onUploadComplete={fetchPolicies}
+      />
+
+      <ViewPolicyModal
+        open={!!viewPolicy}
+        onOpenChange={(open) => !open && setViewPolicy(null)}
+        policy={viewPolicy}
+      />
+
+      <EditPolicyModal
+        open={!!editPolicy}
+        onOpenChange={(open) => !open && setEditPolicy(null)}
+        policy={editPolicy}
+        onSave={updatePolicy}
+      />
+
+      <DeletePolicyModal
+        open={!!deletePolicyModal}
+        onOpenChange={(open) => !open && setDeletePolicyModal(null)}
+        policy={deletePolicyModal}
+        onDelete={deletePolicy}
       />
     </DashboardLayout>
   );

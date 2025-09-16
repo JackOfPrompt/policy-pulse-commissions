@@ -53,6 +53,8 @@ export const MispSchema = z.object({
   cheque_doc: z.string().url().optional(),
   misp_agreement_doc: z.string().url().optional(),
 
+  commission_tier_id: z.string().uuid().optional(),
+  override_percentage: z.coerce.number().min(0).max(100).optional(),
   mobilepermissions: z.boolean().default(true),
   emailpermissions: z.boolean().default(true),
 });

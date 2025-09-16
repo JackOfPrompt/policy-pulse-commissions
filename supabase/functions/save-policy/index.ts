@@ -31,8 +31,31 @@ function splitName(fullName?: string | null): { first?: string; last?: string } 
   return { first: parts.join(' '), last };
 }
 
-async function getOrCreateOrgId(): Promise<string> {
-  // Try first existing org
+function inferProductType(formData: any): string | null {
+  try {
+    const policyType = getVal(formData, ['policy.POLICY_TYPE', 'policy_details.policy_type']);
+    if (formData?.vehicle || formData?.vehicle_details || /motor|vehicle|two\s*wheeler|four\s*wheeler/i.test(policyType || '')) {
+      return 'motor';
+    }
+    if (formData?.insured_members || formData?.policy?.INSURED_PERSONS || /health|mediclaim|family\s*floater/i.test(policyType || '')) {
+      return 'health';
+    }
+    if (formData?.benefits || /life|term|endowment|ulip/i.test(policyType || '')) {
+      return 'life';
+    }
+    return null;
+  } catch (_) {
+    return null;
+  }
+}
+
+async function getOrCreateOrgId(formData: any): Promise<string> {
+  // If org_id is provided in formData, use it (from authenticated user context)
+  if (formData.org_id) {
+    return formData.org_id as string;
+  }
+
+  // Try first existing org as fallback
   const { data: org, error: orgErr } = await supabase
     .from('organizations')
     .select('id')
@@ -57,7 +80,7 @@ async function getOrCreateProductTypeId(orgId: string, productType: string): Pro
     .from('product_types')
     .select('id')
     .eq('org_id', orgId)
-    .or(`code.eq.${code},name.ilike.%${code}%`)
+    .or(`code.eq.${code},name.ilike.*${code}*`)
     .limit(1)
     .maybeSingle();
   if (pt && pt.id) return pt.id as string;
@@ -163,9 +186,12 @@ async function createVehicle(orgId: string, customerId: string, formData: any) {
   return data.id as string;
 }
 
-function publicFileUrl(fileName?: string | null): string | null {
-  if (!fileName) return null;
-  const { data } = supabase.storage.from('policies').getPublicUrl(fileName);
+function publicFileUrl(fileName?: string | null, documentPath?: string | null): string | null {
+  // Priority: use documentPath (from document upload) over fileName (from extraction)
+  const filePath = documentPath || fileName;
+  if (!filePath) return null;
+  
+  const { data } = supabase.storage.from('policies').getPublicUrl(filePath);
   return data?.publicUrl || null;
 }
 
@@ -176,14 +202,25 @@ serve(async (req) => {
 
   try {
     const { formData, metadata } = await req.json();
+    console.log('save-policy incoming', { hasFormData: !!formData, hasMetadata: !!metadata });
+    if (formData) {
+      console.log('save-policy payload preview', {
+        org_id: formData?.org_id,
+        source_type: formData?.source_type,
+        employee_id: formData?.employee_id,
+        posp_id: formData?.posp_id,
+        misp_id: formData?.misp_id,
+        broker_company: formData?.broker_company,
+      });
+    }
     if (!formData) {
       return new Response(JSON.stringify({ success: false, error: 'Missing formData' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 });
     }
 
-    const productType: string = metadata?.productType || getVal(formData, ['policy.PRODUCT_TYPE']) || 'general';
+    const productType: string = metadata?.productType || getVal(formData, ['policy.PRODUCT_TYPE']) || inferProductType(formData) || 'general';
 
     // Prepare base entities
-    const orgId = await getOrCreateOrgId();
+    const orgId = await getOrCreateOrgId(formData);
     const productTypeId = await getOrCreateProductTypeId(orgId, productType);
     const customerId = await getOrCreateCustomer(orgId, formData);
 
@@ -197,9 +234,9 @@ serve(async (req) => {
     const netPremium = getVal(formData, ['policy.NET_PREMIUM', 'premium_details.net_premium', 'premium_details.installment_premium']);
     const grossPremium = getVal(formData, ['policy.GROSS_PREMIUM', 'premium_details.total_premium']);
 
-    const pdfLink = publicFileUrl(metadata?.fileName);
+    const pdfLink = publicFileUrl(metadata?.fileName, metadata?.documentPath);
 
-    // Insert policy
+    // Insert policy with business source assignments
     const policyPayload: any = {
       org_id: orgId,
       customer_id: customerId,
@@ -215,6 +252,12 @@ serve(async (req) => {
       product_type_id: productTypeId,
       pdf_link: pdfLink,
       dynamic_details: formData,
+      // Business source assignments
+      source_type: formData.source_type || null,
+      employee_id: formData.employee_id || null,
+      posp_id: formData.posp_id || null,
+      misp_id: formData.misp_id || null,
+      broker_company: formData.broker_company || null,
     };
 
     const { data: policyRow, error: policyErr } = await supabase
@@ -321,8 +364,8 @@ serve(async (req) => {
   } catch (error) {
     console.error('save-policy error:', error);
     return new Response(
-      JSON.stringify({ success: false, error: error?.message || 'Unknown error' }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      JSON.stringify({ success: false, error: error?.message || 'Unknown error', details: error }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
     );
   }
 });

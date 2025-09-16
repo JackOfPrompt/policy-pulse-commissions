@@ -11,8 +11,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import users from "@/data/users.json";
-import AddGridModal from "@/components/admin/AddGridModal";
+import { useAuth } from "@/contexts/AuthContext";
+import { EnhancedCommissionGridModal } from "@/components/admin/EnhancedCommissionGridModal";
+import { CommissionCalculationPanel } from "@/components/admin/CommissionCalculationPanel";
 
 interface GridEntry {
   id: string;
@@ -51,10 +52,23 @@ interface PolicyCommission {
   agent?: {
     agent_name: string;
   } | null;
+  // Enhanced fields for commission distribution
+  source_type?: string;
+  source_name?: string;
+  premium_amount?: number;
+  customer_name?: string;
+  agent_commission_rate?: number;
+  agent_commission_amount?: number;
+  misp_commission_rate?: number;
+  misp_commission_amount?: number;
+  employee_commission_rate?: number;
+  employee_commission_amount?: number;
+  broker_share_rate?: number;
+  broker_share_amount?: number;
 }
 
 export default function UnifiedCommissions() {
-  const user = users.admin;
+  const { profile } = useAuth();
   const { toast } = useToast();
   const [motorGrids, setMotorGrids] = useState<GridEntry[]>([]);
   const [healthGrids, setHealthGrids] = useState<GridEntry[]>([]);
@@ -67,6 +81,9 @@ export default function UnifiedCommissions() {
     provider: "",
     status: "all"
   });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [gridModalOpen, setGridModalOpen] = useState(false);
+  const [editingGrid, setEditingGrid] = useState<GridEntry | null>(null);
 
   useEffect(() => {
     fetchCommissionGrids();
@@ -122,52 +139,52 @@ export default function UnifiedCommissions() {
     try {
       setLoading(true);
 
+      // Use the enhanced commission distribution report for better data
       const { data, error } = await supabase
-        .from('policy_commissions')
-        .select(`
-          id,
-          policy_id,
-          product_type,
-          grid_table,
-          grid_id,
-          commission_rate,
-          reward_rate,
-          total_rate,
-          commission_amount,
-          reward_amount,
-          total_amount,
-          payout_status,
-          created_at,
-          policies(
-            policy_number,
-            agent_id,
-            provider,
-            agents(
-              agent_name
-            )
-          )
-        `)
-        .order('created_at', { ascending: false });
+        .rpc('get_commission_distribution_report', {
+          p_org_id: null, // Uses current user's org
+          p_product_type: null,
+          p_commission_status: null,
+          p_date_from: null,
+          p_date_to: null
+        });
 
       if (error) throw error;
 
-      // Transform the data to match our interface
+      // Transform the enhanced data to match our interface
       const transformedData: PolicyCommission[] = (data || []).map((item: any) => ({
-        id: item.id,
+        id: item.policy_id, // Use policy_id as unique identifier
         policy_id: item.policy_id,
         product_type: item.product_type,
-        grid_table: item.grid_table,
-        grid_id: item.grid_id,
-        commission_rate: item.commission_rate,
-        reward_rate: item.reward_rate,
-        total_rate: item.total_rate,
-        commission_amount: item.commission_amount,
-        reward_amount: item.reward_amount,
-        total_amount: item.total_amount,
-        payout_status: item.payout_status,
-        created_at: item.created_at,
-        policy: item.policies,
-        agent: item.policies?.agents
+        grid_table: item.grid_source || 'unknown',
+        grid_id: 'N/A',
+        commission_rate: item.insurer_commission_rate || 0,
+        reward_rate: 0, // Will calculate from total
+        total_rate: item.insurer_commission_rate || 0,
+        commission_amount: item.insurer_commission_amount || 0,
+        reward_amount: 0,
+        total_amount: item.insurer_commission_amount || 0,
+        payout_status: item.commission_status || 'calculated',
+        created_at: item.calc_date,
+        policy: {
+          policy_number: item.policy_number,
+          agent_id: null,
+          provider: item.provider
+        },
+        agent: item.source_type === 'agent' ? { agent_name: item.source_name } : null,
+        // Enhanced fields for distribution
+        source_type: item.source_type,
+        source_name: item.source_name,
+        premium_amount: item.premium_amount,
+        customer_name: item.customer_name,
+        agent_commission_rate: item.agent_commission_rate || 0,
+        agent_commission_amount: item.agent_commission_amount || 0,
+        misp_commission_rate: item.misp_commission_rate || 0,
+        misp_commission_amount: item.misp_commission_amount || 0,
+        employee_commission_rate: item.employee_commission_rate || 0,
+        employee_commission_amount: item.employee_commission_amount || 0,
+        broker_share_rate: item.broker_share_rate || 0,
+        broker_share_amount: item.broker_share_amount || 0
       }));
 
       setPolicyCommissions(transformedData);
@@ -181,6 +198,59 @@ export default function UnifiedCommissions() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const exportCommissionData = () => {
+    if (policyCommissions.length === 0) return;
+
+    const headers = [
+      'Policy Number',
+      'Customer Name',
+      'Product Type',
+      'Provider',
+      'Premium Amount',
+      'Source Type',
+      'Source Name',
+      'Total Commission Rate %',
+      'Insurer Commission Amount',
+      'Agent Commission Amount',
+      'MISP Commission Amount', 
+      'Employee Commission Amount',
+      'Broker Share Amount',
+      'Status',
+      'Date'
+    ];
+
+    const csvContent = [
+      headers.join(','),
+      ...policyCommissions.map(record => [
+        record.policy?.policy_number || '',
+        record.customer_name || '',
+        record.product_type || '',
+        record.policy?.provider || '',
+        record.premium_amount || 0,
+        record.source_type || 'direct',
+        record.source_name || 'Direct',
+        record.commission_rate || 0,
+        record.commission_amount || 0,
+        record.agent_commission_amount || 0,
+        record.misp_commission_amount || 0,
+        record.employee_commission_amount || 0,
+        record.broker_share_amount || 0,
+        record.payout_status || '',
+        new Date(record.created_at).toLocaleDateString()
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `commission_distribution_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const updatePayoutStatus = async (commissionId: string, newStatus: string) => {
@@ -250,6 +320,55 @@ export default function UnifiedCommissions() {
     }
   };
 
+  const handleCopy = async (gridEntry: GridEntry, gridType: string) => {
+    try {
+      // Create a copy with new ID and current timestamp
+      const copyData = {
+        ...gridEntry,
+        id: undefined, // Let the database generate new ID
+        created_at: undefined,
+        updated_at: undefined,
+        provider: `${gridEntry.provider} (Copy)`,
+        is_active: false // Make copies inactive by default
+      };
+
+      let tableName: string;
+      switch (gridType) {
+        case 'motor':
+          tableName = 'motor_payout_grid';
+          break;
+        case 'health':
+          tableName = 'health_payout_grid';
+          break;
+        case 'life':
+          tableName = 'life_payout_grid';
+          break;
+        default:
+          throw new Error('Invalid grid type');
+      }
+
+      const { error } = await supabase
+        .from(tableName as any)
+        .insert(copyData);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Commission grid copied successfully",
+      });
+
+      fetchCommissionGrids();
+    } catch (error) {
+      console.error('Error copying grid entry:', error);
+      toast({
+        title: "Error",
+        description: "Failed to copy commission grid entry",
+        variant: "destructive",
+      });
+    }
+  };
+
   const filterGridData = (data: GridEntry[]) => {
     return data.filter(entry => {
       const matchesProvider = !filters.provider || entry.provider.toLowerCase().includes(filters.provider.toLowerCase());
@@ -288,8 +407,26 @@ export default function UnifiedCommissions() {
     }
   };
 
-  const totalCommissions = policyCommissions.reduce((sum, c) => sum + (c.total_amount || 0), 0);
-  const pendingCommissions = policyCommissions.filter(c => c.payout_status === 'pending');
+  const totalCommissions = policyCommissions.reduce((sum, c) => sum + (c.commission_amount || 0), 0);
+  const pendingCommissions = policyCommissions.filter(c => c.payout_status === 'pending' || c.payout_status === 'calculated');
+  const totalBrokerShare = policyCommissions.reduce((sum, c) => sum + (c.broker_share_amount || 0), 0);
+  const totalAgentCommissions = policyCommissions.reduce((sum, c) => sum + (c.agent_commission_amount || 0), 0);
+  const totalMispCommissions = policyCommissions.reduce((sum, c) => sum + (c.misp_commission_amount || 0), 0);
+  const totalEmployeeCommissions = policyCommissions.reduce((sum, c) => sum + (c.employee_commission_amount || 0), 0);
+
+  const filteredPolicyCommissions = policyCommissions.filter(commission => {
+    const searchFields = [
+      commission.policy?.policy_number,
+      commission.agent?.agent_name,
+      commission.source_name,
+      commission.customer_name,
+      commission.product_type,
+      commission.payout_status,
+      commission.source_type
+    ].join(' ').toLowerCase();
+    
+    return searchFields.includes(searchTerm.toLowerCase());
+  });
 
   const renderGridTable = (data: GridEntry[], gridType: string) => (
     <div className="space-y-4">
@@ -318,10 +455,10 @@ export default function UnifiedCommissions() {
           <Download className="mr-2 h-4 w-4" />
           Export
         </Button>
-        <AddGridModal 
-          onGridAdded={fetchCommissionGrids} 
-          orgId={user.id} 
-        />
+        <Button onClick={() => setGridModalOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Add Commission Grid
+        </Button>
       </div>
 
       <Table>
@@ -361,10 +498,21 @@ export default function UnifiedCommissions() {
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      setEditingGrid(entry);
+                      setGridModalOpen(true);
+                    }}
+                  >
                     <Edit className="h-4 w-4" />
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleCopy(entry, gridType)}
+                  >
                     <Copy className="h-4 w-4" />
                   </Button>
                   <Button 
@@ -385,7 +533,11 @@ export default function UnifiedCommissions() {
 
   if (loading) {
     return (
-      <DashboardLayout role="admin" user={user}>
+      <DashboardLayout role="admin" user={{
+        name: profile?.full_name || "Admin User",
+        email: profile?.email || "",
+        role: profile?.role || "admin"
+      }}>
         <div className="flex items-center justify-center h-64">
           <div className="text-muted-foreground">Loading commission data...</div>
         </div>
@@ -394,7 +546,11 @@ export default function UnifiedCommissions() {
   }
 
   return (
-    <DashboardLayout role="admin" user={user}>
+    <DashboardLayout role="admin" user={{
+      name: profile?.full_name || "Admin User",
+      email: profile?.email || "",
+      role: profile?.role || "admin"
+    }}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -415,41 +571,54 @@ export default function UnifiedCommissions() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Commissions</CardTitle>
+              <CardTitle className="text-sm font-medium">Total Insurer Commissions</CardTitle>
               <DollarSign className="h-4 w-4 text-success" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">₹{totalCommissions.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground">From policy commissions</p>
+              <p className="text-xs text-muted-foreground">From all policies</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending Payouts</CardTitle>
-              <Clock className="h-4 w-4 text-warning" />
+              <CardTitle className="text-sm font-medium">Broker Share</CardTitle>
+              <DollarSign className="h-4 w-4 text-orange-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{pendingCommissions.length}</div>
+              <div className="text-2xl font-bold text-orange-600">₹{totalBrokerShare.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground">Retained by organization</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Source Commissions</CardTitle>
+              <DollarSign className="h-4 w-4 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-600">
+                ₹{(totalAgentCommissions + totalMispCommissions + totalEmployeeCommissions).toLocaleString()}
+              </div>
               <p className="text-xs text-muted-foreground">
-                ₹{pendingCommissions.reduce((sum, c) => sum + (c.total_amount || 0), 0).toLocaleString()} pending
+                Agent: ₹{totalAgentCommissions.toLocaleString()} | MISP: ₹{totalMispCommissions.toLocaleString()} | Employee: ₹{totalEmployeeCommissions.toLocaleString()}
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Grids</CardTitle>
-              <CheckCircle className="h-4 w-4 text-info" />
+              <CardTitle className="text-sm font-medium">Pending Approvals</CardTitle>
+              <Clock className="h-4 w-4 text-warning" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {motorGrids.filter(g => g.is_active).length + healthGrids.filter(g => g.is_active).length + lifeGrids.filter(g => g.is_active).length}
-              </div>
-              <p className="text-xs text-muted-foreground">Across all products</p>
+              <div className="text-2xl font-bold">{pendingCommissions.length}</div>
+              <p className="text-xs text-muted-foreground">
+                ₹{pendingCommissions.reduce((sum, c) => sum + (c.commission_amount || 0), 0).toLocaleString()} pending
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -465,6 +634,7 @@ export default function UnifiedCommissions() {
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList>
                 <TabsTrigger value="grids">Commission Grids</TabsTrigger>
+                <TabsTrigger value="calculations">Live Calculations</TabsTrigger>
                 <TabsTrigger value="records">Commission Records</TabsTrigger>
               </TabsList>
 
@@ -490,6 +660,10 @@ export default function UnifiedCommissions() {
                 </Tabs>
               </TabsContent>
 
+              <TabsContent value="calculations" className="mt-6">
+                <CommissionCalculationPanel />
+              </TabsContent>
+
               <TabsContent value="records" className="mt-6">
                 <div className="space-y-4">
                   <div className="mb-4 flex space-x-2">
@@ -498,9 +672,11 @@ export default function UnifiedCommissions() {
                       <Input
                         placeholder="Search policy commissions..."
                         className="pl-10"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                       />
                     </div>
-                    <Button variant="outline">
+                    <Button variant="outline" onClick={exportCommissionData}>
                       <Download className="mr-2 h-4 w-4" />
                       Export Records
                     </Button>
@@ -509,31 +685,107 @@ export default function UnifiedCommissions() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Policy</TableHead>
-                        <TableHead>Agent</TableHead>
-                        <TableHead>Product Type</TableHead>
-                        <TableHead>Commission</TableHead>
-                        <TableHead>Total Amount</TableHead>
+                        <TableHead>Policy Details</TableHead>
+                        <TableHead>Source</TableHead>
+                        <TableHead>Premium</TableHead>
+                        <TableHead>Total Rate %</TableHead>
+                        <TableHead>Insurer Commission</TableHead>
+                        <TableHead>Source Commission</TableHead>
+                        <TableHead>Broker Share</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead>Grid Source</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {policyCommissions.map((commission) => (
+                      {filteredPolicyCommissions.map((commission) => (
                         <TableRow key={commission.id}>
-                          <TableCell className="font-medium">
-                            {commission.policy?.policy_number || 'N/A'}
+                          <TableCell>
+                            <div className="space-y-1">
+                              <div className="font-medium">
+                                {commission.policy?.policy_number || 'N/A'}
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                {commission.customer_name || 'Unknown Customer'}
+                              </div>
+                              <Badge variant="outline" className="text-xs">
+                                {commission.product_type}
+                              </Badge>
+                            </div>
                           </TableCell>
                           <TableCell>
-                            {commission.agent?.agent_name || 'Unassigned'}
+                            <div className="space-y-1">
+                              <div className="font-medium text-sm">
+                                {commission.source_name || 'Direct'}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {commission.source_type || 'direct'}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            ₹{commission.premium_amount?.toLocaleString() || 0}
                           </TableCell>
                           <TableCell>
-                            <Badge variant="outline">{commission.product_type}</Badge>
+                            <div className="font-medium text-primary">
+                              {commission.commission_rate?.toFixed(2) || 0}%
+                            </div>
                           </TableCell>
-                          <TableCell>{commission.commission_rate}%</TableCell>
-                          <TableCell className="font-medium">
-                            ₹{commission.total_amount?.toLocaleString() || 0}
+                          <TableCell>
+                            <div className="space-y-1">
+                              <div className="font-medium">
+                                ₹{commission.commission_amount?.toLocaleString() || 0}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {commission.commission_rate?.toFixed(1) || 0}%
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-1">
+                              {commission.source_type === 'agent' && (
+                                <>
+                                  <div className="font-medium text-blue-600">
+                                    ₹{commission.agent_commission_amount?.toLocaleString() || 0}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">
+                                    Agent: {commission.agent_commission_rate?.toFixed(1) || 0}%
+                                  </div>
+                                </>
+                              )}
+                              {commission.source_type === 'misp' && (
+                                <>
+                                  <div className="font-medium text-green-600">
+                                    ₹{commission.misp_commission_amount?.toLocaleString() || 0}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">
+                                    MISP: {commission.misp_commission_rate?.toFixed(1) || 0}%
+                                  </div>
+                                </>
+                              )}
+                              {commission.source_type === 'employee' && (
+                                <>
+                                  <div className="font-medium text-purple-600">
+                                    ₹{commission.employee_commission_amount?.toLocaleString() || 0}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">
+                                    Employee: {commission.employee_commission_rate?.toFixed(1) || 0}%
+                                  </div>
+                                </>
+                              )}
+                              {(!commission.source_type || commission.source_type === 'direct') && (
+                                <div className="text-sm text-muted-foreground">Direct Sale</div>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-1">
+                              <div className="font-medium text-orange-600">
+                                ₹{commission.broker_share_amount?.toLocaleString() || 0}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                Broker: {commission.broker_share_rate?.toFixed(1) || 0}%
+                              </div>
+                            </div>
                           </TableCell>
                           <TableCell>
                             <StatusChip variant={getPayoutStatusVariant(commission.payout_status)}>
@@ -541,16 +793,8 @@ export default function UnifiedCommissions() {
                             </StatusChip>
                           </TableCell>
                           <TableCell>
-                            <div className="flex items-center gap-1">
-                              <span className="text-sm text-muted-foreground">
-                                {commission.grid_table?.replace('_payout_grid', '')}
-                              </span>
-                              <ExternalLink className="h-3 w-3 text-muted-foreground" />
-                            </div>
-                          </TableCell>
-                          <TableCell>
                             <div className="flex items-center gap-2">
-                              {commission.payout_status === 'pending' && (
+                              {commission.payout_status === 'calculated' && (
                                 <Button 
                                   variant="outline" 
                                   size="sm"
@@ -580,6 +824,16 @@ export default function UnifiedCommissions() {
           </CardContent>
         </Card>
       </div>
+
+      <EnhancedCommissionGridModal
+        open={gridModalOpen}
+        onOpenChange={setGridModalOpen}
+        grid={editingGrid}
+        onSuccess={() => {
+          fetchCommissionGrids();
+          setEditingGrid(null);
+        }}
+      />
     </DashboardLayout>
   );
 }

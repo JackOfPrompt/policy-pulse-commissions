@@ -1,0 +1,4 @@
+channel_partner_name,misp_code,email,phone,commission_tier_name,override_percentage
+XYZ Motors,MISP001,misp@example.com,9876543210,Gold,12
+ABC Insurance Hub,MISP002,abc@example.com,9876543211,Silver,
+Premium Auto Sales,MISP003,premium@example.com,9876543212,,15

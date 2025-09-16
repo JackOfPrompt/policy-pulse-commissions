@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Building2, Users, UserCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface BusinessSource {
   sourceType: 'employee' | 'posp' | 'misp' | null;
@@ -48,42 +49,57 @@ export function BusinessSourceAssignment({
   extractedData
 }: BusinessSourceAssignmentProps) {
   const { toast } = useToast();
+  const { profile } = useAuth();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [misps, setMisps] = useState<Misp[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    loadSourceOptions();
-  }, []);
+    if (profile?.org_id) {
+      loadSourceOptions();
+    }
+  }, [profile?.org_id]);
 
   const loadSourceOptions = async () => {
+    if (!profile?.org_id) {
+      toast({
+        title: "Error",
+        description: "Organization context not found",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setLoading(true);
     try {
-      // Load employees
+      // Load employees for current organization
       const { data: employeeData, error: employeeError } = await supabase
         .from('employees')
         .select('id, name, employee_code')
+        .eq('org_id', profile.org_id)
         .eq('status', 'active')
         .order('name');
 
       if (employeeError) throw employeeError;
       setEmployees(employeeData || []);
 
-      // Load agents (POSPs)
+      // Load agents (POSPs) for current organization
       const { data: agentData, error: agentError } = await supabase
         .from('agents')
         .select('id, agent_name, agent_code')
+        .eq('org_id', profile.org_id)
         .eq('status', 'active')
         .order('agent_name');
 
       if (agentError) throw agentError;
       setAgents(agentData || []);
 
-      // Load MISPs
+      // Load MISPs for current organization
       const { data: mispData, error: mispError } = await supabase
         .from('misps')
         .select('id, channel_partner_name, type_of_dealer')
+        .eq('org_id', profile.org_id)
         .order('channel_partner_name');
 
       if (mispError) throw mispError;

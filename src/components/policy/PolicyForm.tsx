@@ -201,14 +201,17 @@ export function PolicyForm({ policy, onSuccess, onCancel }: PolicyFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Agent</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select 
+                  onValueChange={(value) => field.onChange(value === 'none' ? undefined : value)} 
+                  defaultValue={field.value || 'none'}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select agent (optional)" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                   <SelectContent>
+                     <SelectItem value="none">None</SelectItem>
                     {agents.map((agent) => (
                       <SelectItem key={agent.id} value={agent.id}>
                         {agent.agent_name} ({agent.email})
