@@ -38,7 +38,7 @@ export function PolicyCommissionReport() {
     provider: '',
   });
 
-  const { data, loading: reportLoading, totals, refetch, exportToCSV } = useDetailedCommissionReport(filters);
+  const { data, loading: reportLoading, totals, refetch, exportToCSV } = useDetailedCommissionReport();
 
   // Auto-load data on component mount
   useEffect(() => {

@@ -255,7 +255,11 @@ export function PolicyList({ userRole }: PolicyListProps) {
                     'Unknown'
                   }
                 </div>
-                <div><strong>Product Type:</strong> {selectedPolicy.product_type?.name || 'Unknown'}</div>
+                <div><strong>Product Type:</strong> 
+                  {typeof selectedPolicy.product_type === 'string' 
+                    ? selectedPolicy.product_type 
+                    : selectedPolicy.product_type?.name || 'Unknown'}
+                </div>
                 <div><strong>Premium:</strong> ₹{selectedPolicy.premium_with_gst?.toLocaleString() || 'N/A'}</div>
                 <div><strong>Created:</strong> 
                   {selectedPolicy.created_at ? format(new Date(selectedPolicy.created_at), 'PPP') : 'N/A'}

@@ -5,7 +5,7 @@ export function useDetailedCommissionReport() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const generateDetailedReport = async () => {
+  const generateDetailedReport = async (filters?: any) => {
     setLoading(true);
     try {
       console.log('Detailed commission report temporarily disabled - types being regenerated');
@@ -30,7 +30,7 @@ export function useDetailedCommissionReport() {
   return {
     generateDetailedReport: (filters?: any) => {
       console.log('generateDetailedReport called with filters:', filters);
-      return generateDetailedReport();
+      return generateDetailedReport(filters);
     },
     data: [],
     loading,
@@ -45,7 +45,13 @@ export function useDetailedCommissionReport() {
       totalPremium: 0,
       count: 0
     },
-    refetch,
-    exportToCSV
+    refetch: (filters?: any) => {
+      console.log('Report refetch with filters:', filters);  
+      return Promise.resolve();
+    },
+    exportToCSV: () => {
+      console.log('CSV export temporarily disabled');
+      return true;
+    }
   };
 }

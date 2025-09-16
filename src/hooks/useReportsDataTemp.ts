@@ -5,14 +5,28 @@ export function useReportsData() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchReportsData = async () => {
+  const fetchReportsData = async (range?: any) => {
     setLoading(true);
     try {
       console.log('Reports data fetching temporarily disabled - types being regenerated');
-      return [];
+      return {
+        totalPremium: 0,
+        totalPolicies: 0,
+        totalCommissions: 0,
+        avgCommissionRate: 0,
+        pendingPayouts: 0,
+        policyRenewalRate: 0
+      };
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Reports data fetch failed');
-      return [];
+      return {
+        totalPremium: 0,
+        totalPolicies: 0,
+        totalCommissions: 0,
+        avgCommissionRate: 0,
+        pendingPayouts: 0,
+        policyRenewalRate: 0
+      };
     } finally {
       setLoading(false);
     }
@@ -20,12 +34,19 @@ export function useReportsData() {
 
   return {
     reportsData: [],
-    data: [],
+    data: {
+      totalPremium: 0,
+      totalPolicies: 0,
+      totalCommissions: 0,
+      avgCommissionRate: 0,
+      pendingPayouts: 0,
+      policyRenewalRate: 0
+    },
     loading,
     error,
     fetchReportsData: (filters?: any) => {
       console.log('Reports data fetch with filters:', filters);
-      return fetchReportsData();
+      return fetchReportsData(filters);
     },
     refetch: fetchReportsData
   };

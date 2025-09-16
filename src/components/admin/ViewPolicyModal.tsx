@@ -71,7 +71,11 @@ export function ViewPolicyModal({ open, onOpenChange, policy }: ViewPolicyModalP
               </div>
               <div>
                 <label className="text-sm font-medium text-muted-foreground">Product Type</label>
-                <p className="capitalize">{policy.product_type?.name || policy.product_type?.category}</p>
+                <p className="capitalize">
+                  {typeof policy.product_type === 'string' 
+                    ? policy.product_type 
+                    : policy.product_type?.name || policy.product_type?.category || 'N/A'}
+                </p>
               </div>
               <div>
                 <label className="text-sm font-medium text-muted-foreground">Provider</label>

@@ -62,11 +62,11 @@ export function useEnhancedCommissionCalculation() {
     }
   };
 
-  const calculateEnhancedCommission = async () => {
+  const calculateEnhancedCommission = async (policyId?: string) => {
     return null;
   };
 
-  const saveEnhancedCommission = async () => {
+  const saveEnhancedCommission = async (policyId?: string, commissionData?: any) => {
     return false;
   };
 
@@ -122,8 +122,8 @@ export function useEnhancedCommissionCalculation() {
 
   return {
     calculateEnhanced,
-    calculateEnhancedCommission,
-    saveEnhancedCommission,
+    calculateEnhancedCommission: (policyId?: string) => calculateEnhancedCommission(policyId),
+    saveEnhancedCommission: (policyId?: string, commissionData?: any) => saveEnhancedCommission(policyId, commissionData),
     getProviders,
     getAgents,
     getMISPs,

@@ -32,7 +32,7 @@ export function useEnhancedCommissionReportWithDetails() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const generateEnhancedReport = async () => {
+  const generateEnhancedReport = async (filters?: any) => {
     setLoading(true);
     try {
       console.log('Enhanced commission report with details temporarily disabled - types being regenerated');
@@ -73,9 +73,9 @@ export function useEnhancedCommissionReportWithDetails() {
     return true;
   };
 
-  const refetch = (filters?: any) => {
+  const refetch = async (filters?: any) => {
     console.log('Report refetch temporarily disabled');
-    return Promise.resolve();
+    return [];
   };
 
   return {
