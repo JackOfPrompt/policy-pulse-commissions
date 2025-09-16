@@ -25,7 +25,8 @@ export interface CommissionCalculationResult {
   calc_date: string;
 }
 
-export function useCommissionCalculation() {
+// Temporarily export the simplified version
+export { useCommissionCalculation } from '@/hooks/useCommissionCalculationTemp';
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();

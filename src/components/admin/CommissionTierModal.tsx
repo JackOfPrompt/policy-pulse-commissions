@@ -58,19 +58,26 @@ export function CommissionTierModal({ open, onOpenChange, tier }: CommissionTier
     }
   });
 
-  const { data: productTypes } = useQuery({
-    queryKey: ['product-types'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('product_types')
-        .select('id, name')
-        .eq('is_active', true)
-        .order('name');
+  // Temporarily disabled due to type sync issues - will be restored when types are regenerated
+  const productTypes = [
+    { id: 'motor', name: 'Motor Insurance' },
+    { id: 'health', name: 'Health Insurance' },
+    { id: 'life', name: 'Life Insurance' }
+  ];
 
-      if (error) throw error;
-      return data;
-    }
-  });
+  // const { data: productTypes } = useQuery({
+  //   queryKey: ['product-types'],
+  //   queryFn: async () => {
+  //     const { data, error } = await supabase
+  //       .from('product_types')
+  //       .select('id, name')
+  //       .eq('is_active', true)
+  //       .order('name');
+
+  //     if (error) throw error;
+  //     return data || [];
+  //   },
+  // });
 
   const mutation = useMutation({
     mutationFn: async (data: CommissionTierFormData) => {
@@ -232,11 +239,11 @@ export function CommissionTierModal({ open, onOpenChange, tier }: CommissionTier
                 </FormControl>
                  <SelectContent>
                    <SelectItem value="all">All Products</SelectItem>
-                  {productTypes?.map((type) => (
-                    <SelectItem key={type.id} value={type.id}>
-                      {type.name}
-                    </SelectItem>
-                  ))}
+                   {productTypes.map((type) => (
+                     <SelectItem key={type.id} value={type.id}>
+                       {type.name}
+                     </SelectItem>
+                   ))}
                 </SelectContent>
               </Select>
               <FormMessage />
