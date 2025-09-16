@@ -31,9 +31,15 @@ export function useCommissionTierCalculation() {
     }
   };
 
+  const syncAllCommissions = async () => {
+    console.log('Commission sync temporarily disabled - types being regenerated');
+    return [];
+  };
+
   return {
     calculateTierCommissions,
     saveTierCommissions,
+    syncAllCommissions,
     loading,
     error
   };

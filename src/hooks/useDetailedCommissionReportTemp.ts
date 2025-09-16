@@ -18,10 +18,30 @@ export function useDetailedCommissionReport() {
     }
   };
 
+  const refetch = (filters?: any) => {
+    console.log('Report refetch temporarily disabled');  
+  };
+
+  const exportToCSV = () => {
+    console.log('CSV export temporarily disabled');
+  };
+
   return {
-    generateDetailedReport,
+    generateDetailedReport: (filters?: any) => generateDetailedReport(),
+    data: [],
     loading,
     error,
-    detailedReportData: []
+    detailedReportData: [],
+    totals: {
+      totalCommission: 0,
+      totalAgentCommission: 0,
+      totalMispCommission: 0,
+      totalEmployeeCommission: 0,
+      totalBrokerShare: 0,
+      totalPremium: 0,
+      count: 0
+    },
+    refetch,
+    exportToCSV
   };
 }
