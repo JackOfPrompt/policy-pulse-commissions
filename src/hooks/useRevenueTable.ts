@@ -63,12 +63,13 @@ export interface RevenueTotals {
   count: number;
 }
 
-export function useRevenueTable(filters: RevenueFilters = {}) {
+export function useRevenueTable(initialFilters: RevenueFilters = {}) {
   const { profile } = useAuth();
   const { toast } = useToast();
   const [revenueData, setRevenueData] = useState<RevenueRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [filters, setFilters] = useState<RevenueFilters>(initialFilters);
   const [totals, setTotals] = useState<RevenueTotals>({
     totalCommission: 0,
     totalInsurer: 0,
@@ -82,174 +83,7 @@ export function useRevenueTable(filters: RevenueFilters = {}) {
   });
 
   const fetchRevenueData = async () => {
-    if (!profile?.org_id) return [];
-
-    setLoading(true);
-    setError(null);
-    
-    try {
-      // Use the enhanced comprehensive commission report function instead
-      const { data: commissionData, error: commissionError } = await supabase
-        .rpc('calculate_enhanced_comprehensive_commission_report', { 
-          p_org_id: profile.org_id 
-        });
-
-      if (commissionError) {
-        console.warn('Commission calculation warning:', commissionError.message);
-        throw commissionError;
-      }
-
-      // If no data from function, fallback to revenue_table
-      let revenueRecords = commissionData || [];
-      
-      if (!revenueRecords || revenueRecords.length === 0) {
-        let query = supabase
-          .from('revenue_table')
-          .select('*')
-          .eq('org_id', profile.org_id)
-          .order('policy_number');
-
-      // Apply filters
-      if (filters.product_type) {
-        query = query.eq('product_type', filters.product_type);
-      }
-      
-      if (filters.source_type) {
-        query = query.eq('source_type', filters.source_type);
-      }
-      
-      if (filters.provider) {
-        query = query.ilike('provider', `%${filters.provider}%`);
-      }
-      
-      if (filters.search) {
-        query = query.or(`policy_number.ilike.%${filters.search}%,source_name.ilike.%${filters.search}%`);
-      }
-
-        if (filters.product_type) {
-          query = query.eq('product_type', filters.product_type);
-        }
-        
-        if (filters.source_type) {
-          query = query.eq('source_type', filters.source_type);
-        }
-        
-        if (filters.provider) {
-          query = query.ilike('provider', `%${filters.provider}%`);
-        }
-        
-        if (filters.search) {
-          query = query.or(`policy_number.ilike.%${filters.search}%,customer_name.ilike.%${filters.search}%`);
-        }
-
-        const { data, error: fetchError } = await query;
-
-        if (fetchError) throw fetchError;
-
-        revenueRecords = (data as any[]) || [];
-      }
-
-      // Apply client-side filters if using function data
-      if (commissionData && commissionData.length > 0) {
-        if (filters.product_type) {
-          revenueRecords = revenueRecords.filter((r: any) => 
-            (r.product_type && r.product_type === filters.product_type) ||
-            (r.product_name && r.product_name === filters.product_type)
-          );
-        }
-        if (filters.source_type) {
-          revenueRecords = revenueRecords.filter((r: any) => r.source_type === filters.source_type);
-        }
-        if (filters.provider) {
-          revenueRecords = revenueRecords.filter((r: any) => 
-            r.provider && r.provider.toLowerCase().includes(filters.provider.toLowerCase())
-          );
-        }
-        if (filters.search) {
-          revenueRecords = revenueRecords.filter((r: any) => 
-            (r.policy_number && r.policy_number.toLowerCase().includes(filters.search.toLowerCase())) ||
-            (r.customer_name && r.customer_name.toLowerCase().includes(filters.search.toLowerCase()))
-          );
-        }
-      }
-      // Normalize data structure to match interface
-      const normalizedRecords = revenueRecords.map((record: any) => ({
-        id: record.id || record.policy_id || `${record.policy_number}-${Date.now()}`,
-        policy_id: record.policy_id,
-        policy_number: record.policy_number,
-        provider: record.provider,
-        product_type: record.product_type || record.product_name,
-        source_type: record.source_type,
-        employee_id: record.employee_id,
-        agent_id: record.agent_id,
-        misp_id: record.misp_id,
-        employee_name: record.employee_name,
-        agent_name: record.agent_name,
-        misp_name: record.misp_name,
-        reporting_employee_id: record.reporting_employee_id,
-        reporting_employee_name: record.reporting_employee_name,
-        customer_name: record.customer_name,
-        customer_id: record.customer_id,
-        org_id: record.org_id,
-        premium: record.premium || record.premium_amount || 0,
-        base_rate: record.base_rate || record.base_commission_rate || 0,
-        reward_rate: record.reward_rate || record.reward_commission_rate || 0,
-        bonus_rate: record.bonus_rate || record.bonus_commission_rate || 0,
-        total_rate: record.total_rate || record.total_commission_rate || 0,
-        insurer_commission: record.insurer_commission || 0,
-        agent_commission: record.agent_commission || 0,
-        employee_commission: record.employee_commission || 0,
-        reporting_employee_commission: record.reporting_employee_commission || 0,
-        broker_share: record.broker_share || 0,
-        commission_status: record.commission_status || 'pending',
-        calc_date: record.calc_date || record.created_at || new Date().toISOString(),
-        created_at: record.created_at || new Date().toISOString()
-      }));
-
-      setRevenueData(normalizedRecords);
-
-      // Calculate totals
-      const calculatedTotals = normalizedRecords.reduce((acc, record) => ({
-        totalCommission: acc.totalCommission + (record.insurer_commission || 0),
-        totalInsurer: acc.totalInsurer + (record.insurer_commission || 0),
-        totalAgent: acc.totalAgent + (record.agent_commission || 0),
-        totalMisp: acc.totalMisp + 0, // MISP handled separately
-        totalEmployee: acc.totalEmployee + (record.employee_commission || 0) + (record.reporting_employee_commission || 0),
-        totalBroker: acc.totalBroker + (record.broker_share || 0),
-        totalPremium: acc.totalPremium + (record.premium || 0),
-        avgBaseRate: acc.avgBaseRate + (record.base_rate || 0),
-        count: acc.count + 1
-      }), {
-        totalCommission: 0,
-        totalInsurer: 0,
-        totalAgent: 0,
-        totalMisp: 0,
-        totalEmployee: 0,
-        totalBroker: 0,
-        totalPremium: 0,
-        avgBaseRate: 0,
-        count: 0
-      });
-
-      // Calculate average base rate
-      if (calculatedTotals.count > 0) {
-        calculatedTotals.avgBaseRate = calculatedTotals.avgBaseRate / calculatedTotals.count;
-      }
-
-      setTotals(calculatedTotals);
-      return normalizedRecords;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch revenue data';
-      setError(errorMessage);
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
-      return [];
-    } finally {
-      setLoading(false);
-    }
+    return fetchRevenueDataWithFilters();
   };
 
   const syncRevenueTable = async () => {
@@ -358,9 +192,139 @@ export function useRevenueTable(filters: RevenueFilters = {}) {
     document.body.removeChild(link);
   };
 
+  // Only fetch data on initial load when org_id is available
   useEffect(() => {
-    fetchRevenueData();
-  }, [profile?.org_id, filters]);
+    if (profile?.org_id && revenueData.length === 0) {
+      fetchRevenueDataWithFilters();
+    }
+  }, [profile?.org_id]);
+
+  const applyFilters = (newFilters: RevenueFilters) => {
+    setFilters(newFilters);
+    // Fetch data with new filters
+    fetchRevenueDataWithFilters(newFilters);
+  };
+
+  const fetchRevenueDataWithFilters = async (appliedFilters = filters) => {
+    if (!profile?.org_id) return [];
+
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // Use the enhanced comprehensive commission report function
+      const { data: commissionData, error: commissionError } = await supabase
+        .rpc('calculate_enhanced_comprehensive_commission_report', { 
+          p_org_id: profile.org_id 
+        });
+
+      if (commissionError) {
+        console.warn('Commission calculation warning:', commissionError.message);
+        throw commissionError;
+      }
+
+      let revenueRecords = commissionData || [];
+      
+      // Apply client-side filters
+      if (appliedFilters.product_type) {
+        revenueRecords = revenueRecords.filter((r: any) => 
+          (r.product_type && r.product_type === appliedFilters.product_type) ||
+          (r.product_name && r.product_name === appliedFilters.product_type)
+        );
+      }
+      if (appliedFilters.source_type) {
+        revenueRecords = revenueRecords.filter((r: any) => r.source_type === appliedFilters.source_type);
+      }
+      if (appliedFilters.provider) {
+        revenueRecords = revenueRecords.filter((r: any) => 
+          r.provider && r.provider.toLowerCase().includes(appliedFilters.provider.toLowerCase())
+        );
+      }
+      if (appliedFilters.search) {
+        revenueRecords = revenueRecords.filter((r: any) => 
+          (r.policy_number && r.policy_number.toLowerCase().includes(appliedFilters.search.toLowerCase())) ||
+          (r.customer_name && r.customer_name.toLowerCase().includes(appliedFilters.search.toLowerCase()))
+        );
+      }
+
+      // Normalize data structure
+      const normalizedRecords = revenueRecords.map((record: any) => ({
+        id: record.id || record.policy_id || `${record.policy_number}-${Date.now()}`,
+        policy_id: record.policy_id,
+        policy_number: record.policy_number,
+        provider: record.provider,
+        product_type: record.product_type || record.product_name,
+        source_type: record.source_type,
+        employee_id: record.employee_id,
+        agent_id: record.agent_id,
+        misp_id: record.misp_id,
+        employee_name: record.employee_name,
+        agent_name: record.agent_name,
+        misp_name: record.misp_name,
+        reporting_employee_id: record.reporting_employee_id,
+        reporting_employee_name: record.reporting_employee_name,
+        customer_name: record.customer_name,
+        customer_id: record.customer_id,
+        org_id: record.org_id,
+        premium: record.premium || record.premium_amount || 0,
+        base_rate: record.base_rate || record.base_commission_rate || 0,
+        reward_rate: record.reward_rate || record.reward_commission_rate || 0,
+        bonus_rate: record.bonus_rate || record.bonus_commission_rate || 0,
+        total_rate: record.total_rate || record.total_commission_rate || 0,
+        insurer_commission: record.insurer_commission || 0,
+        agent_commission: record.agent_commission || 0,
+        employee_commission: record.employee_commission || 0,
+        reporting_employee_commission: record.reporting_employee_commission || 0,
+        broker_share: record.broker_share || 0,
+        commission_status: record.commission_status || 'pending',
+        calc_date: record.calc_date || record.created_at || new Date().toISOString(),
+        created_at: record.created_at || new Date().toISOString()
+      }));
+
+      setRevenueData(normalizedRecords);
+
+      // Calculate totals
+      const calculatedTotals = normalizedRecords.reduce((acc, record) => ({
+        totalCommission: acc.totalCommission + (record.insurer_commission || 0),
+        totalInsurer: acc.totalInsurer + (record.insurer_commission || 0),
+        totalAgent: acc.totalAgent + (record.agent_commission || 0),
+        totalMisp: acc.totalMisp + 0,
+        totalEmployee: acc.totalEmployee + (record.employee_commission || 0) + (record.reporting_employee_commission || 0),
+        totalBroker: acc.totalBroker + (record.broker_share || 0),
+        totalPremium: acc.totalPremium + (record.premium || 0),
+        avgBaseRate: acc.avgBaseRate + (record.base_rate || 0),
+        count: acc.count + 1
+      }), {
+        totalCommission: 0,
+        totalInsurer: 0,
+        totalAgent: 0,
+        totalMisp: 0,
+        totalEmployee: 0,
+        totalBroker: 0,
+        totalPremium: 0,
+        avgBaseRate: 0,
+        count: 0
+      });
+
+      if (calculatedTotals.count > 0) {
+        calculatedTotals.avgBaseRate = calculatedTotals.avgBaseRate / calculatedTotals.count;
+      }
+
+      setTotals(calculatedTotals);
+      return normalizedRecords;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch revenue data';
+      setError(errorMessage);
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return {
     revenueData,
@@ -368,9 +332,11 @@ export function useRevenueTable(filters: RevenueFilters = {}) {
     loading,
     error,
     totals,
-    fetchRevenueData,
+    filters,
+    fetchRevenueData: () => fetchRevenueDataWithFilters(),
+    applyFilters,
     syncRevenueTable,
     exportToCSV,
-    refetch: fetchRevenueData
+    refetch: () => fetchRevenueDataWithFilters()
   };
 }

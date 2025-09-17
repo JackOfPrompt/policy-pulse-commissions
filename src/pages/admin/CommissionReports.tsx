@@ -21,19 +21,28 @@ export default function CommissionReports() {
     loading, 
     error, 
     totals, 
+    filters: currentFilters,
     fetchRevenueData, 
+    applyFilters,
     syncRevenueTable, 
     exportToCSV 
-  } = useRevenueTable({
-    ...filters,
-    search: searchTerm
-  });
+  } = useRevenueTable();
 
   const handleFilterChange = (key: keyof RevenueFilters, value: string) => {
-    setFilters(prev => ({
-      ...prev,
+    const newFilters = {
+      ...currentFilters,
       [key]: value || undefined
-    }));
+    };
+    applyFilters(newFilters);
+  };
+
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+    const newFilters = {
+      ...currentFilters,
+      search: term || undefined
+    };
+    applyFilters(newFilters);
   };
 
   const getSourceDisplay = (record: any) => {
@@ -100,7 +109,7 @@ export default function CommissionReports() {
                 <Input
                   placeholder="Search policy number..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e) => handleSearch(e.target.value)}
                   className="pl-9"
                 />
               </div>
