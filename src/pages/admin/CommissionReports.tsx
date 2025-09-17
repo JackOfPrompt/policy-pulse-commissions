@@ -45,15 +45,52 @@ export default function CommissionReports() {
     applyFilters(newFilters);
   };
 
-  const getSourceDisplay = (record: any) => {
-    if (record.source_type === 'employee') {
-      return `Internal (${record.employee_name || 'Employee'})`;
-    } else if (record.source_type === 'agent') {
-      return `External (${record.agent_name || 'Agent'})`;
-    } else if (record.source_type === 'misp') {
-      return `External (${record.misp_name || 'MISP'})`;
+  const getSourceBadgeVariant = (sourceType: string) => {
+    switch (sourceType?.toLowerCase()) {
+      case 'agent':
+      case 'misp':
+      case 'posp':
+        return 'destructive' as const;
+      case 'employee':
+        return 'default' as const;
+      case 'direct':
+        return 'outline' as const;
+      default:
+        return 'secondary' as const;
     }
-    return 'Direct Sale';
+  };
+
+  const getSourceLabel = (sourceType: string) => {
+    switch (sourceType?.toLowerCase()) {
+      case 'agent':
+      case 'misp':
+      case 'posp':
+        return 'External';
+      case 'employee':
+        return 'Internal';
+      case 'direct':
+        return 'Direct';
+      default:
+        return 'Unknown';
+    }
+  };
+
+  const getSourceName = (record: any) => {
+    if (record.source_type === 'employee') {
+      const employeeCode = record.employee_code || record.employee_id;
+      const employeeName = record.employee_name || 'Unknown Employee';
+      return employeeCode ? `${employeeCode} - ${employeeName}` : employeeName;
+    } else if (record.source_type === 'agent') {
+      const agentCode = record.agent_code || record.agent_id;
+      const agentName = record.agent_name || 'Unknown Agent';
+      return agentCode ? `${agentCode} - ${agentName}` : agentName;
+    } else if (record.source_type === 'misp') {
+      const mispName = record.misp_name || record.channel_partner_name || 'Unknown MISP';
+      return mispName;
+    } else if (record.source_type === 'direct') {
+      return 'Direct Policy';
+    }
+    return record.source_name || 'Unknown';
   };
 
 
@@ -271,11 +308,16 @@ export default function CommissionReports() {
                         <td className="p-2 text-center">{record.bonus_rate?.toFixed(1) || '0'}%</td>
                         <td className="p-2 text-center font-semibold">{record.total_rate?.toFixed(1) || '0'}%</td>
                         <td className="p-2 text-right font-semibold">₹{record.insurer_commission?.toLocaleString('en-IN') || '0'}</td>
-                        <td className="p-2">
-                          <Badge variant="outline" className="text-xs">
-                            {getSourceDisplay(record)}
-                          </Badge>
-                        </td>
+                         <td className="p-2">
+                           <div className="space-y-1">
+                             <Badge variant={getSourceBadgeVariant(record.source_type)} className="text-xs">
+                               {getSourceLabel(record.source_type)}
+                             </Badge>
+                             <div className="text-xs text-muted-foreground">
+                               {getSourceName(record)}
+                             </div>
+                           </div>
+                         </td>
                         <td className="p-2 text-right">₹{record.agent_commission?.toLocaleString('en-IN') || '0'}</td>
                         <td className="p-2 text-right">₹{record.employee_commission?.toLocaleString('en-IN') || '0'}</td>
                         <td className="p-2 text-right">₹{record.reporting_employee_commission?.toLocaleString('en-IN') || '0'}</td>
