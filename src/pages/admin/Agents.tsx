@@ -276,8 +276,8 @@ export default function AdminAgents() {
                           })()
                         ) : agent.override_percentage ? (
                           `Override: ${agent.override_percentage}%`
-                        ) : agent.percentage ? (
-                          `Legacy: ${agent.percentage}%`
+                        ) : agent.base_percentage ? (
+                          `Base: ${agent.base_percentage}%`
                         ) : (
                           'No Commission Set'
                         )}

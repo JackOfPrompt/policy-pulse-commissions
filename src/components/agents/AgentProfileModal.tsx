@@ -481,7 +481,7 @@ export function AgentProfileModal({ agent, open, onOpenChange, onSave }: AgentPr
                 step="0.01"
                 min="0"
                 max="100"
-                {...register('percentage')}
+                {...register('base_percentage')}
                 placeholder="2.50"
               />
             </div>

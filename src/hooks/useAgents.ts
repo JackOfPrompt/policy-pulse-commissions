@@ -41,7 +41,7 @@ export interface Agent {
   ifsc_code?: string;
   account_type?: string;
   branch_name?: string;
-  percentage?: number;
+  base_percentage?: number;
   status?: string;
   kyc_status?: string; // Adding missing property
   agent_plan_id?: string; // Adding missing property

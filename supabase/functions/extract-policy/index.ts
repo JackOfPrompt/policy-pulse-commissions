@@ -361,11 +361,18 @@ serve(async (req) => {
 
     // Build dynamic prompt based on product type and schema
     let fieldsList = '';
-    let specialInstructions = '';
+    let specialInstructions = `
+CRITICAL PRODUCT TYPE DETECTION:
+- ALWAYS identify and extract the PRODUCT_TYPE field from the document
+- Look for insurance type indicators like: "Health Insurance", "Life Insurance", "Motor Insurance", "Travel Insurance", etc.
+- Common product types are: health, life, motor, travel, home, personal_accident, business, loan
+- If product type is not explicitly mentioned, infer from context (e.g., vehicle details = motor, medical coverage = health, death benefit = life)
+- Set PRODUCT_TYPE in the policy section - this is MANDATORY for all extractions
+    `;
     
     if (productType === 'health') {
-      specialInstructions = `
-CRITICAL: For health insurance policies, extract insured family members separately:
+      specialInstructions += `
+For health insurance policies, extract insured family members separately:
 - Extract ALL insured persons into INSURED_PERSONS as an array of objects
 - Each insured person should be a separate object with fields: name, dob, gender, age, relationship_with_proposer, member_id, pre_existing_diseases, date_insured_since
 - Even if only one member, return it as a single-object array: [{"name": "...", "dob": "...", ...}]
@@ -416,6 +423,7 @@ ${outputSkeleton}
 Fields to extract (flat list): ${fieldsList}
       
 CRITICAL INSTRUCTIONS:
+- MANDATORY: Extract PRODUCT_TYPE field - identify the insurance type from document content
 - Extract ONLY the fields defined in this schema for ${productType}. If a field is missing in the policy, return null (or [] for arrays)
 - Return ONLY valid JSON, no markdown fences or extra prose
 - Follow the PROVIDED KEYS AND SECTIONS EXACTLY (must match skeleton)

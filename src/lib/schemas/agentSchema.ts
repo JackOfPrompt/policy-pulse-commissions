@@ -24,7 +24,7 @@ export const AgentSchema = z.object({
   agent_type: z.string().default("POSP"),
   qualification: z.string().optional(),
   reference: z.string().optional(),
-  percentage: z.coerce.number().min(0).max(100).optional(),
+  base_percentage: z.coerce.number().min(0).max(100).optional(),
   commission_tier_id: z.string().uuid().optional(),
   override_percentage: z.coerce.number().min(0).max(100).optional(),
   status: z.enum(["active", "inactive"]).default("active"),

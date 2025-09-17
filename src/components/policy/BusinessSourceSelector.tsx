@@ -149,7 +149,7 @@ export function BusinessSourceSelector({
                   className="w-full justify-between"
                 >
                   {selectedAgent ? (
-                    `${selectedAgent.agent_name} (${selectedAgent.agent_code}) - ${selectedAgent.percentage}%`
+                    `${selectedAgent.agent_name} (${selectedAgent.agent_code}) - ${selectedAgent.base_percentage || 0}%`
                   ) : (
                     "Select agent..."
                   )}
@@ -176,7 +176,7 @@ export function BusinessSourceSelector({
                         <div className="flex flex-col">
                           <span>{agent.agent_name} ({agent.agent_code})</span>
                           <span className="text-sm text-muted-foreground">
-                            Commission: {agent.percentage}%
+                            Commission: {agent.base_percentage || 0}%
                           </span>
                         </div>
                       </CommandItem>

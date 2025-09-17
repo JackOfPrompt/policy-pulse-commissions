@@ -1,26 +1,36 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
-// Temporary simplified version until Supabase types are regenerated
 export function useProductTypes() {
+  const [productTypes, setProductTypes] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchProductTypes = async () => {
     setLoading(true);
     try {
-      console.log('Product types fetching temporarily disabled - types being regenerated');
-      return [];
+      const { data, error } = await supabase
+        .from('product_types')
+        .select('*')
+        .eq('is_active', true)
+        .order('name');
+
+      if (error) throw error;
+      setProductTypes(data || []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Product types fetch failed');
-      return [];
+      setError(err instanceof Error ? err.message : 'Failed to fetch product types');
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchProductTypes();
+  }, []);
+
   return {
-    productTypes: [],
-    data: [],
+    productTypes,
+    data: productTypes,
     loading,
     error,
     fetchProductTypes,

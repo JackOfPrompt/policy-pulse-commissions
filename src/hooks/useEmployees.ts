@@ -54,10 +54,7 @@ export function useEmployees() {
       setLoading(true);
       const { data, error } = await supabase
         .from('employees')
-        .select(`
-          *,
-          organizations(name)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;

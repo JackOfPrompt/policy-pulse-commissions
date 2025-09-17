@@ -109,15 +109,15 @@ export function ViewPolicyModal({ open, onOpenChange, policy }: ViewPolicyModalP
               </div>
               <div>
                 <label className="text-sm font-medium text-muted-foreground">Email</label>
-                <p>{policy.customer?.email || "N/A"}</p>
+                <p>{(policy.customer as any)?.email || policy.customers?.email || "N/A"}</p>
               </div>
               <div>
                 <label className="text-sm font-medium text-muted-foreground">Phone</label>
-                <p>{policy.customer?.phone || "N/A"}</p>
+                <p>{(policy.customer as any)?.phone || policy.customers?.phone || "N/A"}</p>
               </div>
               <div>
                 <label className="text-sm font-medium text-muted-foreground">Address</label>
-                <p className="text-sm">{policy.customer?.address || "N/A"}</p>
+                <p className="text-sm">{(policy.customer as any)?.address || policy.customers?.address || "N/A"}</p>
               </div>
             </CardContent>
           </Card>

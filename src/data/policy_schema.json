@@ -45,7 +45,7 @@
       { "field": "PREVIOUS_MEDICAL_CONDITION", "label": "Previous Medical Condition", "type": "string" },
       { "field": "MEMBER_COUNT", "label": "Member Count", "type": "number" },
       { "field": "MEMBERS_DETAILS", "label": "Members Details", "type": "string" },
-      { "field": "PRODUCT_TYPE", "label": "Product Type", "type": "string" },
+      { "field": "PRODUCT_TYPE", "label": "Product Type", "type": "select", "options": ["life", "health", "motor", "travel", "pet", "loan", "home", "personal_accident", "cyber", "security", "marine", "business"], "required": true },
       { "field": "POLICY_TYPE", "label": "Policy Type", "type": "string" },
       { "field": "POLICY_SUB_TYPE", "label": "Policy Sub Type", "type": "string" },
       { "field": "PLAN_TYPE", "label": "Plan Type", "type": "string" },

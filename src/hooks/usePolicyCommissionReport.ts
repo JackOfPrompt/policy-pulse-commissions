@@ -55,48 +55,10 @@ export function usePolicyCommissionReport(filters: PolicyCommissionFilters = {})
       setLoading(true);
       setError(null);
 
-      // Build the base query with joins
-      let query = supabase
-        .from('policies')
-        .select(`
-          id,
-          policy_number,
-          premium_with_gst,
-          premium_without_gst,
-          provider,
-          policy_status,
-          start_date,
-          end_date,
-          source_type,
-          created_at,
-          customers!inner(
-            first_name,
-            last_name,
-            company_name
-          ),
-          product_types!inner(
-            name,
-            category
-          ),
-          policy_commissions!inner(
-            product_type,
-            commission_rate,
-            reward_rate,
-            commission_amount,
-            reward_amount,
-            total_amount,
-            payout_status
-          ),
-          agents!policies_agent_id_fkey(
-            agent_name
-          ),
-          employees(
-            name
-          ),
-          misps(
-            channel_partner_name
-          )
-        `, { count: 'exact' });
+      // Use revenue table data for policy commission reports
+      let query: any = supabase
+        .from('revenue_table')
+        .select('*', { count: 'exact' });
 
       // Apply role-based filtering
       if (profile?.role === 'admin' && profile?.org_id) {
@@ -105,22 +67,19 @@ export function usePolicyCommissionReport(filters: PolicyCommissionFilters = {})
         query = query.eq('employee_id', profile.id);
       } else if (profile?.role === 'agent' && profile?.id) {
         query = query.eq('agent_id', profile.id);
-      } else if (profile?.role !== 'super_admin') {
-        // Regular users can only see their own policies
-        query = query.eq('customer_id', profile?.id);
+      } else if (profile?.role !== 'super_admin' && profile?.id) {
+        // Regular users can only see their own policies - but revenue table doesn't have customer_id
+        // For now, we'll restrict to empty results for customers until we fix the revenue table structure
+        query = query.eq('policy_id', '00000000-0000-0000-0000-000000000000'); // Force empty result
       }
 
-      // Apply filters
+      // Apply filters  
       if (filters.productType) {
-        query = query.eq('product_types.category', filters.productType);
+        query = query.eq('product_type', filters.productType);
       }
       
       if (filters.sourceType) {
         query = query.eq('source_type', filters.sourceType);
-      }
-      
-      if (filters.policyStatus) {
-        query = query.eq('policy_status', filters.policyStatus);
       }
       
       if (filters.provider) {
@@ -128,16 +87,16 @@ export function usePolicyCommissionReport(filters: PolicyCommissionFilters = {})
       }
       
       if (filters.dateFrom) {
-        query = query.gte('start_date', filters.dateFrom);
+        query = query.gte('calc_date', filters.dateFrom);
       }
       
       if (filters.dateTo) {
-        query = query.lte('start_date', filters.dateTo);
+        query = query.lte('calc_date', filters.dateTo);
       }
 
       if (filters.search) {
         query = query.or(
-          `policy_number.ilike.%${filters.search}%,customers.first_name.ilike.%${filters.search}%,customers.last_name.ilike.%${filters.search}%,customers.company_name.ilike.%${filters.search}%`
+          `policy_number.ilike.%${filters.search}%,customer_name.ilike.%${filters.search}%,agent_name.ilike.%${filters.search}%,employee_name.ilike.%${filters.search}%`
         );
       }
 
@@ -146,67 +105,84 @@ export function usePolicyCommissionReport(filters: PolicyCommissionFilters = {})
       const to = from + pageSize - 1;
       query = query.range(from, to);
 
-      // Order by created_at desc
-      query = query.order('created_at', { ascending: false });
+      // Order by calc_date desc
+      query = query.order('calc_date', { ascending: false });
 
-      const { data: policies, error: policiesError, count } = await query;
+      const { data: revenueRecords, error: revenueError, count } = await query;
 
-      if (policiesError) throw policiesError;
+      if (revenueError) throw revenueError;
 
-      // Transform the data
-      const transformedData: PolicyCommissionRecord[] = policies?.map((policy: any) => {
-        const customer = policy.customers;
-        const productType = policy.product_types;
-        const commission = policy.policy_commissions?.[0] || {};
-        
-        const customerName = customer?.company_name || 
-          `${customer?.first_name || ''} ${customer?.last_name || ''}`.trim() || 
-          'Unknown Customer';
+      let records: any[] = revenueRecords || [];
+      let totalCount = count || 0;
 
-        let sourceName = 'Direct';
-        if (policy.source_type === 'agent' && policy.agents) {
-          sourceName = policy.agents.agent_name;
-        } else if (policy.source_type === 'employee' && policy.employees) {
-          sourceName = policy.employees.name;
-        } else if (policy.source_type === 'misp' && policy.misps) {
-          sourceName = policy.misps.channel_partner_name;
+      // If empty, try to sync revenue table and retry
+      if (records.length === 0 && profile?.org_id) {
+        await supabase.rpc('sync_revenue_table_comprehensive', { p_org_id: profile.org_id });
+
+        const { data: retry1, error: retryErr1, count: count1 } = await supabase
+          .from('revenue_table')
+          .select('*', { count: 'exact' })
+          .eq('org_id', profile.org_id)
+          .order('calc_date', { ascending: false })
+          .range(from, to);
+
+        if (retryErr1) throw retryErr1;
+        records = retry1 || [];
+        totalCount = count1 || 0;
+
+        // Fallback to legacy sync if still empty
+        if (records.length === 0) {
+          await supabase.rpc('sync_revenue_table', { p_org_id: profile.org_id });
+
+          const { data: retry2, error: retryErr2, count: count2 } = await supabase
+            .from('revenue_table')
+            .select('*', { count: 'exact' })
+            .eq('org_id', profile.org_id)
+            .order('calc_date', { ascending: false })
+            .range(from, to);
+
+          if (retryErr2) throw retryErr2;
+          records = retry2 || [];
+          totalCount = count2 || 0;
         }
+      }
 
-        // Calculate distribution percentages (simplified - could be more complex based on org rules)
-        const orgAdminShare = 20; // 20% to org admin
-        const sourceShare = policy.source_type ? 70 : 0; // 70% to source (agent/employee/misp)
-        const remainingShare = 100 - orgAdminShare - sourceShare; // remainder distributed
-
+      // Transform the revenue table data to match the expected interface
+      const transformedData: PolicyCommissionRecord[] = records?.map((record: any) => {
+        const sourceName = record.employee_name || record.agent_name || record.misp_name || 'Direct';
+        
         return {
-          policy_id: policy.id,
-          policy_number: policy.policy_number,
-          customer_name: customerName,
-          product_type: productType?.name || 'Unknown',
-          product_category: commission.product_type || productType?.category || 'Unknown',
-          gross_premium: parseFloat(policy.premium_with_gst || policy.premium_without_gst || '0'),
-          net_premium: parseFloat(policy.premium_without_gst || policy.premium_with_gst || '0'),
-          commission_rate: parseFloat(commission.commission_rate || '0'),
-          commission_amount: parseFloat(commission.commission_amount || '0'),
-          reward_rate: parseFloat(commission.reward_rate || '0'),
-          reward_amount: parseFloat(commission.reward_amount || '0'),
-          total_commission: parseFloat(commission.total_amount || '0'),
-          source_type: policy.source_type,
+          policy_id: record.policy_id || record.id,
+          policy_number: record.policy_number,
+          customer_name: record.customer_name || 'Unknown Customer',
+          product_type: record.product_type,
+          product_category: record.product_type,
+          gross_premium: parseFloat(record.premium || '0'),
+          net_premium: parseFloat(record.premium || '0'), 
+          commission_rate: parseFloat(record.base_rate || '0'),
+          commission_amount: parseFloat(record.insurer_commission || '0'),
+          reward_rate: parseFloat(record.reward_rate || '0'),
+          reward_amount: parseFloat(record.insurer_commission || '0') * parseFloat(record.reward_rate || '0') / 100,
+          total_commission: parseFloat(record.insurer_commission || '0'),
+          source_type: record.source_type,
           source_name: sourceName,
-          policy_status: policy.policy_status,
-          policy_start_date: policy.start_date,
-          policy_end_date: policy.end_date,
-          provider: policy.provider || 'Unknown',
-          created_at: policy.created_at,
-          payout_status: commission.payout_status || 'pending',
-          org_admin_share: orgAdminShare,
-          agent_share: policy.source_type === 'agent' ? sourceShare : 0,
-          misp_share: policy.source_type === 'misp' ? sourceShare : 0,
-          employee_share: policy.source_type === 'employee' ? sourceShare : remainingShare,
+          policy_status: 'active', // Revenue table only has active policies
+          policy_start_date: record.calc_date?.split('T')[0] || new Date().toISOString().split('T')[0],
+          policy_end_date: '',
+          provider: record.provider || 'Unknown',
+          created_at: record.calc_date,
+          payout_status: record.commission_status || 'calculated',
+          org_admin_share: 100 - (record.source_type ? 70 : 0), // Simplified calculation
+          agent_share: record.source_type === 'agent' ? 70 : 0,
+          misp_share: record.source_type === 'misp' ? 70 : 0,
+          employee_share: record.source_type === 'employee' ? 70 : 0,
+          tier_name: undefined,
+          override_used: false,
         };
       }) || [];
 
       setData(transformedData);
-      setTotalRecords(count || 0);
+      setTotalRecords(totalCount);
       setCurrentPage(page);
 
     } catch (err) {

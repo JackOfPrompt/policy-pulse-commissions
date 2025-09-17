@@ -28,7 +28,7 @@ export default function PolicyExtraction() {
   const [metadata, setMetadata] = useState<any>(null);
   const [documentPath, setDocumentPath] = useState<string | null>(null);
   const [businessSource, setBusinessSource] = useState<{
-    sourceType: 'employee' | 'posp' | 'misp' | null;
+    sourceType: 'internal' | 'external' | null;
     sourceId: string | null;
     brokerCompany: string;
   }>({
@@ -38,6 +38,15 @@ export default function PolicyExtraction() {
   });
 
   const handleUploadComplete = (data: any, meta: any, productType: string) => {
+    console.log('Upload complete - data:', data);
+    console.log('Upload complete - meta:', meta);
+    console.log('Upload complete - productType:', productType);
+    
+    // Ensure PRODUCT_TYPE is set in the extracted data
+    if (data && data.policy && !data.policy.PRODUCT_TYPE && productType) {
+      data.policy.PRODUCT_TYPE = productType;
+    }
+    
     setExtractedData(data);
     setMetadata({ ...meta, productType });
     setCurrentStep('document');
@@ -63,11 +72,6 @@ export default function PolicyExtraction() {
       // Add business source assignment and organization context to policy record
       const policyWithSource = {
         ...policyRecord,
-        source_type: businessSource.sourceType,
-        employee_id: businessSource.sourceType === 'employee' ? businessSource.sourceId : null,
-        posp_id: businessSource.sourceType === 'posp' ? businessSource.sourceId : null,  
-        misp_id: businessSource.sourceType === 'misp' ? businessSource.sourceId : null,
-        broker_company: businessSource.brokerCompany || null,
         // Add organization context for proper data isolation
         org_id: profile.org_id
       };

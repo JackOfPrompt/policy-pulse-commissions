@@ -8,6 +8,7 @@ import { Upload, FileText, Loader2, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { UserRole, Agent, UploadOption } from "@/types/policy";
+import productTypesData from "@/data/master/product_types.json";
 
 // Import product-specific schemas
 import lifeSchema from "@/data/schemas/life_policy_schema.json";
@@ -20,7 +21,8 @@ interface PolicyUploadFormProps {
   onUploadComplete: (extractedData: any, metadata: any, productType: string) => void;
 }
 
-type ProductType = 'life' | 'health' | 'motor';
+// Get available product types from master data
+const productTypes = Object.keys(productTypesData);
 
 // Mock agents data - in real app, this would come from database
 const mockAgents: Agent[] = [
@@ -31,13 +33,13 @@ const mockAgents: Agent[] = [
 
 export function PolicyUploadForm({ userRole, userEmail, onUploadComplete }: PolicyUploadFormProps) {
   const [file, setFile] = useState<File | null>(null);
-  const [productType, setProductType] = useState<ProductType | ''>('');
+  const [productType, setProductType] = useState<string>('');
   const [uploadOption, setUploadOption] = useState<UploadOption>({ type: 'direct' });
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
 
   // Get schema based on product type
-  const getSchemaForProductType = (type: ProductType) => {
+  const getSchemaForProductType = (type: string) => {
     switch (type) {
       case 'life':
         return lifeSchema;
@@ -277,18 +279,25 @@ export function PolicyUploadForm({ userRole, userEmail, onUploadComplete }: Poli
           <Label>Product Type *</Label>
           <Select 
             value={productType} 
-            onValueChange={(value: ProductType) => setProductType(value)}
+            onValueChange={(value: string) => setProductType(value)}
             disabled={isProcessing}
           >
-            <SelectTrigger>
+            <SelectTrigger className="border-2 border-primary/20">
               <SelectValue placeholder="Select product type" />
             </SelectTrigger>
             <SelectContent className="bg-background border border-border z-50">
-              <SelectItem value="life">Life Insurance</SelectItem>
-              <SelectItem value="health">Health Insurance</SelectItem>
-              <SelectItem value="motor">Motor Insurance</SelectItem>
+              {productTypes.map((type) => (
+                <SelectItem key={type} value={type}>
+                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
+          {!productType && (
+            <p className="text-sm text-orange-600">
+              Please select the product type to ensure accurate data extraction
+            </p>
+          )}
         </div>
 
         {/* File Upload */}

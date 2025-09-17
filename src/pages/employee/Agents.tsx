@@ -361,7 +361,7 @@ export default function EmployeeAgents() {
                     </div>
                     <div>
                       <Label>Commission Percentage</Label>
-                      <p className="text-sm text-muted-foreground">{selectedAgent.percentage || 0}%</p>
+                      <p className="text-sm text-muted-foreground">{selectedAgent.base_percentage || 0}%</p>
                     </div>
                   </div>
                 </TabsContent>

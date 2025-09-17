@@ -39,7 +39,7 @@ export function AgentForm({ agent, onSubmit, onCancel, loading }: AgentFormProps
       aadhar_card: agent?.aadhar_card || '',
       qualification: agent?.qualification || '',
       reference: agent?.reference || '',
-      percentage: agent?.percentage || undefined,
+      // base_percentage is now auto-populated from commission_tier_id
       status: (agent?.status as any) || 'active',
       account_name: agent?.account_name || '',
       bank_name: agent?.bank_name || '',
@@ -472,26 +472,7 @@ export function AgentForm({ agent, onSubmit, onCancel, loading }: AgentFormProps
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="percentage"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Legacy Commission % (deprecated)</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        min="0" 
-                        max="100" 
-                        disabled
-                        {...field}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value) || undefined)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Base percentage is now auto-populated from commission tier */}
             </CardContent>
           </Card>
 

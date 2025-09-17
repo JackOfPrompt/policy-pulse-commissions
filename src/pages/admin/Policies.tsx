@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PolicyBulkUploadModal } from "@/components/admin/PolicyBulkUploadModal";
-import { ViewPolicyModal } from "@/components/admin/ViewPolicyModal";
-import { EditPolicyModal } from "@/components/admin/EditPolicyModal";
+import { EnhancedViewPolicyModal } from "@/components/admin/EnhancedViewPolicyModal";
+import { EnhancedEditPolicyModal } from "@/components/admin/EnhancedEditPolicyModal";
 import { DeletePolicyModal } from "@/components/admin/DeletePolicyModal";
 import { usePolicies, Policy } from "@/hooks/usePolicies";
 import { useAuth } from "@/contexts/AuthContext";
@@ -116,12 +116,12 @@ export default function AdminPolicies() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Policy ID</TableHead>
+                  <TableHead>Policy Details</TableHead>
                   <TableHead>Customer</TableHead>
-                  <TableHead>Type</TableHead>
+                  <TableHead>Coverage</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>AI Extraction</TableHead>
                   <TableHead>Premium</TableHead>
+                  <TableHead>Source</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -142,26 +142,75 @@ export default function AdminPolicies() {
                   filteredPolicies.map((policy) => (
                     <TableRow key={policy.id}>
                       <TableCell>
-                        <div className="flex items-center space-x-2">
-                          <Shield className="h-4 w-4 text-primary" />
-                          <span className="font-medium font-mono text-sm">{policy.policy_number}</span>
+                        <div className="space-y-1">
+                          <div className="flex items-center space-x-2">
+                            <Shield className="h-4 w-4 text-primary" />
+                            <span className="font-medium font-mono text-sm">{policy.policy_number}</span>
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {policy.provider} • {policy.plan_name || 'N/A'}
+                          </div>
+                          <div className="text-xs capitalize">
+                            {policy.product_type?.category || policy.product_type?.name || "N/A"}
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell>
-                        {policy.customer ? `${policy.customer.first_name || ''} ${policy.customer.last_name || ''}`.trim() : "N/A"}
+                        <div className="space-y-1">
+                          <div className="font-medium">
+                            {policy.customer ? `${policy.customer.first_name || ''} ${policy.customer.last_name || ''}`.trim() : "N/A"}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {(policy.customer as any)?.email || 'No email'}
+                          </div>
+                        </div>
                       </TableCell>
-                      <TableCell className="capitalize">{policy.product_type?.category || policy.product_type?.name || "N/A"}</TableCell>
+                      <TableCell>
+                        <div className="space-y-1 text-sm">
+                          {policy.dynamic_details?.sum_assured && (
+                            <div>SA: {formatCurrency(policy.dynamic_details.sum_assured)}</div>
+                          )}
+                          {policy.dynamic_details?.sum_insured && (
+                            <div>SI: {formatCurrency(policy.dynamic_details.sum_insured)}</div>
+                          )}
+                          {policy.dynamic_details?.idv && (
+                            <div>IDV: {formatCurrency(policy.dynamic_details.idv)}</div>
+                          )}
+                          {!policy.dynamic_details?.sum_assured && !policy.dynamic_details?.sum_insured && !policy.dynamic_details?.idv && (
+                            <span className="text-muted-foreground">N/A</span>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <StatusChip variant={getStatusVariant(policy.policy_status || 'active')}>
                           {policy.policy_status || 'active'}
                         </StatusChip>
                       </TableCell>
                       <TableCell>
-                        <StatusChip variant="success">
-                          completed
-                        </StatusChip>
+                        <div className="space-y-1">
+                          <div className="font-semibold">
+                            {formatCurrency(policy.premium_with_gst || policy.premium_without_gst)}
+                          </div>
+                          {policy.dynamic_details?.premium_frequency && (
+                            <div className="text-xs text-muted-foreground capitalize">
+                              {policy.dynamic_details.premium_frequency}
+                            </div>
+                          )}
+                        </div>
                       </TableCell>
-                      <TableCell>{formatCurrency(policy.premium_with_gst || policy.premium_without_gst)}</TableCell>
+                      <TableCell>
+                        <div className="text-sm">
+                          {policy.agent && (
+                            <div className="text-blue-600">Agent: {policy.agent.agent_name}</div>
+                          )}
+                          {policy.employee && (
+                            <div className="text-green-600">Employee: {policy.employee.name}</div>
+                          )}
+                          {!policy.agent && !policy.employee && (
+                            <span className="text-muted-foreground">Direct</span>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <div className="flex space-x-1">
                           <Button 
@@ -203,13 +252,13 @@ export default function AdminPolicies() {
         onUploadComplete={fetchPolicies}
       />
 
-      <ViewPolicyModal
+      <EnhancedViewPolicyModal
         open={!!viewPolicy}
         onOpenChange={(open) => !open && setViewPolicy(null)}
         policy={viewPolicy}
       />
 
-      <EditPolicyModal
+      <EnhancedEditPolicyModal
         open={!!editPolicy}
         onOpenChange={(open) => !open && setEditPolicy(null)}
         policy={editPolicy}

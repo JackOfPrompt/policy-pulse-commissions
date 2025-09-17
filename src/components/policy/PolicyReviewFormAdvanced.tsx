@@ -7,9 +7,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, CheckCircle, Plus, Trash2 } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertTriangle, CheckCircle, Plus, Trash2, AlertCircle } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
+import productTypesData from "@/data/master/product_types.json";
 
 interface PolicyReviewFormAdvancedProps {
   schema: PolicySchema;
@@ -36,6 +38,10 @@ export function PolicyReviewFormAdvanced({
   const [formData, setFormData] = useState<PolicyData>({});
   const [validationErrors, setValidationErrors] = useState(new Set<string>());
   const [saveTraining, setSaveTraining] = useState(false);
+
+  // Get available product types from master data
+  const productTypes = Object.keys(productTypesData);
+  const currentProductType = formData?.policy?.PRODUCT_TYPE?.toLowerCase() || '';
 
   useEffect(() => {
     // Initialize form data based on schema
@@ -157,6 +163,39 @@ export function PolicyReviewFormAdvanced({
     const isRequired = field.required;
     const hasError = validationErrors.has(fieldKey);
     const wasExtracted = extractedData?.[section]?.[field.field] !== undefined;
+
+    // Special handling for PRODUCT_TYPE field
+    if (field.field === 'PRODUCT_TYPE') {
+      return (
+        <div className="p-4 border-2 border-primary/20 rounded-lg bg-primary/5">
+          <Label className="text-sm font-medium">
+            {field.label} {isRequired && <span className="text-red-500">*</span>}
+            <span className="text-xs text-primary ml-2 font-medium">(Critical Field)</span>
+            {wasExtracted && <Badge variant="secondary" className="ml-2">Extracted</Badge>}
+          </Label>
+          <Select
+            value={value?.toString() || ''}
+            onValueChange={(val) => updateFormData(section, field.field, val)}
+          >
+            <SelectTrigger className="border-2 border-primary/20">
+              <SelectValue placeholder="Select Product Type" />
+            </SelectTrigger>
+            <SelectContent>
+              {productTypes.map((type) => (
+                <SelectItem key={type} value={type}>
+                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {!value && (
+            <p className="text-sm text-orange-600 font-medium mt-1">
+              Please select the correct product type for accurate processing
+            </p>
+          )}
+        </div>
+      );
+    }
 
     if (field.type === 'array' && field.arrayType === 'object') {
       return (
@@ -341,6 +380,53 @@ export function PolicyReviewFormAdvanced({
           </Label>
         </div>
       </div>
+
+      {/* Product Type Selection Card - Always Visible */}
+      <Card className="border-2 border-primary/30 bg-gradient-to-r from-primary/5 to-primary/10">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-primary">
+            <AlertCircle className="h-5 w-5" />
+            Product Type Selection (Required)
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <Label className="text-base font-medium">
+              Product Type <span className="text-red-500">*</span>
+            </Label>
+            <Select
+              value={currentProductType || ''}
+              onValueChange={(val) => updateFormData('policy', 'PRODUCT_TYPE', val)}
+            >
+              <SelectTrigger className="border-2 border-primary/20 h-12">
+                <SelectValue placeholder="Select Product Type for Accurate Processing" />
+              </SelectTrigger>
+              <SelectContent>
+                {productTypes.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {!currentProductType ? (
+              <Alert className="border-orange-200 bg-orange-50">
+                <AlertCircle className="h-4 w-4 text-orange-600" />
+                <AlertDescription className="text-orange-800">
+                  <strong>Action Required:</strong> Please select the product type. This field is critical for accurate policy processing and commission calculations.
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <Alert className="border-green-200 bg-green-50">
+                <AlertCircle className="h-4 w-4 text-green-600" />
+                <AlertDescription className="text-green-800">
+                  <strong>Product Type Set:</strong> {currentProductType.charAt(0).toUpperCase() + currentProductType.slice(1)} selected
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {validationErrors.size > 0 && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useEmployees } from "@/hooks/useEmployees";
@@ -26,6 +26,16 @@ export function ReportingManagerSelector({
      emp.designation?.toLowerCase().includes('head') ||
      emp.designation?.toLowerCase().includes('lead'))
   );
+
+  // Set default to employee with employee_code "71092" if no value is set
+  useEffect(() => {
+    if (!value && employees.length > 0) {
+      const defaultEmployee = employees.find(emp => emp.employee_code === "71092");
+      if (defaultEmployee) {
+        onChange(defaultEmployee.id);
+      }
+    }
+  }, [employees, value, onChange]);
 
   return (
     <div className="space-y-2">

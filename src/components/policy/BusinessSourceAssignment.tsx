@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface BusinessSource {
-  sourceType: 'employee' | 'posp' | 'misp' | null;
+  sourceType: 'internal' | 'external' | null;
   sourceId: string | null;
   brokerCompany: string;
 }
@@ -118,27 +118,30 @@ export function BusinessSourceAssignment({
 
   const getSourceOptions = () => {
     switch (businessSource.sourceType) {
-      case 'employee':
+      case 'internal':
         return employees.map(emp => ({
           value: emp.id,
           label: `${emp.name} ${emp.employee_code ? `(${emp.employee_code})` : ''}`
         }));
-      case 'posp':
-        return agents.map(agent => ({
-          value: agent.id,
-          label: `${agent.agent_name} ${agent.agent_code ? `(${agent.agent_code})` : ''}`
-        }));
-      case 'misp':
-        return misps.map(misp => ({
-          value: misp.id,
-          label: `${misp.channel_partner_name}${misp.type_of_dealer ? ` (${misp.type_of_dealer})` : ''}`
-        }));
+      case 'external':
+        return [
+          ...agents.map(agent => ({
+            value: agent.id,
+            label: `Agent: ${agent.agent_name} ${agent.agent_code ? `(${agent.agent_code})` : ''}`,
+            type: 'agent'
+          })),
+          ...misps.map(misp => ({
+            value: misp.id,
+            label: `MISP: ${misp.channel_partner_name}${misp.type_of_dealer ? ` (${misp.type_of_dealer})` : ''}`,
+            type: 'misp'
+          }))
+        ];
       default:
         return [];
     }
   };
 
-  const handleSourceTypeChange = (sourceType: 'employee' | 'posp' | 'misp') => {
+  const handleSourceTypeChange = (sourceType: 'internal' | 'external') => {
     onBusinessSourceChange({
       sourceType,
       sourceId: null,
@@ -174,13 +177,28 @@ export function BusinessSourceAssignment({
       return;
     }
     
+    // Determine the specific source type and ID for external sources
+    let sourceDetails = { employee_id: null, agent_id: null, misp_id: null };
+    
+    if (businessSource.sourceType === 'internal') {
+      sourceDetails.employee_id = businessSource.sourceId;
+    } else if (businessSource.sourceType === 'external') {
+      // Check if selected source is an agent or misp
+      const selectedAgent = agents.find(a => a.id === businessSource.sourceId);
+      const selectedMisp = misps.find(m => m.id === businessSource.sourceId);
+      
+      if (selectedAgent) {
+        sourceDetails.agent_id = businessSource.sourceId;
+      } else if (selectedMisp) {
+        sourceDetails.misp_id = businessSource.sourceId;
+      }
+    }
+    
     // Merge extracted data with business source assignment
     const policyWithSource = {
       ...extractedData,
       source_type: businessSource.sourceType,
-      employee_id: businessSource.sourceType === 'employee' ? businessSource.sourceId : null,
-      posp_id: businessSource.sourceType === 'posp' ? businessSource.sourceId : null,
-      misp_id: businessSource.sourceType === 'misp' ? businessSource.sourceId : null,
+      ...sourceDetails,
       broker_company: businessSource.brokerCompany || null,
       policy_status: 'reviewed'
     };
@@ -216,22 +234,16 @@ export function BusinessSourceAssignment({
                 <SelectValue placeholder="Select source type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="employee">
+                <SelectItem value="internal">
                   <div className="flex items-center gap-2">
                     <Users className="h-4 w-4" />
-                    Employee (Internal Sales)
+                    Internal (Employee Sales)
                   </div>
                 </SelectItem>
-                <SelectItem value="posp">
+                <SelectItem value="external">
                   <div className="flex items-center gap-2">
                     <UserCheck className="h-4 w-4" />
-                    POSP Agent
-                  </div>
-                </SelectItem>
-                <SelectItem value="misp">
-                  <div className="flex items-center gap-2">
-                    <Building2 className="h-4 w-4" />
-                    MISP Channel Partner
+                    External (Agent/MISP)
                   </div>
                 </SelectItem>
               </SelectContent>
@@ -241,11 +253,9 @@ export function BusinessSourceAssignment({
           {/* Source Selection */}
           {businessSource.sourceType && (
             <div className="space-y-2">
-              <Label htmlFor="sourceId">
-                Select {businessSource.sourceType === 'employee' ? 'Employee' : 
-                        businessSource.sourceType === 'posp' ? 'POSP Agent' : 
-                        'MISP Channel Partner'} *
-              </Label>
+               <Label htmlFor="sourceId">
+                Select {businessSource.sourceType === 'internal' ? 'Employee' : 'Agent/MISP'} *
+               </Label>
               <Select
                 value={businessSource.sourceId || ''}
                 onValueChange={handleSourceIdChange}
@@ -254,9 +264,7 @@ export function BusinessSourceAssignment({
                 <SelectTrigger>
                   <SelectValue placeholder={
                     loading ? 'Loading...' : 
-                    `Select ${businessSource.sourceType === 'employee' ? 'employee' : 
-                             businessSource.sourceType === 'posp' ? 'agent' : 
-                             'channel partner'}`
+                    `Select ${businessSource.sourceType === 'internal' ? 'employee' : 'agent or MISP'}`
                   } />
                 </SelectTrigger>
                 <SelectContent>

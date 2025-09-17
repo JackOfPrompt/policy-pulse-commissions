@@ -76,19 +76,44 @@ async function getOrCreateOrgId(formData: any): Promise<string> {
 
 async function getOrCreateProductTypeId(orgId: string, productType: string): Promise<string> {
   const code = (productType || 'general').toLowerCase();
+  
+  // First try to find existing product type by category (which is the main field)
   const { data: pt, error: ptErr } = await supabase
     .from('product_types')
     .select('id')
     .eq('org_id', orgId)
-    .or(`code.eq.${code},name.ilike.*${code}*`)
+    .eq('category', code)
     .limit(1)
     .maybeSingle();
   if (pt && pt.id) return pt.id as string;
 
-  const name = code.charAt(0).toUpperCase() + code.slice(1);
+  // If not found, create new product type with proper mapping
+  const categoryMap: Record<string, string> = {
+    'motor': 'motor',
+    'vehicle': 'motor',
+    'auto': 'motor',
+    'health': 'health',
+    'medical': 'health',
+    'mediclaim': 'health',
+    'life': 'life',
+    'term': 'life',
+    'endowment': 'life',
+    'ulip': 'life',
+    'general': 'general'
+  };
+  
+  const category = categoryMap[code] || 'general';
+  const name = category.charAt(0).toUpperCase() + category.slice(1);
+  
   const { data: created, error: createErr } = await supabase
     .from('product_types')
-    .insert({ org_id: orgId, code, name, category: 'insurance', is_active: true })
+    .insert({ 
+      org_id: orgId, 
+      code: category, 
+      name: name, 
+      category: category, 
+      is_active: true 
+    })
     .select('id')
     .single();
   if (createErr) throw createErr;
@@ -146,44 +171,60 @@ async function getOrCreateCustomer(orgId: string, formData: any) {
 }
 
 async function createVehicle(orgId: string, customerId: string, formData: any) {
-  // Try from multiple schemas
-  const regNum = getVal(formData, ['vehicle.VEHICLE_NUMBER', 'vehicle_details.registration_number']);
-  const make = getVal(formData, ['vehicle.VEHICLE_MAKE', 'vehicle_details.make']);
-  const model = getVal(formData, ['vehicle.VEHICLE_MODEL', 'vehicle_details.model']);
-  const variant = getVal(formData, ['vehicle.VEHICLE_VARIANT', 'vehicle_details.variant']);
-  const fuelType = getVal(formData, ['vehicle.FUEL_TYPE', 'vehicle_details.fuel_type']);
-  const engineNumber = getVal(formData, ['vehicle.VEHICLE_ENGINE_NUMBER', 'vehicle_details.engine_number']);
-  const chassisNumber = getVal(formData, ['vehicle.VEHICLE_CHASSID', 'vehicle_details.chassis_number']);
-  const cc = getVal(formData, ['vehicle.VEHICLE_CC', 'vehicle_details.cc_kw']);
-  const bodyType = getVal(formData, ['vehicle.VEHICLE_BODY_TYPE', 'vehicle_details.body_type']);
-  const permitType = getVal(formData, ['vehicle.VEHICLE_PERMIT_TYPE']);
-  const regDate = getVal(formData, ['vehicle.VEHICLE_REGISTRATION_DATE']);
-  const mfgDate = getVal(formData, ['vehicle.MFG_DATE', 'vehicle_details.year_of_manufacture']);
+  try {
+    // Try from multiple schemas
+    const regNum = getVal(formData, ['vehicle.VEHICLE_NUMBER', 'vehicle_details.registration_number']);
+    const make = getVal(formData, ['vehicle.VEHICLE_MAKE', 'vehicle_details.make']);
+    const model = getVal(formData, ['vehicle.VEHICLE_MODEL', 'vehicle_details.model']);
+    const variant = getVal(formData, ['vehicle.VEHICLE_VARIANT', 'vehicle_details.variant']);
+    const fuelType = getVal(formData, ['vehicle.FUEL_TYPE', 'vehicle_details.fuel_type']);
+    const engineNumber = getVal(formData, ['vehicle.VEHICLE_ENGINE_NUMBER', 'vehicle_details.engine_number']);
+    const chassisNumber = getVal(formData, ['vehicle.VEHICLE_CHASSID', 'vehicle_details.chassis_number']);
+    const cc = getVal(formData, ['vehicle.VEHICLE_CC', 'vehicle_details.cc_kw']);
+    const bodyType = getVal(formData, ['vehicle.VEHICLE_BODY_TYPE', 'vehicle_details.body_type']);
+    const permitType = getVal(formData, ['vehicle.VEHICLE_PERMIT_TYPE']);
+    const regDate = getVal(formData, ['vehicle.VEHICLE_REGISTRATION_DATE']);
+    const mfgDate = getVal(formData, ['vehicle.MFG_DATE', 'vehicle_details.year_of_manufacture']);
 
-  const payload: any = {
-    org_id: orgId,
-    customer_id: customerId,
-    registration_number: regNum || null,
-    make: make || null,
-    model: model || null,
-    variant: variant || null,
-    fuel_type: fuelType || null,
-    engine_number: engineNumber || null,
-    chassis_number: chassisNumber || null,
-    cc: cc ? Number(String(cc).replace(/[^0-9]/g, '')) : null,
-    body_type: bodyType || null,
-    permit_type: permitType || null,
-    registration_date: regDate || null,
-    manufacture_date: mfgDate || null,
-  };
+    // Check if vehicles table exists, if not skip vehicle creation
+    const { error: tableCheckError } = await supabase
+      .from('vehicles')
+      .select('id')
+      .limit(1);
+      
+    if (tableCheckError && tableCheckError.message?.includes('relation "vehicles" does not exist')) {
+      console.log('Vehicles table does not exist, skipping vehicle creation');
+      return null;
+    }
 
-  const { data, error } = await supabase
-    .from('vehicles')
-    .insert(payload)
-    .select('id')
-    .single();
-  if (error) throw error;
-  return data.id as string;
+    const payload: any = {
+      org_id: orgId,
+      customer_id: customerId,
+      registration_number: regNum || null,
+      make: make || null,
+      model: model || null,
+      variant: variant || null,
+      fuel_type: fuelType || null,
+      engine_number: engineNumber || null,
+      chassis_number: chassisNumber || null,
+      cc: cc ? Number(String(cc).replace(/[^0-9]/g, '')) : null,
+      body_type: bodyType || null,
+      permit_type: permitType || null,
+      registration_date: regDate || null,
+      manufacture_date: mfgDate || null,
+    };
+
+    const { data, error } = await supabase
+      .from('vehicles')
+      .insert(payload)
+      .select('id')
+      .single();
+    if (error) throw error;
+    return data.id as string;
+  } catch (error) {
+    console.error('Vehicle creation error:', error);
+    return null; // Return null instead of throwing
+  }
 }
 
 function publicFileUrl(fileName?: string | null, documentPath?: string | null): string | null {
@@ -203,12 +244,13 @@ serve(async (req) => {
   try {
     const { formData, metadata } = await req.json();
     console.log('save-policy incoming', { hasFormData: !!formData, hasMetadata: !!metadata });
+    
     if (formData) {
       console.log('save-policy payload preview', {
         org_id: formData?.org_id,
         source_type: formData?.source_type,
         employee_id: formData?.employee_id,
-        posp_id: formData?.posp_id,
+        agent_id: formData?.agent_id,
         misp_id: formData?.misp_id,
         broker_company: formData?.broker_company,
       });
@@ -217,7 +259,9 @@ serve(async (req) => {
       return new Response(JSON.stringify({ success: false, error: 'Missing formData' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 });
     }
 
-    const productType: string = metadata?.productType || getVal(formData, ['policy.PRODUCT_TYPE']) || inferProductType(formData) || 'general';
+    const productType: string = metadata?.productType || getVal(formData, ['policy.PRODUCT_TYPE']) || inferProductType(formData) || 'motor';
+
+    console.log('Determined product type:', productType);
 
     // Prepare base entities
     const orgId = await getOrCreateOrgId(formData);
@@ -249,112 +293,169 @@ serve(async (req) => {
       gst: gst !== null ? Number(gst) : null,
       premium_without_gst: netPremium !== null ? Number(netPremium) : null,
       premium_with_gst: grossPremium !== null ? Number(grossPremium) : null,
+      gross_premium: grossPremium !== null ? Number(grossPremium) : (netPremium !== null ? Number(netPremium) : null),
       product_type_id: productTypeId,
       pdf_link: pdfLink,
       dynamic_details: formData,
+      policy_status: 'active',
       // Business source assignments
       source_type: formData.source_type || null,
       employee_id: formData.employee_id || null,
       posp_id: formData.posp_id || null,
       misp_id: formData.misp_id || null,
+      agent_id: formData.agent_id || null,
       broker_company: formData.broker_company || null,
     };
 
     const { data: policyRow, error: policyErr } = await supabase
       .from('policies')
-      .insert(policyPayload)
+      .upsert(policyPayload, { onConflict: 'org_id,policy_number' })
       .select('id')
       .single();
     if (policyErr) throw policyErr;
 
     const policyId: string = policyRow.id;
 
-    // Product-specific detail tables
-    if (productType.toLowerCase() === 'motor') {
-      // Create vehicle
-      const vehicleId = await createVehicle(orgId, customerId, formData).catch(() => null);
-
-      const idv = getVal(formData, ['policy.IDV', 'vehicle_details.idv']);
-      const ncb = getVal(formData, ['policy.NCB', 'previous_insurance.ncb']);
-      const prevClaim = getVal(formData, ['policy.PREVIOUS_CLAIM', 'previous_insurance.claims_history']);
-      const policyType = getVal(formData, ['policy.POLICY_TYPE', 'policy_details.policy_type']);
-      const policySubType = getVal(formData, ['policy.POLICY_SUB_TYPE']);
-      const prevInsurer = getVal(formData, ['policy.PREVIOUS_POLICY_COMPANY_NAME', 'previous_insurance.insurer_name']);
-      const prevPolicyNum = getVal(formData, ['policy.PREVIOUS_POLICY_NUMBER', 'previous_insurance.policy_number']);
-
-      const motorPayload: any = {
-        policy_id: policyId,
-        vehicle_id: vehicleId,
-        idv: idv !== null ? Number(idv) : null,
-        ncb: ncb !== null ? Number(ncb) : null,
-        previous_claim: typeof prevClaim === 'string' ? /yes|claim/i.test(prevClaim) : Boolean(prevClaim),
-        policy_type: policyType || null,
-        policy_sub_type: policySubType || null,
-        previous_insurer_name: prevInsurer || null,
-        previous_policy_number: prevPolicyNum || null,
-      };
-
-      const { error: motorErr } = await supabase.from('motor_policy_details').insert(motorPayload);
-      if (motorErr) throw motorErr;
-    }
-
-    if (productType.toLowerCase() === 'health') {
-      const policyType = getVal(formData, ['policy.POLICY_TYPE']);
-      const uin = getVal(formData, ['insurance_provider.PROVIDER_UIN']);
-      const coverTillAge = getVal(formData, ['policy.COVER_TILL_AGE']);
-
-      const healthPayload: any = {
-        policy_id: policyId,
-        policy_type: policyType || null,
-        uin: uin || null,
-        cover_type: coverTillAge ? `Till ${coverTillAge}` : null,
-        benefits: null,
-        exclusions: null,
-      };
-      const { error: healthErr } = await supabase.from('health_policy_details').insert(healthPayload);
-      if (healthErr) throw healthErr;
-
-      // Insured members
-      const insuredPersons: any[] = formData?.policy?.INSURED_PERSONS || [];
-      if (Array.isArray(insuredPersons) && insuredPersons.length) {
-        const rows = insuredPersons.map((m) => ({
+    // Create basic commission record (skip complex calculation for now)
+    try {
+      console.log('Creating basic commission record for policy:', policyId);
+      
+      // Upsert basic commission record with pending status (avoid duplicates)
+      const { error: insertCommissionError } = await supabase
+        .from('policy_commissions')
+        .upsert({
           policy_id: policyId,
-          name: m?.name || null,
-          dob: m?.dob || null,
-          gender: m?.gender || null,
-          relationship: m?.relationship_with_proposer || null,
-          member_id: m?.member_id || null,
-          pre_existing_diseases: m?.pre_existing_diseases || null,
-          sum_insured: null,
-        }));
-        const { error: imErr } = await supabase.from('insured_members').insert(rows);
-        if (imErr) throw imErr;
+          org_id: orgId,
+          product_type: productType,
+          commission_status: 'pending',
+          created_by: formData.created_by || null
+        }, { onConflict: 'policy_id' });
+        
+      if (insertCommissionError) {
+        console.error('Commission insert error:', insertCommissionError);
+      } else {
+        console.log('Commission record created successfully with pending status');
       }
+    } catch (commissionErr) {
+      console.error('Commission processing error:', commissionErr);
+      // Continue without failing the policy save
     }
 
-    if (productType.toLowerCase() === 'life') {
-      const policyTerm = getVal(formData, ['policy_details.policy_term', 'policy.POLICY_TENURE']);
-      const premiumPaymentTerm = getVal(formData, ['policy_details.premium_payment_term', 'policy.POLICY_PAYMENT_TERM']);
-      const premiumFrequency = getVal(formData, ['policy_details.premium_payment_frequency', 'policy.PAYMENT_TERM']);
-      const sumAssured = getVal(formData, ['benefits.sum_assured_on_death', 'policy.SUM_INSURED']);
-      const maturityDate = getVal(formData, ['policy_details.maturity_date']);
-      const uin = getVal(formData, ['policy_details.uin']);
-      const planType = getVal(formData, ['policy_details.plan_type']);
-      const taxBenefits = getVal(formData, ['premium_details.tax_benefits']);
+    // Product-specific detail tables - with error handling
+    try {
+      if (productType.toLowerCase() === 'motor') {
+        console.log('Creating motor policy details...');
+        // Create vehicle first
+        let vehicleId = null;
+        try {
+          vehicleId = await createVehicle(orgId, customerId, formData);
+        } catch (vehicleErr) {
+          console.error('Vehicle creation error:', vehicleErr);
+          // Continue without vehicle if creation fails
+        }
 
-      const lifePayload: any = {
-        policy_id: policyId,
-        policy_term: policyTerm ? Number(String(policyTerm).replace(/[^0-9]/g, '')) : null,
-        premium_payment_term: premiumPaymentTerm ? Number(String(premiumPaymentTerm).replace(/[^0-9]/g, '')) : null,
-        premium_frequency: premiumFrequency || null,
-        sum_assured: sumAssured !== null ? Number(sumAssured) : null,
-        maturity_date: maturityDate || null,
-        uin: uin || null,
-        plan_type: planType || null,
-        tax_benefits: taxBenefits || null,
-      };
-      const { error: lifeErr } = await supabase.from('life_policy_details').insert(lifePayload);
-      if (lifeErr) throw lifeErr;
+        const idv = getVal(formData, ['policy.IDV', 'vehicle_details.idv']);
+        const ncb = getVal(formData, ['policy.NCB', 'previous_insurance.ncb']);
+        const prevClaim = getVal(formData, ['policy.PREVIOUS_CLAIM', 'previous_insurance.claims_history']);
+        const policyType = getVal(formData, ['policy.POLICY_TYPE', 'policy_details.policy_type']);
+        const policySubType = getVal(formData, ['policy.POLICY_SUB_TYPE']);
+        const prevInsurer = getVal(formData, ['policy.PREVIOUS_POLICY_COMPANY_NAME', 'previous_insurance.insurer_name']);
+        const prevPolicyNum = getVal(formData, ['policy.PREVIOUS_POLICY_NUMBER', 'previous_insurance.policy_number']);
+
+        const motorPayload: any = {
+          policy_id: policyId,
+          vehicle_id: vehicleId,
+          idv: idv !== null ? Number(idv) : null,
+          ncb: ncb !== null ? Number(ncb) : null,
+          previous_claim: typeof prevClaim === 'string' ? /yes|claim/i.test(prevClaim) : Boolean(prevClaim),
+          policy_type: policyType || null,
+          policy_sub_type: policySubType || null,
+          previous_insurer_name: prevInsurer || null,
+          previous_policy_number: prevPolicyNum || null,
+        };
+
+        const { error: motorErr } = await supabase.from('motor_policy_details').insert(motorPayload);
+        if (motorErr) {
+          console.error('Motor policy details error:', motorErr);
+          throw motorErr;
+        }
+        console.log('Motor policy details created successfully');
+      }
+
+      if (productType.toLowerCase() === 'health') {
+        console.log('Creating health policy details...');
+        const policyType = getVal(formData, ['policy.POLICY_TYPE']);
+        const uin = getVal(formData, ['insurance_provider.PROVIDER_UIN', 'policy_details.uin']);
+        const coverTillAge = getVal(formData, ['policy.COVER_TILL_AGE']);
+
+        const healthPayload: any = {
+          policy_id: policyId,
+          policy_type: policyType || null,
+          uin: uin || null,
+          cover_type: coverTillAge ? `Till ${coverTillAge}` : null,
+          benefits: null,
+          exclusions: null,
+        };
+        const { error: healthErr } = await supabase.from('health_policy_details').insert(healthPayload);
+        if (healthErr) {
+          console.error('Health policy details error:', healthErr);
+          throw healthErr;
+        }
+
+        // Insured members
+        const insuredPersons: any[] = formData?.policy?.INSURED_PERSONS || formData?.insured_members || [];
+        if (Array.isArray(insuredPersons) && insuredPersons.length) {
+          const rows = insuredPersons.map((m) => ({
+            policy_id: policyId,
+            name: m?.name || null,
+            dob: m?.dob || null,
+            gender: m?.gender || null,
+            relationship: m?.relationship_with_proposer || m?.relationship || null,
+            member_id: m?.member_id || null,
+            pre_existing_diseases: m?.pre_existing_diseases || null,
+            sum_insured: m?.sum_insured ? Number(m.sum_insured) : null,
+          }));
+          const { error: imErr } = await supabase.from('insured_members').insert(rows);
+          if (imErr) {
+            console.error('Insured members error:', imErr);
+            // Don't fail for member insertion errors
+          }
+        }
+        console.log('Health policy details created successfully');
+      }
+
+      if (productType.toLowerCase() === 'life') {
+        console.log('Creating life policy details...');
+        const policyTerm = getVal(formData, ['policy_details.policy_term', 'policy.POLICY_TENURE']);
+        const premiumPaymentTerm = getVal(formData, ['policy_details.premium_payment_term', 'policy.POLICY_PAYMENT_TERM']);
+        const premiumFrequency = getVal(formData, ['policy_details.premium_payment_frequency', 'policy.PAYMENT_TERM']);
+        const sumAssured = getVal(formData, ['benefits.sum_assured_on_death', 'policy.SUM_INSURED']);
+        const maturityDate = getVal(formData, ['policy_details.maturity_date']);
+        const uin = getVal(formData, ['policy_details.uin', 'insurance_provider.PROVIDER_UIN']);
+        const planType = getVal(formData, ['policy_details.plan_type']);
+        const taxBenefits = getVal(formData, ['premium_details.tax_benefits']);
+
+        const lifePayload: any = {
+          policy_id: policyId,
+          policy_term: policyTerm ? Number(String(policyTerm).replace(/[^0-9]/g, '')) : null,
+          premium_payment_term: premiumPaymentTerm ? Number(String(premiumPaymentTerm).replace(/[^0-9]/g, '')) : null,
+          premium_frequency: premiumFrequency || null,
+          sum_assured: sumAssured !== null ? Number(sumAssured) : null,
+          maturity_date: maturityDate || null,
+          uin: uin || null,
+          plan_type: planType || null,
+          tax_benefits: taxBenefits || null,
+        };
+        const { error: lifeErr } = await supabase.from('life_policy_details').insert(lifePayload);
+        if (lifeErr) {
+          console.error('Life policy details error:', lifeErr);
+          throw lifeErr;
+        }
+        console.log('Life policy details created successfully');
+      }
+    } catch (detailsErr) {
+      console.error('Product-specific details error:', detailsErr);
+      // Don't fail the entire save for details table errors
     }
 
     return new Response(

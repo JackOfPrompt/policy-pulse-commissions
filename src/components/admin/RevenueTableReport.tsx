@@ -169,6 +169,8 @@ export function RevenueTableReport() {
                     <TableHead className="text-right">Premium</TableHead>
                     <TableHead className="text-right">Base %</TableHead>
                     <TableHead className="text-right">Reward %</TableHead>
+                    <TableHead className="text-right">Bonus %</TableHead>
+                    <TableHead className="text-right">Total %</TableHead>
                     <TableHead className="text-right">Insurer Comm.</TableHead>
                     <TableHead className="text-right">Agent Comm.</TableHead>
                     <TableHead className="text-right">Employee Comm.</TableHead>
@@ -215,6 +217,12 @@ export function RevenueTableReport() {
                       </TableCell>
                       <TableCell className="text-right">
                         {record.reward_rate?.toFixed(2)}%
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {record.bonus_rate?.toFixed(2)}%
+                      </TableCell>
+                      <TableCell className="text-right font-semibold">
+                        {((record.base_rate || 0) + (record.reward_rate || 0) + (record.bonus_rate || 0)).toFixed(2)}%
                       </TableCell>
                       <TableCell className="text-right">
                         {formatCurrency(record.insurer_commission)}
